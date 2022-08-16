@@ -133,6 +133,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   J <- ncol(Y)
   jxs <- sample(1:J,size=subsample,replace=FALSE)
   Y.sub <- Y[,jxs]
+  Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
   out <- gbm.sc(Y.sub,M=M,gamma.start = 50)
