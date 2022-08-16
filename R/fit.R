@@ -99,6 +99,7 @@ gbm.sc <- function(Y,M,max.iter=100,gamma.start=25,tol=10^{-4},
 gbm.projection <- function(Y,M,subsample=2000,min.counts=5,ncores) {
   J <- ncol(Y)
   jxs <- sample(1:J,size=subsample,replace=FALSE)
+  Y.sub <- as.matrix(Y.sub)
   Y.sub <- Y[,jxs]
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
