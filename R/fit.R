@@ -145,7 +145,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
 
   Y <- Y[ixs,]
   #Now get V
-  cl <- makeCluster(ncores)
+  cl <- makeCluster(ncores, type="FORK")
   registerDoParallel(cl)
   V <- foreach(j=1:J, .combine=rbind) %dopar% {
     cell <- as.vector(Y[,j])
