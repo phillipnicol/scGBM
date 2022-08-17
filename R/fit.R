@@ -148,7 +148,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   cl <- makeCluster(ncores)
   registerDoParallel(cl)
   V <- foreach(j=1:J, .combine=rbind) %dopar% {
-    cell <- Y[,j]
+    cell <- as.vector(Y[,j])
     o <- log(sum(cell))+alpha
     fit <- glm(cell~0+offset(o)+.,
                data=U,
