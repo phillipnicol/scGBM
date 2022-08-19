@@ -8,7 +8,8 @@ gbm.sc <- function(Y,M,max.iter=100,gamma.start=25,tol=10^{-4},
     if(ncores==1) {
       out <- gbm.projection(Y,M,subsample=subset)
     } else{
-      out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores)
+      out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,
+                               gamma.start=gamma.start)
     }
     return(out)
   }
@@ -129,14 +130,14 @@ gbm.projection <- function(Y,M,subsample=2000,min.counts=5,ncores) {
 }
 
 gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
-                              ncores) {
+                              ncores,gamma.start=gamma.start) {
   J <- ncol(Y)
   jxs <- sample(1:J,size=subsample,replace=FALSE)
   Y.sub <- Y[,jxs]
   Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M,gamma.start = 50)
+  out <- gbm.sc(Y.sub,M=M,gamma.start = gamma.start)
 
   U <- out$U
   U <- as.data.frame(U)
@@ -150,12 +151,16 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   V <- foreach(j=1:J, .combine=rbind) %dopar% {
     cell <- as.vector(Y[,j])
     o <- log(sum(cell))+alpha
-    fit <- glm(cell~0+offset(o)+.,
-               data=U,
-               family=poisson(link="log"))
-    sumfit <- summary(fit)
-    matrix(c(coefficients(fit),sumfit$coefficients[,2]),
-              nrow=1)
+    val <- matrix(rep(0,2*M),nrow=1)
+    try({
+      fit <- glm(cell~0+offset(o)+.,
+                 data=U,
+                 family=poisson(link="log"))
+      sumfit <- summary(fit)
+      val <- matrix(c(coefficients(fit),sumfit$coefficients[,2]),
+             nrow=1)
+    })
+    val
   }
 
   out$se_V <- V[,(M+1):(2*M)]
