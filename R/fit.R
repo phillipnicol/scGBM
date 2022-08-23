@@ -59,7 +59,7 @@ gbm.sc <- function(Y,M,max.iter=100,tol=10^{-4},
     LL[i] <- sum(dpois(Y,lambda=W,log=TRUE))
     cat("Iteration: ", i, ". LogLik=", LL[i], "\n")
     if(i > 2) {
-      tau <- (LL[i]-LL[i-1])/LL[i-1]
+      tau <- abs((LL[i]-LL[i-1])/LL[i-1])
       if(tau < tol) {
         break
       }
