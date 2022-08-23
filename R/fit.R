@@ -8,8 +8,7 @@ gbm.sc <- function(Y,M,max.iter=100,tol=10^{-4},
     if(ncores==1) {
       out <- gbm.projection(Y,M,subsample=subset)
     } else{
-      out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,
-                               gamma.start=gamma.start)
+      out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores)
     }
     return(out)
   }
