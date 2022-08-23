@@ -37,6 +37,7 @@ gbm.sc <- function(Y,M,max.iter=100,gamma.start=25,tol=10^{-4},
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*% diag(LRA$d) %*% t(LRA$v)
   X <- sqrt(1/W)*X
+  LRA <- irlba::irlba(X,nv=M,nu=M)
 
   #Bound X to avoid starting too large
   X[X > 8] <- 8
