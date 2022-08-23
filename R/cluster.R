@@ -36,7 +36,7 @@ gbm.cluster <- function(V, se_V, max.cluster=100) {
 
     if(K == max.cluster | K==1) {
       break
-    } else if(lb==ub) {
+    } else if(abs(lb-ub) <= 1) {
       break
     }
 
@@ -64,6 +64,9 @@ gbm.cluster <- function(V, se_V, max.cluster=100) {
     }
     K <- K.new
   }
+
+  best <- which.min(bics)
+  fit <- kmeans(V,centers=best)
 
   for(K in 2:max.cluster) {
     print(K)
