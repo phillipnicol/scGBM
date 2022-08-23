@@ -52,32 +52,13 @@ gbm.sc <- function(Y,M,max.iter=100,gamma.start=25,tol=10^{-4},
     alphas <- log(mu)
     W <- matrix(mu,nrow=I,ncol=J)
     W <- W*Offset.new
+    W[W > max(Y)] <- max(Y)
     Z <- X+(Y-W)/W
 
     ## Compute log likelihood
     LL[i] <- sum(dpois(Y,lambda=W,log=TRUE))
     cat("Iteration: ", i, ". LogLik="
         , LL[i], ". Step size = ", gamma, ".\n")
-    if(gamma < 0.01) {
-      break
-    }
-    if(i > 1) {
-      tau <- abs((LL[i]-LL[i-1])/LL[i-1])
-      if(tau < tol) {
-        break
-      }
-
-      if(LL[i-1] > LL[i]) {
-        X <- X.prev
-        gamma <- gamma/2
-        last.change <- 0
-        next
-      } else {last.change <- last.change+1}
-
-      if(last.change > 10) {
-        gamma <- gamma*2
-      }
-    }
 
     ## Gradient Step
     X.prev <- X
