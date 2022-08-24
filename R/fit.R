@@ -129,7 +129,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   out <- gbm.sc(Y.sub,M=M)
 
   U <- out$U
-  U <- as.data.frame(U)
+  #U <- as.data.frame(U)
   colnames(U) <- paste0("U",1:M)
   alpha <- out$alpha
 
@@ -142,11 +142,14 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
     o <- log(sum(cell))+alpha
     val <- matrix(rep(0,2*M),nrow=1)
     try({
-      fit <- glm(cell~0+offset(o)+.,
-                 data=U,
-                 family=poisson(link="log"))
+      fit <- fastglm(x=U,y=cell,offset=o,
+                     family=poisson(),
+                     method=3)
+      #fit <- glm(cell~0+offset(o)+.,
+                 #data=U,
+                 #family=poisson(link="log"))
       sumfit <- summary(fit)
-      val <- matrix(c(coefficients(fit),sumfit$coefficients[,2]),
+      val <- matrix(c(fit$coefficients,fit$se),
              nrow=1)
     })
     val
