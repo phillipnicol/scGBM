@@ -6,7 +6,6 @@ gbm.cluster <- function(out, se_V, max.cluster=100) {
   M <- length(out$D)
   V <- out$V
   J <- nrow(V)
-  ll.null <- ll
   ll.null <- sum(dnorm(V/se_V,log=TRUE))
 
   bics <- rep(NA,max.cluster)
@@ -18,7 +17,6 @@ gbm.cluster <- function(out, se_V, max.cluster=100) {
 
     Pi <- table(fit$cluster)/J
     mu <- fit$centers
-    ll <- 0
     ll <- vapply(1:J,FUN.VALUE=numeric(1),function(j) {
       vec <- vapply(1:K,FUN.VALUE=numeric(1),function(k) {
         log(Pi[k])+sum(dnorm((V[j,]-mu[k,])/se_V[j,],log=TRUE))
