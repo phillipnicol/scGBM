@@ -13,7 +13,7 @@ gbm.cluster <- function(out, se_V, max.cluster=100) {
 
   for(K in 2:max.cluster) {
     print(K)
-    fit <- kmeans(V,centers=K)
+    fit <- kmeans(x=V,centers=K,nstart=25)
 
     Pi <- table(fit$cluster)/J
     mu <- fit$centers
@@ -40,7 +40,7 @@ gbm.cluster <- function(out, se_V, max.cluster=100) {
   val$bic <- bics
   val$cluster <- fit.prev$cluster
   val$fc.centers <- out$U %*% t(fit.prev$centers)
-  A <- matrix(out$alpha,nrow=nrow(out$W),ncol=ncol(val$fc.centers))
+  A <- matrix(out$alpha,nrow=nrow(out$U),ncol=ncol(val$fc.centers))
   val$full.centers <- A + val$fc.centers
   return(val)
 }
