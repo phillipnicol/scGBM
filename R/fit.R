@@ -134,10 +134,8 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   alpha <- out$alpha
 
   Y <- Y[ixs,]
-  #Now get V
-  cl <- makeCluster(ncores, type="FORK")
-  registerDoParallel(cl)
-  V <- foreach(j=1:J, .combine=rbind) %dopar% {
+  print(Sys.time())
+  V <- mclapply(1:J,function(j) {
     cell <- as.vector(Y[,j])
     o <- log(sum(cell))+alpha
     val <- matrix(rep(0,2*M),nrow=1)
@@ -146,14 +144,15 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
                      family=poisson(),
                      method=3)
       #fit <- glm(cell~0+offset(o)+.,
-                 #data=U,
-                 #family=poisson(link="log"))
-      sumfit <- summary(fit)
+      #data=U,
+      #family=poisson(link="log"))
       val <- matrix(c(fit$coefficients,fit$se),
-             nrow=1)
+                    nrow=1)
     })
     val
-  }
+  },
+  mc.cores = ncores)
+  V <- matrix(unlist(V),nrow=J,ncol=2*M,byrow=TRUE)
 
   out$se_V <- V[,(M+1):(2*M)]
   out$V <- V[,1:M]

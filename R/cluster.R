@@ -19,7 +19,7 @@ gbm.cluster <- function(out, se_V, max.cluster=100) {
     mu <- fit$centers
     ll <- vapply(1:J,FUN.VALUE=numeric(1),function(j) {
       vec <- vapply(1:K,FUN.VALUE=numeric(1),function(k) {
-        log(Pi[k])+sum(dnorm((V[j,]-mu[k,])/se_V[j,],log=TRUE))
+        log(Pi[k])+sum(dt((V[j,]-mu[k,])/se_V[j,],df=1,log=TRUE))
       })
       c <- max(vec)
       c+log(sum(exp(vec-c)))
