@@ -157,7 +157,6 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   out$se_V <- V[,(M+1):(2*M)]
   out$V <- V[,1:M]
 
-  stopCluster(cl)
   return(out)
 }
 
