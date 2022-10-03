@@ -24,8 +24,13 @@ simData <- function(I,J,d,alpha.mean=0) {
 }
 
 
+simNull <- function(I,J) {
+  mus <- runif(n=I,min=1,max=10)
+  Mu <- matrix(mus,nrow=I,ncol=J)
 
-
+  Y <- matrix(rpois(n=I*J,lambda=as.vector(Mu)),nrow=I,ncol=J)
+  return(Y)
+}
 
 
 
