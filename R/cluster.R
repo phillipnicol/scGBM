@@ -65,7 +65,7 @@ gbm.cluster2 <- function(out,se_V,max.cluster=20,keep) {
   }
 
   #Shrinkage
-  mu <- t(fit.prev$parameters$mean)
+  #mu <- t(fit.prev$parameters$mean)
   val$bic <- bics
   #val$fc.centers <- out$U[,1:keep] %*% mu
   #A <- matrix(out$alpha,nrow=nrow(out$U),ncol=ncol(val$fc.centers))

@@ -1,8 +1,13 @@
 
 
-gbm.sc <- function(Y,M,max.iter=100,tol=10^{-4},
-                   offset=NULL,subset=NULL,ncores=1,
-                   infer.beta=FALSE) {
+gbm.sc <- function(Y,
+                   M,
+                   max.iter=100,
+                   tol=10^{-4},
+                   subset=NULL,
+                   ncores=1,
+                   infer.beta=FALSE,
+                   big.matrix=FALSE) {
   if(!is.null(subset)) {
     if(ncores==1) {
       out <- gbm.projection(Y,M,subsample=subset)
@@ -12,12 +17,12 @@ gbm.sc <- function(Y,M,max.iter=100,tol=10^{-4},
     return(out)
   }
 
+  I <- nrow(Y); J <- ncol(Y)
+  LL <- rep(0,max.iter)
+
   if(!is.matrix(Y)) {
     Y <- as.matrix(Y)
   }
-
-  I <- nrow(Y); J <- ncol(Y)
-  LL <- rep(0,max.iter)
 
   #Precompute relevant quantities
   max.Y <- max(Y)
@@ -77,13 +82,14 @@ gbm.sc <- function(Y,M,max.iter=100,tol=10^{-4},
   }
 
   out <- list()
-  out$W <- W
+  out$W <- outer(exp(alphas),exp(betas))*exp(X)
   out$V <- LRA$v
   out$D <- LRA$d
   out$U <- LRA$u
   out$alpha <- alphas
   out$beta <- betas
   out$M <- M
+  out$I <- nrow(out$W); out$J <- ncol(out$W)
   out$LL <- LL
 
   out <- process.results(out)
@@ -126,8 +132,12 @@ gbm.projection <- function(Y,M,subsample=2000,min.counts=5,ncores) {
 gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
                               ncores) {
   J <- ncol(Y)
-  jxs <- sample(1:J,size=subsample,replace=FALSE)
-  Y.sub <- Y[,jxs]
+  if(length(subsample)==1) {
+    jxs <- sample(1:J,size=subsample,replace=FALSE)
+    Y.sub <- Y[,jxs]
+  } else {
+    Y.sub <- Y[,subsample]
+  }
   Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
