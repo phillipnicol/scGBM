@@ -44,7 +44,7 @@ cluster.confidence <- function(V,
 
 
 
-
+holder <- function() {
 V <- out$V
 
 K <- 4
@@ -62,4 +62,5 @@ for(k in 1:K) {
   ixs <- which(cluster$cluster==k)
   new.ixs <- cluster.new$cluster[ixs]
   print(sum(choose(table(new.ixs),2))/choose(length(ixs),2))
+}
 }
