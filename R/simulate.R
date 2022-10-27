@@ -33,7 +33,12 @@ simNull <- function(I,J) {
 }
 
 
-
+simNullNB <- function(I,J,theta=1) {
+  mus <- runif(n=I,min=1,max=10)
+  Mu <- matrix(mus,nrow=I,ncol=J)
+  Y <- matrix(MASS::rnegbin(n=I*J,mu=as.vector(Mu),theta=theta),nrow=I,ncol=J)
+  return(Y)
+}
 
 
 

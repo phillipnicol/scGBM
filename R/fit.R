@@ -150,25 +150,36 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
 
   Y <- Y[ixs,]
   print(Sys.time())
-  V <- mclapply(1:J,function(j) {
-    cell <- as.vector(Y[,j])
-    o <- log(sum(cell))+alpha
-    val <- matrix(rep(0,2*M),nrow=1)
-    try({
-      fit <- fastglm(x=U,y=cell,offset=o,
-                     family=poisson(),
-                     method=3)
-      #fit <- glm(cell~0+offset(o)+.,
-      #data=U,
-      #family=poisson(link="log"))
-      val <- matrix(c(fit$coefficients,fit$se),
-                    nrow=1)
-    })
-    val
-  },
-  mc.cores = ncores)
-  V <- matrix(unlist(V),nrow=J,ncol=2*M,byrow=TRUE)
-
+  V <- matrix(0,nrow=J,ncol=2*M)
+  split.len <- 200000
+  max.iter <- ceiling(J/split.len)
+  for(i in 1:max.iter) {
+    start <- (i-1)*split.len + 1
+    if(i == max.iter) {
+      stop <- J
+    } else {
+      stop <- i*split.len
+    }
+    V.sub <- mclapply(start:stop, function(j) {
+      cell <- as.vector(Y[,j])
+      o <- log(sum(cell))+alpha
+      val <- matrix(rep(0,2*M),nrow=1)
+      try({
+        fit <- fastglm(x=U,y=cell,offset=o,
+                       family=poisson(),
+                       method=3)
+        #fit <- glm(cell~0+offset(o)+.,
+        #data=U,
+        #family=poisson(link="log"))
+        val <- matrix(c(fit$coefficients,fit$se),
+                      nrow=1)
+      })
+      val
+    },
+    mc.cores = ncores)
+    V.sub <- matrix(unlist(V.sub),nrow=stop-start+1,ncol=2*M,byrow=TRUE)
+    V[start:stop,] <- V.sub
+  }
   out$se_V <- V[,(M+1):(2*M)]
   out$V <- V[,1:M]
 
