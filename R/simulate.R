@@ -1,6 +1,6 @@
 
 
-simData <- function(I,J,d,alpha.mean=0) {
+simData <- function(I,J,d,alpha.mean=0,beta.mean=0) {
   U <- rustiefel(m=I,R=d); V <- rustiefel(m=J,R=d)
   U <- U[,1:d]; V <- V[,1:d]
   D <- seq(2*(sqrt(I)+sqrt(J)),sqrt(I)+sqrt(J),length.out=d)
@@ -12,7 +12,8 @@ simData <- function(I,J,d,alpha.mean=0) {
   }
   UDV <- U %*% diag(D) %*% t(V)
   alpha <- rnorm(n=I,mean=alpha.mean)
-  Lambda <- matrix(alpha,nrow=I,ncol=J)+UDV
+  beta <- rnorm(n=J,mean=beta.mean)
+  Lambda <- matrix(alpha,nrow=I,ncol=J)+matrix(beta,nrow=I,ncol=J,byrow=TRUE)+UDV
   Y <- matrix(rpois(n=I*J,lambda=as.vector(exp(Lambda))),nrow=I,ncol=J)
 
   val <- list()
@@ -20,6 +21,8 @@ simData <- function(I,J,d,alpha.mean=0) {
   val$V <- t(diag(D) %*% t(V))
   val$U <- U
   val$D <- D
+  val$alpha <- alpha
+  val$beta <- beta
   return(val)
 }
 

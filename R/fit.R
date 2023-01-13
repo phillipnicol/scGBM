@@ -7,13 +7,10 @@ gbm.sc <- function(Y,
                    subset=NULL,
                    ncores=1,
                    infer.beta=FALSE,
-                   big.matrix=FALSE) {
+                   return.W = TRUE,
+                   batch=as.factor(rep(1,ncol(Y)))) {
   if(!is.null(subset)) {
-    if(ncores==1) {
-      out <- gbm.projection(Y,M,subsample=subset)
-    } else{
-      out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores)
-    }
+    out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores)
     return(out)
   }
 
@@ -24,14 +21,24 @@ gbm.sc <- function(Y,
     Y <- as.matrix(Y)
   }
 
+  if(!is.factor(batch)) {
+    stop("Batch must be encoded as factor.")
+  }
+  batch.factor <- batch
+  batch <- as.integer(batch)
+  nbatch <- max(batch)
+
   #Precompute relevant quantities
   max.Y <- max(Y)
 
-
   #Starting estimate for alpha and W
   betas <- log(colSums(Y))
-  alphas <- log(rowSums(Y))-log(sum(exp(betas)))
-  W <- outer(exp(alphas),exp(betas))
+  betas <- betas - mean(betas) #Enforce the betas sum to 0
+  W <- matrix(0, nrow=I, ncol=J)
+  alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
+    log(rowSums(Y[,batch==j]))-log(sum(exp(betas[batch==j])))
+  })
+  W <- t(t(exp(alphas[,batch]))*exp(betas))
 
   #Starting estimate of X
   Z <- (Y-W)/sqrt(W)
@@ -50,21 +57,24 @@ gbm.sc <- function(Y,
 
   for(i in 1:max.iter) {
     #Reweight
-    alphas <- log(rowSums(Y))-log(rowSums(exp(t(t(X)+betas))))
+    alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
+      log(rowSums(Y[,batch==j]))-log(rowSums(exp(t(t(X)+betas))[,batch==j]))
+    })
     if(infer.beta) {
-      betas <- log(colSums(Y))-log(colSums(exp(alphas+X)))
+      betas <- log(colSums(Y))-log(colSums(exp(alphas[,batch]+X)))
+      betas <- betas - mean(betas)
     }
-    W <- outer(exp(alphas),exp(betas))*exp(X)
+    W <- t(t(exp(alphas[,batch]+X))*exp(betas))
 
     #Prevent W from being too large (stability)
-    W[W > max.Y] <- max(Y)
+    W[W > max.Y] <- max.Y
 
     #Compute working variables
     Z <- X+(Y-W)/W
 
-    ## Compute log likelihood
-    LL[i] <- sum(dpois(Y,lambda=W,log=TRUE))
-    cat("Iteration: ", i, ". LogLik=", LL[i], "\n")
+    ## Compute log likelihood (no normalizing constant)
+    LL[i] <- sum(Y*log(W)-W)
+    cat("Iteration: ", i, ". Objective=", LL[i], "\n")
     if(i > 2) {
       tau <- abs((LL[i]-LL[i-1])/LL[i-1])
       if(tau < tol) {
@@ -82,7 +92,9 @@ gbm.sc <- function(Y,
   }
 
   out <- list()
-  out$W <- outer(exp(alphas),exp(betas))*exp(X)
+  if(return.W) {
+    out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
+  }
   out$V <- LRA$v
   out$D <- LRA$d
   out$U <- LRA$u
@@ -90,42 +102,9 @@ gbm.sc <- function(Y,
   out$beta <- betas
   out$M <- M
   out$I <- nrow(out$W); out$J <- ncol(out$W)
-  out$LL <- LL
+  out$obj <- LL[1:i]
 
   out <- process.results(out)
-  return(out)
-}
-
-
-gbm.projection <- function(Y,M,subsample=2000,min.counts=5,ncores) {
-  J <- ncol(Y)
-  jxs <- sample(1:J,size=subsample,replace=FALSE)
-  Y.sub <- Y[,jxs]
-  Y.sub <- as.matrix(Y.sub)
-  ixs <- which(rowSums(Y.sub) > 5)
-  Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M)
-
-  V.subsamp <- t(diag(out$D) %*% t(out$V))
-
-  U <- out$U
-  U <- as.data.frame(U)
-  colnames(U) <- paste0("U",1:M)
-  alpha <- out$alpha
-
-  Y <- Y[ixs,]
-  #Now get V
-  V <- apply(Y,2,function(cell) {
-    o <- log(sum(cell))+alpha
-    fit <- glm(cell~0+offset(o)+.,
-               data=U,
-               family=poisson(link="log"))
-    sumfit <- summary(fit)
-    c(coefficients(fit),sumfit$coefficients[,2])
-  })
-  out$se_V <- V[,(M+1):(2*M)]
-  out$V <- V[,1:M]
-
   return(out)
 }
 
@@ -165,7 +144,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
       o <- log(sum(cell))+alpha
       val <- matrix(rep(0,2*M),nrow=1)
       try({
-        fit <- fastglm(x=U,y=cell,offset=o,
+        fit <- fastglm::fastglm(x=U,y=cell,offset=o,
                        family=poisson(),
                        method=3)
         #fit <- glm(cell~0+offset(o)+.,
@@ -185,187 +164,6 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
 
   return(out)
 }
-
-
-gbm.projection <- function(Y,M,subsample=2000,min.counts=5,ncores) {
-  J <- ncol(Y)
-  jxs <- sample(1:J,size=subsample,replace=FALSE)
-  Y.sub <- Y[,jxs]
-  Y.sub <- as.matrix(Y.sub)
-  ixs <- which(rowSums(Y.sub) > 5)
-  Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M)
-
-  V.subsamp <- t(diag(out$D) %*% t(out$V))
-
-  U <- out$U
-  U <- as.data.frame(U)
-  colnames(U) <- paste0("U",1:M)
-  alpha <- out$alpha
-
-  Y <- Y[ixs,]
-  #Now get V
-  V <- apply(Y,2,function(cell) {
-    o <- log(sum(cell))+alpha
-    fit <- glm(cell~0+offset(o)+.,
-               data=U,
-               family=poisson(link="log"))
-    sumfit <- summary(fit)
-    c(coefficients(fit),sumfit$coefficients[,2])
-  })
-  out$se_V <- V[,(M+1):(2*M)]
-  out$V <- V[,1:M]
-
-  return(out)
-}
-
-
-
-
-
-gbm.sc.batch <- function(Y,M,max.iter=100,tol=10^{-4},
-                   offset=NULL,subset=NULL,ncores=1,
-                   batch=rep(1,ncol(Y))) {
-  if(!is.null(subset)) {
-    if(ncores==1) {
-      out <- gbm.projection(Y,M,subsample=subset)
-    } else{
-      out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores)
-    }
-    return(out)
-  }
-
-
-  if(!is.matrix(Y)) {
-    Y <- as.matrix(Y)
-  }
-
-  nbatch <- max(batch)
-  if(is.null(offset)) {
-    offset <- colSums(Y)
-  }
-
-  I <- nrow(Y); J <- ncol(Y)
-  LL <- rep(0,max.iter)
-
-  #Starting estimate for mu
-  mu <- vapply(1:nbatch,FUN.VALUE=numeric(I),function(i) {
-    rowSums(Y[,batch==i])/sum(offset[batch==i])
-  })
-  cut <- apply(mu,1,function(x) {
-    if(min(x) == 0) {
-      1
-    } else{
-      0
-    }
-  })
-  cut <- which(cut==1)
-  Y <- Y[-cut,]
-  mu <- mu[-cut,]
-  I <- nrow(Y); J <- ncol(Y)
-  alphas <- log(mu)
-  Offset <- matrix(offset,nrow=I,ncol=J,byrow=TRUE)
-  W <- matrix(0,nrow=I,ncol=J)
-  for(i in 1:nbatch) {
-    W[,batch==i] <- matrix(mu[,i], I, sum(batch==i))
-  }
-  W <- W*Offset
-
-  Z <- (Y-W)/sqrt(W)
-  LRA <-  irlba::irlba(Z,nv=M,nu=M)
-  X <- LRA$u %*% diag(LRA$d) %*% t(LRA$v)
-  X <- sqrt(1/W)*X
-  LRA <- irlba::irlba(X,nv=M,nu=M)
-
-  #Bound X to avoid starting too large
-  X[X > 8] <- 8
-  X[X < -8] <- -8
-
-  Xt <- matrix(0,nrow=I,ncol=J)
-
-  last.change <- 1
-
-  for(i in 1:max.iter) {
-    #Reweight
-    Offset.new <- Offset*exp(X)
-    mu <- rowSums(Y)/rowSums(Offset.new)
-    mu <- vapply(1:nbatch,FUN.VALUE=numeric(I),function(j) {
-      rowSums(Y[,batch==j])/rowSums(Offset.new[,batch==j])
-    })
-    alphas <- log(mu)
-    W <- matrix(0,nrow=I,ncol=J)
-    for(j in 1:nbatch) {
-      W[,batch==j] <- matrix(mu[,j], I, sum(batch==j))
-    }
-    W <- W*Offset.new
-    W[W > max(Y)] <- max(Y)
-    Z <- X+(Y-W)/W
-
-    ## Compute log likelihood
-    #LL[i] <- sum(dpois(Y,lambda=W,log=TRUE))
-    LL[i] <- sum(dpois(Y,lambda=W,log=TRUE))
-    cat("Iteration: ", i, ". LogLik=", LL[i], "\n")
-    if(i > 2) {
-      tau <- abs((LL[i]-LL[i-1])/LL[i-1])
-      if(tau < tol) {
-        break
-      }
-    }
-
-    ## Gradient Step
-    V <- X+((i-1)/(i+2))*(X-Xt)
-    Xt <- X
-    w.max <- max(W)
-    LRA <- irlba::irlba((W/w.max)*Z+(1-(W/w.max))*V,nv=M)
-    X <- LRA$u %*% diag(LRA$d) %*% t(LRA$v)
-  }
-
-  out <- list()
-  out$W <- W
-  out$V <- LRA$v
-  out$D <- LRA$d
-  out$U <- LRA$u
-  out$alpha <- alphas
-  out$M <- M
-  out$LL <- LL
-
-  out <- process.results(out)
-  return(out)
-}
-
-gbm.projection <- function(Y,M,subsample=2000,min.counts=5,ncores) {
-  J <- ncol(Y)
-  jxs <- sample(1:J,size=subsample,replace=FALSE)
-  Y.sub <- Y[,jxs]
-  Y.sub <- as.matrix(Y.sub)
-  ixs <- which(rowSums(Y.sub) > 5)
-  Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M)
-
-  V.subsamp <- t(diag(out$D) %*% t(out$V))
-
-  U <- out$U
-  U <- as.data.frame(U)
-  colnames(U) <- paste0("U",1:M)
-  alpha <- out$alpha
-
-  Y <- Y[ixs,]
-  #Now get V
-  V <- apply(Y,2,function(cell) {
-    o <- log(sum(cell))+alpha
-    fit <- glm(cell~0+offset(o)+.,
-               data=U,
-               family=poisson(link="log"))
-    sumfit <- summary(fit)
-    c(coefficients(fit),sumfit$coefficients[,2])
-  })
-  out$se_V <- V[,(M+1):(2*M)]
-  out$V <- V[,1:M]
-
-  return(out)
-}
-
-
 
 process.results <- function(gbm) {
   #Enforce identifiability in U
@@ -403,7 +201,7 @@ infer.gbm <- function(out) {
 get.seu <- function(out) {
   M <- length(out$D)
   U <- out$U
-  V <- t(diag(out$D)%*%t(out$V))
+  V <- out$V
   W <- out$W
   J <- nrow(V)
   tV <- t(V)
