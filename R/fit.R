@@ -95,11 +95,11 @@ gbm.sc <- function(Y,
   if(return.W) {
     out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
   }
-  out$V <- LRA$v
-  out$D <- LRA$d
-  out$U <- LRA$u
-  out$alpha <- alphas
-  out$beta <- betas
+  out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
+  out$D <- LRA$d; names(out$D) <- 1:M
+  out$U <- LRA$u; rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
+  out$alpha <- alphas; rownames(out$alpha) <- rownames(Y)
+  out$beta <- betas; names(out$beta) <- colnames(Y)
   out$M <- M
   out$I <- nrow(out$W); out$J <- ncol(out$W)
   out$obj <- LL[1:i]
