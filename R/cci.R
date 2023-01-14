@@ -43,9 +43,12 @@ CCI <- function(V,
   p <- p + ggtitle("Posterior of Cluster Confidence Index")
   p  <- p + guides(fill="none")
   p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  p
 
-  return(p)
+  out <- list()
+  out$plot <- p
+  out$cci <- cci
+
+  return(out)
 }
 
 
