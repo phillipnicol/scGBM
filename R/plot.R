@@ -1,7 +1,21 @@
+#' @export
+#'
+#' @title Plot the results of scGBM
+#'
+#' @param gbm An object which is the output of \code{\link{gbm.sc}}
+#' @param dims Which dimensions (in the latent factors) to plot
+#' @param se If TRUE, plot the uncertainty estimates around each point
+#' @param return.gg If TRUE, return the ggplot object
+#' @param plot If TRUE, plot the \code{ggplot} object
+#'
+#' @return If \code{return.gg} is TRUE, then a \code{ggplot} object is
+#' returned.
+#'
+#' @author Phillip B. Nicol <philnicol740@gmail.com>
 plot.gbm <- function(gbm,dims=c(1,2),cluster=NULL,
-                     se_V=NULL,return.gg=FALSE) {
+                     se=FALSE,return.gg=FALSE, plot=TRUE) {
   V <- out$V
-  if(is.null(se_V)) {
+  if(!se) {
     df <- data.frame(x=V[,dims[1]],y=V[,dims[2]])
     if(is.null(cluster)) {
       df$cluster <- rep(1,nrow(df))
@@ -12,6 +26,7 @@ plot.gbm <- function(gbm,dims=c(1,2),cluster=NULL,
     p <- p + geom_point()
     print(p)
   } else {
+    se_V <- out$se_V
     df <- data.frame(x0=V[,dims[1]],y0=V[,dims[2]])
     if(is.null(cluster)) {
       df$cluster <- rep(1,nrow(df))

@@ -1,5 +1,43 @@
-
-
+#' @export
+#'
+#' @title scGBM: Model-based dimensionality reduction for single-cell
+#' RNA-seq with generalized bilinear models
+#'
+#' @description Fit a Poisson bilinear model to the single-cell
+#' count matrix.
+#'
+#' @param Y A matrix of UMI counts with genes on rows and cells on columns.
+#' @param M The number of latent factors to estimate
+#' @param max.iter The maximum number of iterations
+#' @param tol The tolerance for convergence (relative difference in objective function)
+#' @param subset If NULL, use the entire data to fit the model. If an integer, take a
+#' random subsample of cells to fit the loadings. Then project the remaining
+#' cells onto those loadings. If a non-random sample is desired, subset can
+#' be an integer vector corresponding to the columns that should be used to
+#' fit the loadings.
+#' @param ncores If subset is not NULL, then ncores specifies the number of cores to use
+#' during the projection step.
+#' @param infer.beta If FALSE, beta is set to the log of the number of counts per cell.
+#' @param return.W If TRUE, the matrix of weights (which is equal to the estimated mean) is returned. This should
+#' be FALSE for large datasets since it requires a lot of memory.
+#' @param batch An optional factor containing the assignment of cells to known batches.
+#'
+#' @return A list with components
+#' \itemize{
+#' \item \code{V} - A matrix containing the factor scores.
+#' \item \code{U} - A matrix contianing the factor loadings
+#' \item \code{D} - A vector containing the singular values (scaling factors)
+#' \item \code{alpha} - A matrix containing gene-specific intercepts. The number of columns
+#' is set to be equal to the number of batches (by default there are no batches so this is 1).
+#' \item \code{beta} - A vector of cell-specific intercepts.
+#' \item \code{I} - The number of genes
+#' \item \code{J} - The number of cells.
+#' \item \code{W} - The estimated mean (and by properties of the Poisson distribution, also the variance)
+#' for each entry of the count matrix.
+#' \item \code{obj} The value of the objective function for each iteration.
+#' }
+#'
+#' @author Phillip B. Nicol <philnicol740@gmail.com>
 gbm.sc <- function(Y,
                    M,
                    max.iter=100,
@@ -89,6 +127,11 @@ gbm.sc <- function(Y,
     W <- W/w.max
     LRA <- irlba::irlba(W*Z+(1-W)*V,nv=M)
     X <- LRA$u %*%(LRA$d*t(LRA$v))
+
+    if(i == max.iter) {
+      warning("Maximum number of iterations reached (increase max.iter).
+              Possible non-convergence.")
+    }
   }
 
   out <- list()
