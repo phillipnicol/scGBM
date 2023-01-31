@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot.gbm}
 \alias{plot.gbm}
-\title{scGBM: Model-based dimensionality reduction for single-cell
-RNA-seq with generalized bilinear models}
+\title{Plot the results of scGBM}
 \usage{
 \method{plot}{gbm}(
   gbm,
@@ -30,8 +29,7 @@ If \code{return.gg} is TRUE, then a \code{ggplot} object is
 returned.
 }
 \description{
-Fit a Poisson bilinear model to the single-cell
-count matrix.
+Plot the results of scGBM
 }
 \author{
 Phillip B. Nicol <philnicol740@gmail.com>

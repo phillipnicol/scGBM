@@ -1,5 +1,5 @@
 
-
+#' @export
 simData <- function(I,J,d,alpha.mean=0,beta.mean=0) {
   U <- rustiefel(m=I,R=d); V <- rustiefel(m=J,R=d)
   U <- U[,1:d]; V <- V[,1:d]
