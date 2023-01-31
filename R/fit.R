@@ -48,7 +48,8 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y)))) {
   if(!is.null(subset)) {
-    out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores)
+    out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
+                             max.iter=max.iter)
     return(out)
   }
 
@@ -152,7 +153,7 @@ gbm.sc <- function(Y,
 }
 
 gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
-                              ncores) {
+                              ncores,tol=tol,max.iter=max.iter) {
   J <- ncol(Y)
   if(length(subsample)==1) {
     jxs <- sample(1:J,size=subsample,replace=FALSE)
@@ -163,7 +164,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M)
+  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter)
 
   U <- out$U
   #U <- as.data.frame(U)

@@ -12,9 +12,3 @@ glmpcaObjective <- function(glmpca.fit,Y) {
   Mu <- O*exp(Alpha+U%*%t(V))
   sum(Y*log(Mu)-Mu)
 }
-
-#devToLL
-logY <- Y
-logY[Y!=0] <- log(Y[Y!=0])
-dev <- fit$dev
-g.obj <- -1*(dev - sum(Y*logY)+sum(Y))
