@@ -126,8 +126,9 @@ gbm.sc <- function(Y,
       }
     }
     if(time.by.iter) {
-      loglik[i] <- sum(dpois(Y,lambda=W,log=TRUE))
       time[i] <- difftime(Sys.time(),start.time,units="sec")
+      loglik[i] <- sum(dpois(Y,lambda=W,log=TRUE))
+      start.time <- Sys.time()
     }
 
     ## Gradient Step
@@ -158,7 +159,7 @@ gbm.sc <- function(Y,
   out$obj <- LL[1:i]
   if(time.by.iter) {
     out$loglik <- loglik
-    out$time <- time
+    out$time <- cumsum(time)
   }
 
   out <- process.results(out)
