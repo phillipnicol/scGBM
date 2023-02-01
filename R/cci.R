@@ -34,6 +34,7 @@ CCI <- function(gbm,
 
     V.new <- V+e
     cluster <- cluster.fn(V.new,...)
+    nc.new <- length(unique(cluster)) #New number of clusters
 
     for(k in 1:nc) {
       for(j in 1:nc) {
@@ -43,8 +44,8 @@ CCI <- function(gbm,
         new.jxs <- cluster[jxs]
         new.kxs <- cluster[kxs]
 
-        new.jxs <- factor(new.jxs,levels=c(1:nc))
-        new.kxs <- factor(new.kxs,levels=c(1:nc))
+        new.jxs <- factor(new.jxs,levels=c(1:nc.new))
+        new.kxs <- factor(new.kxs,levels=c(1:nc.new))
 
         tab.jxs <- table(new.jxs)
         tab.kxs <- table(new.kxs)

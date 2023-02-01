@@ -46,7 +46,8 @@ gbm.sc <- function(Y,
                    ncores=1,
                    infer.beta=FALSE,
                    return.W = TRUE,
-                   batch=as.factor(rep(1,ncol(Y)))) {
+                   batch=as.factor(rep(1,ncol(Y))),
+                   time.by.iter = FALSE) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -55,6 +56,11 @@ gbm.sc <- function(Y,
 
   I <- nrow(Y); J <- ncol(Y)
   LL <- rep(0,max.iter)
+  if(time.by.iter) {
+    loglik <- rep(0,max.iter)
+    time <- rep(0, max.iter)
+    start.time <- Sys.time()
+  }
 
   if(!is.matrix(Y)) {
     Y <- as.matrix(Y)
@@ -89,7 +95,6 @@ gbm.sc <- function(Y,
   X[X > 8] <- 8
   X[X < -8] <- -8
 
-
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
 
@@ -120,6 +125,10 @@ gbm.sc <- function(Y,
         break
       }
     }
+    if(time.by.iter) {
+      loglik[i] <- sum(dpois(Y,lambda=W,log=TRUE))
+      time[i] <- difftime(Sys.time(),start.time,units="sec")
+    }
 
     ## Gradient Step
     V <- X+((i-1)/(i+2))*(X-Xt)
@@ -147,6 +156,10 @@ gbm.sc <- function(Y,
   out$M <- M
   out$I <- nrow(out$W); out$J <- ncol(out$W)
   out$obj <- LL[1:i]
+  if(time.by.iter) {
+    out$loglik <- loglik
+    out$time <- time
+  }
 
   out <- process.results(out)
   return(out)
@@ -154,7 +167,9 @@ gbm.sc <- function(Y,
 
 gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
                               ncores,tol=tol,max.iter=max.iter) {
-  J <- ncol(Y)
+
+  J <- ncol(Y); I <- nrow(Y)
+  alphas.full <- log(rowSums(Y))-log(sum(colSums(Y)))
   if(length(subsample)==1) {
     jxs <- sample(1:J,size=subsample,replace=FALSE)
     Y.sub <- Y[,jxs]
@@ -169,7 +184,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   U <- out$U
   #U <- as.data.frame(U)
   colnames(U) <- paste0("U",1:M)
-  alpha <- out$alpha
+  alpha <- alphas.full[ixs]
 
   Y <- Y[ixs,]
   print(Sys.time())
@@ -206,6 +221,13 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   out$se_V <- V[,(M+1):(2*M)]
   out$V <- V[,1:M]
 
+  alpha <- rep(0, I)
+  alpha[ixs] <- out$alpha[,1]
+  alpha[-ixs] <- min(out$alpha[,1])
+  out$alpha <- alphas.full
+  U <- matrix(0, nrow=I,ncol=M)
+  U[ixs,] <- out$U
+  out$U <- U
   return(out)
 }
 
