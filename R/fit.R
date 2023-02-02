@@ -184,7 +184,7 @@ gbm.sc <- function(Y,
 }
 
 gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
-                              ncores,tol=tol,max.iter=max.iter) {
+                              ncores,tol=10^{-4},max.iter=max.iter) {
 
   J <- ncol(Y); I <- nrow(Y)
   alphas.full <- log(rowSums(Y))-log(sum(colSums(Y)))
