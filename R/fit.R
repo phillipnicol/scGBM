@@ -58,8 +58,8 @@ gbm.sc <- function(Y,
   I <- nrow(Y); J <- ncol(Y)
   LL <- rep(0,max.iter)
   if(time.by.iter) {
-    loglik <- rep(0,max.iter)
-    time <- rep(0, max.iter)
+    loglik <- c()
+    time <- c()
     start.time <- Sys.time()
   }
 
@@ -127,8 +127,8 @@ gbm.sc <- function(Y,
       }
     }
     if(time.by.iter) {
-      time[i] <- difftime(Sys.time(),start.time,units="sec")
-      loglik[i] <- LL[i]
+      time <- c(time,difftime(Sys.time(),start.time,units="sec"))
+      loglik <- c(loglik,LL[i])
       start.time <- Sys.time()
     }
 
