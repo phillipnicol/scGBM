@@ -88,13 +88,18 @@ gbm.sc <- function(Y,
 
   #Starting estimate of X
   Z <- (Y-W)/sqrt(W)
+  Z[Z > sqrt(log(I*J))] <- sqrt(log(I*J))
+  Z[Z < -sqrt(log(I*J))] <- -sqrt(log(I*J))
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X
 
   #Bound X to avoid starting too large
-  X[X > 8] <- 8
-  X[X < -8] <- -8
+  #clip <- log(Y+sqrt(J*W))
+  #print(clip[1,1])
+  #print(clip[2,1])
+  #X[X > clip] <- clip[X>clip]
+  #X[X < -clip] <- -clip[X < -clip]
 
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
@@ -157,6 +162,9 @@ gbm.sc <- function(Y,
   out <- list()
   if(return.W) {
     out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
+  }
+  if(svd.free) {
+    LRA <- irlba::irlba(X)
   }
   out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
   out$D <- LRA$d; names(out$D) <- 1:M
