@@ -47,7 +47,8 @@ gbm.sc <- function(Y,
                    infer.beta=FALSE,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
-                   time.by.iter = FALSE) {
+                   time.by.iter = FALSE,
+                   svd.free=TRUE) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -136,8 +137,16 @@ gbm.sc <- function(Y,
     Xt <- X
     w.max <- max(W)
     W <- W/w.max
-    LRA <- irlba::irlba(W*Z+(1-W)*V,nv=M)
-    X <- LRA$u %*%(LRA$d*t(LRA$v))
+    if(svd.free) {
+      Q <- W*Z+(1-W)*V
+      LRA <- list(u=LRA$u)
+      LRA$v <- t(Q)%*%LRA$u %*% chol2inv(chol(crossprod(LRA$u)))
+      LRA$u <- Q %*% LRA$v %*% chol2inv(chol(crossprod(LRA$v)))
+      X <- LRA$u %*%t(LRA$v)
+    } else {
+      LRA <- irlba::irlba(W*Z+(1-W)*V,nv=M)
+      X <- LRA$u %*%(LRA$d*t(LRA$v))
+    }
 
     if(i == max.iter) {
       warning("Maximum number of iterations reached (increase max.iter).
@@ -280,3 +289,136 @@ get.seu <- function(out) {
   return(se_U)
 }
 
+
+gbm.sc2 <- function(Y,
+                   M,
+                   max.iter=100,
+                   tol=10^{-4},
+                   subset=NULL,
+                   ncores=1,
+                   infer.beta=FALSE,
+                   return.W = TRUE,
+                   batch=as.factor(rep(1,ncol(Y))),
+                   time.by.iter = FALSE) {
+  if(!is.null(subset)) {
+    out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
+                             max.iter=max.iter)
+    return(out)
+  }
+
+  I <- nrow(Y); J <- ncol(Y)
+  LL <- rep(0,max.iter)
+  if(time.by.iter) {
+    print("H")
+    loglik <- rep(0,max.iter)
+    time <- rep(0, max.iter)
+    start.time <- Sys.time()
+  }
+
+  if(!is.matrix(Y)) {
+    Y <- as.matrix(Y)
+  }
+
+  if(!is.factor(batch)) {
+    stop("Batch must be encoded as factor.")
+  }
+  batch.factor <- batch
+  batch <- as.integer(batch)
+  nbatch <- max(batch)
+
+  #Precompute relevant quantities
+  max.Y <- max(Y)
+
+  #Starting estimate for alpha and W
+  betas <- log(colSums(Y))
+  betas <- betas - mean(betas) #Enforce the betas sum to 0
+  W <- matrix(0, nrow=I, ncol=J)
+  alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
+    log(rowSums(Y[,batch==j]))-log(sum(exp(betas[batch==j])))
+  })
+  W <- t(t(exp(alphas[,batch]))*exp(betas))
+
+  #Starting estimate of X
+  Z <- (Y-W)/sqrt(W)
+  LRA <-  irlba::irlba(Z,nv=M,nu=M)
+  X <- LRA$u %*%(LRA$d*t(LRA$v))
+  X <- sqrt(1/W)*X
+
+  #Bound X to avoid starting too large
+  X[X > 8] <- 8
+  X[X < -8] <- -8
+
+  #For acceleration, save previous X
+  Xt <- matrix(0,nrow=I,ncol=J)
+
+  LRA$v <- t(LRA$d*t(LRA$v))
+  for(i in 1:max.iter) {
+    #Reweight
+    alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
+      log(rowSums(Y[,batch==j]))-log(rowSums(exp(t(t(X)+betas))[,batch==j]))
+    })
+    if(infer.beta) {
+      betas <- log(colSums(Y))-log(colSums(exp(alphas[,batch]+X)))
+      betas <- betas - mean(betas)
+    }
+    W <- t(t(exp(alphas[,batch]+X))*exp(betas))
+
+    #Prevent W from being too large (stability)
+    W[W > max.Y] <- max.Y
+
+    #Compute working variables
+    Z <- X+(Y-W)/W
+
+    ## Compute log likelihood (no normalizing constant)
+    LL[i] <- sum(Y*log(W)-W)
+    cat("Iteration: ", i, ". Objective=", LL[i], "\n")
+    if(i > 2) {
+      tau <- abs((LL[i]-LL[i-1])/LL[i-1])
+      if(tau < tol) {
+        break
+      }
+    }
+    if(time.by.iter) {
+      time[i] <- difftime(Sys.time(),start.time,units="sec")
+      loglik[i] <- LL[i]
+      start.time <- Sys.time()
+    }
+
+    ## Gradient Step
+    V <- X+((i-1)/(i+2))*(X-Xt)
+    Xt <- X
+    w.max <- max(W)
+    W <- W/w.max
+    Q <- W*Z+(1-W)*V
+    LRA <- list(u=LRA$u)
+    LRA$v <- t(Q)%*%LRA$u %*% chol2inv(chol(crossprod(LRA$u)))
+    LRA$u <- Q %*% LRA$v %*% chol2inv(chol(crossprod(LRA$v)))
+    X <- LRA$u %*%t(LRA$v)
+
+    if(i == max.iter) {
+      warning("Maximum number of iterations reached (increase max.iter).
+              Possible non-convergence.")
+    }
+  }
+
+  LRA <- irlba::irlba(X,nv=M)
+  out <- list()
+  if(return.W) {
+    out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
+  }
+  out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
+  out$D <- LRA$d; names(out$D) <- 1:M
+  out$U <- LRA$u; rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
+  out$alpha <- alphas; rownames(out$alpha) <- rownames(Y)
+  out$beta <- betas; names(out$beta) <- colnames(Y)
+  out$M <- M
+  out$I <- nrow(out$W); out$J <- ncol(out$W)
+  out$obj <- LL[1:i]
+  if(time.by.iter) {
+    out$loglik <- loglik
+    out$time <- cumsum(time)
+  }
+
+  out <- process.results(out)
+  return(out)
+}
