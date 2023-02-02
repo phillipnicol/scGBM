@@ -48,7 +48,7 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
-                   svd.free=TRUE) {
+                   svd.free=FALSE) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
