@@ -127,7 +127,7 @@ gbm.sc <- function(Y,
     }
     if(time.by.iter) {
       time[i] <- difftime(Sys.time(),start.time,units="sec")
-      loglik[i] <- sum(dpois(Y,lambda=W,log=TRUE))
+      loglik[i] <- LL[i]
       start.time <- Sys.time()
     }
 
