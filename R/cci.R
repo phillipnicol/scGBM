@@ -16,6 +16,7 @@ cluster.default <- function(V,nstart=25,centers=5) {
   kmeans(V,nstart=nstart,centers=centers)$cluster
 }
 
+#' @export
 CCI <- function(gbm,
                 cluster.orig,
                 reps=100,
@@ -94,7 +95,7 @@ CCI <- function(gbm,
   print(H.table)
   rownames(H.table) <- unique(cluster.orig)
   colnames(H.table) <- unique(cluster.orig)
-  pheatmap(H.table,legend=TRUE, color=colorRampPalette(c("floralwhite","red"))(100),
+  pheatmap(H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
            breaks=seq(0,1,by=0.01),
            rownames=TRUE,
            colnames=TRUE)

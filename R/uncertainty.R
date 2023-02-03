@@ -1,4 +1,4 @@
-
+#' @export
 get.se <- function(out) {
   M <- length(out$D)
   U <- out$U

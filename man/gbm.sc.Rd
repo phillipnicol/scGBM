@@ -14,7 +14,9 @@ gbm.sc(
   ncores = 1,
   infer.beta = FALSE,
   return.W = TRUE,
-  batch = as.factor(rep(1, ncol(Y)))
+  batch = as.factor(rep(1, ncol(Y))),
+  time.by.iter = FALSE,
+  svd.free = FALSE
 )
 }
 \arguments{

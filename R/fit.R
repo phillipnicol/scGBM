@@ -41,6 +41,7 @@
 gbm.sc <- function(Y,
                    M,
                    max.iter=100,
+                   min.iter=0,
                    tol=10^{-4},
                    subset=NULL,
                    ncores=1,
@@ -124,17 +125,17 @@ gbm.sc <- function(Y,
 
     ## Compute log likelihood (no normalizing constant)
     LL[i] <- sum(Y*log(W)-W)
-    cat("Iteration: ", i, ". Objective=", LL[i], "\n")
-    if(i > 2) {
-      tau <- abs((LL[i]-LL[i-1])/LL[i-1])
-      if(tau < tol) {
-        break
-      }
-    }
     if(time.by.iter) {
       time <- c(time,difftime(Sys.time(),start.time,units="sec"))
       loglik <- c(loglik,LL[i])
       start.time <- Sys.time()
+    }
+    cat("Iteration: ", i, ". Objective=", LL[i], "\n")
+    if(i > 2) {
+      tau <- abs((LL[i]-LL[i-1])/LL[i-1])
+      if(tau < tol & i > min.iter) {
+        break
+      }
     }
 
     ## Gradient Step
