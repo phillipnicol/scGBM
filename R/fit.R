@@ -89,8 +89,10 @@ gbm.sc <- function(Y,
 
   #Starting estimate of X
   Z <- (Y-W)/sqrt(W)
-  Z[Z > sqrt(log(I*J))] <- sqrt(log(I*J))
-  Z[Z < -sqrt(log(I*J))] <- -sqrt(log(I*J))
+  Z[Z > sqrt(2*log(I*J/0.025))] <- sqrt(2*log(I*J/0.025))
+  Z[Z < -sqrt(2*log(I*J/0.025))] <- -sqrt(2*log(I*J/0.025))
+  #Z[Z > sqrt(log(I * J))] <- sqrt(log(I * J))
+  #Z[Z < -sqrt(log(I * J))] <- -sqrt(log(I * J))
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X

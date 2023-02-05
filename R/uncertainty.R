@@ -32,3 +32,65 @@ denoise.U <- function(out) {
   out$U.denoise <- U.denoise
   return(out)
 }
+
+
+## Quantify uncertainty
+
+uncertainty <- function(out) {
+  ## Get corU
+  M <- length(out$D)
+  U <- out$U
+  V <- out$V
+  W <- out$W
+  J <- nrow(V)
+
+  tV <- t(V)
+  cov.U <- array(apply(W,1,function(w) {
+    Mat <- tV %*% (w*V)
+    solve(Mat)
+  }),dim=c(M,M,I))
+
+  #Get FI.V
+  max.iter <- 25
+  for(r in 1:max.iter) {
+    print(r)
+    cov.V <- array(apply(W,2,function(w) {
+      Mat <- tU %*% (w*U)
+      for(m in 1:M) {
+        for(mp in 1:M) {
+          Mat[m,mp] <- Mat[m,mp] - sum(w*cov.U[m,mp,])
+        }
+      }
+      solve(Mat)
+    }),dim=c(M,M,J))
+
+    cov.U <- array(apply(W,1,function(w) {
+      Mat <- tV %*% (w*V)
+      for(m in 1:M) {
+        for(mp in 1:M) {
+          Mat[m,mp] <- Mat[m,mp] - sum(w*cov.V[m,mp,])
+        }
+      }
+      solve(Mat)
+    }),dim=c(M,M,I))
+  }
+
+
+  tU <- t(U)
+  cov.V <- array(apply(W,2,function(w) {
+    Mat <- tU %*% (w*U)
+    for(m in 1:M) {
+      for(mp in 1:M) {
+        Mat[m,mp] <- Mat[m,mp] - sum(w*cov.U[m,mp,])
+      }
+    }
+    solve(Mat)
+  }),dim=c(M,M,J))
+}
+
+
+
+
+
+
+

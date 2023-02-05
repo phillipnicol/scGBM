@@ -1,9 +1,9 @@
 
 #' @export
-simData <- function(I,J,d,alpha.mean=0,beta.mean=0) {
+simData <- function(I,J,d,alpha.mean=0,beta.mean=0,K=2) {
   U <- rustiefel(m=I,R=d); V <- rustiefel(m=J,R=d)
   U <- U[,1:d]; V <- V[,1:d]
-  D <- seq(2*(sqrt(I)+sqrt(J)),sqrt(I)+sqrt(J),length.out=d)
+  D <- seq(K*(sqrt(I)+sqrt(J)),sqrt(I)+sqrt(J),length.out=d)
   for(m in 1:d) {
     if(U[1,m] < 0) {
       U[,m] <- -1*U[,m]
