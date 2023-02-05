@@ -9,6 +9,7 @@ gbm.sc(
   Y,
   M,
   max.iter = 100,
+  min.iter = 0,
   tol = 10^{     -4 },
   subset = NULL,
   ncores = 1,
