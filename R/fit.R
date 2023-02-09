@@ -138,6 +138,14 @@ gbm.sc <- function(Y,
     }
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
     if(i > 2) {
+      if(LL[i] < LL[i-1]) {
+        if(i <= min.iter) {
+          X <- Xt
+          next
+        } else{
+          break
+        }
+      }
       tau <- abs((LL[i]-LL[i-1])/LL[i-1])
       if(tau < tol & i > min.iter) {
         break
@@ -157,9 +165,10 @@ gbm.sc <- function(Y,
       X <- LRA$u %*%t(LRA$v)
     } else {
       #Adadelta
-      Gt <- 0.9*Gt + 0.1*(W*(Z-X))^2
       if(i == 1) {
-        lr = mean(sqrt(1e-7+Gt))
+        Gt = (W*(Z-X))^2
+      } else{
+        Gt <- 0.9*Gt + 0.1*(W*(Z-X))^2
       }
       print(mean((lr/(sqrt(1e-7+Gt)))))
       LRA <- irlba::irlba(V+(lr/(sqrt(1e-7+Gt)))*W*(Z-X),nv=M)
