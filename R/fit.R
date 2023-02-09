@@ -143,7 +143,7 @@ gbm.sc <- function(Y,
       if(LL[i] < LL[i-1]) {
         print("HI")
         X <- Xt
-        lr <- max(lr-10,1)
+        lr <- max(lr-1,1)
         next
       }
       tau <- abs((LL[i]-LL[i-1])/LL[i-1])
