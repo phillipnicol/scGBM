@@ -50,12 +50,16 @@ gbm.sc <- function(Y,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
                    svd.free=FALSE,
-                   lr=100) {
+                   lr=10,
+                   lr.try=10) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
     return(out)
   }
+
+  lr.schedule <- seq(lr,1,length.out=lr.try)
+  cur.try <- 1
 
   I <- nrow(Y); J <- ncol(Y)
   LL <- rep(0,max.iter)
@@ -138,17 +142,21 @@ gbm.sc <- function(Y,
       loglik <- c(loglik,LL[i])
       start.time <- Sys.time()
     }
-    cat("Iteration: ", i, ". Objective=", LL[i], "\n")
+    cat("Iteration: ", i, ". Objective=", LL[i], "Learning rate: " ,lr, "\n")
     if(i >= 2) {
-      if(LL[i] < LL[i-1]) {
-        print("HI")
-        X <- Xt
-        lr <- max(lr-1,1)
-        next
-      }
-      tau <- abs((LL[i]-LL[i-1])/LL[i-1])
-      if(tau < tol & i > min.iter) {
-        break
+      tau <- (LL[i]-LL[i-1])/LL[i-1]
+      if(tau < tol) {
+        if(tau < 0) {
+          X <- Xt
+          if(cur.try == length(lr.schedule)) {break} else{
+            lr <- lr.schedule[cur.try]
+          }
+          cur.try <- cur.try + 1
+          next
+        } else {
+          if(cur.try == length(lr.schedule) & i > min.iter) {break}
+          cur.try <- cur.try + 1
+        }
       }
     }
 
@@ -170,7 +178,6 @@ gbm.sc <- function(Y,
       #} else{
       #  Gt <- 0.1*Gt + 0.9*(W*(Z-X))^2
       #}
-      print(lr)
       #print(mean((lr/(sqrt(1e-8+Gt)))))
       #LRA <- irlba::irlba(V+0.001/(sqrt(1e-8+Gt))*W*(Z-X),nv=M)
       LRA <- irlba::irlba(V+lr*W*(Z-X),nv=M)
