@@ -156,7 +156,8 @@ gbm.sc <- function(Y,
       LRA$u <- Q %*% LRA$v %*% chol2inv(chol(crossprod(LRA$v))+lambdau*diag(M))
       X <- LRA$u %*%t(LRA$v)
     } else {
-      Gt <- Gt + (W*(Z-X))^2
+      #Adadelta
+      Gt <- 0.9*Gt + 0.1*(W*(Z-X))^2
       print(mean((lr/(sqrt(0.01+Gt)))))
       LRA <- irlba::irlba(V+(lr/(sqrt(0.01+Gt)))*W*(Z-X),nv=M)
       X <- LRA$u %*%(LRA$d*t(LRA$v))
