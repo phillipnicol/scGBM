@@ -167,6 +167,9 @@ gbm.sc <- function(Y,
     } else {
       #Adadelta
       Gt <- Gt + (W*(Z-X))^2
+      if(i == 1) {
+        lr <- 10*mean(sqrt(1e-7 + Gt))
+      }
       print(mean((lr/(sqrt(1e-7+Gt)))))
       LRA <- irlba::irlba(V+(lr/(sqrt(1e-7+Gt)))*W*(Z-X),nv=M)
       X <- LRA$u %*%(LRA$d*t(LRA$v))
