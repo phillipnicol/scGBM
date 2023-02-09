@@ -141,6 +141,7 @@ gbm.sc <- function(Y,
       if(LL[i] < LL[i-1]) {
         if(i <= min.iter) {
           X <- Xt
+          Gt <- Gt + (W*(Z-X))^2
           next
         } else{
           break
@@ -165,11 +166,7 @@ gbm.sc <- function(Y,
       X <- LRA$u %*%t(LRA$v)
     } else {
       #Adadelta
-      if(i == 1) {
-        Gt = (W*(Z-X))^2
-      } else{
-        Gt <- 0.9*Gt + 0.1*(W*(Z-X))^2
-      }
+      Gt <- Gt + (W*(Z-X))^2
       print(mean((lr/(sqrt(1e-7+Gt)))))
       LRA <- irlba::irlba(V+(lr/(sqrt(1e-7+Gt)))*W*(Z-X),nv=M)
       X <- LRA$u %*%(LRA$d*t(LRA$v))
