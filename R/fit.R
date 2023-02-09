@@ -141,7 +141,7 @@ gbm.sc <- function(Y,
       if(LL[i] < LL[i-1]) {
         if(i <= min.iter) {
           X <- Xt
-          Gt <- Gt + (W*(Z-X))^2
+          #Gt <- Gt + (W*(Z-X))^2
           next
         } else{
           break
