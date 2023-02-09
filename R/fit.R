@@ -49,7 +49,8 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
-                   svd.free=FALSE) {
+                   svd.free=FALSE,
+                   lr=1) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -96,7 +97,8 @@ gbm.sc <- function(Y,
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X
-
+  lambdav <- var(LRA$d*t(LRA$v)[,M])
+  lambdau <- var(LRA$u[,M])
   #Bound X to avoid starting too large
   #clip <- log(Y+sqrt(J*W))
   #print(clip[1,1])
@@ -107,6 +109,8 @@ gbm.sc <- function(Y,
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
 
+  #Prev grad
+  Gt <- matrix(0,nrow=I,ncol=J)
 
   for(i in 1:max.iter) {
     #Reweight
@@ -147,12 +151,14 @@ gbm.sc <- function(Y,
     W <- W/w.max
     if(svd.free) {
       Q <- W*Z+(1-W)*V
-      LRA <- list(u=LRA$u)
-      LRA$v <- t(Q)%*%LRA$u %*% chol2inv(chol(crossprod(LRA$u)))
-      LRA$u <- Q %*% LRA$v %*% chol2inv(chol(crossprod(LRA$v)))
+      LRA <- list(u=LRA$u, v=LRA$v)
+      LRA$v <- t(Q)%*%LRA$u %*% chol2inv(chol(crossprod(LRA$u)+lambdav*diag(M)))
+      LRA$u <- Q %*% LRA$v %*% chol2inv(chol(crossprod(LRA$v))+lambdau*diag(M))
       X <- LRA$u %*%t(LRA$v)
     } else {
-      LRA <- irlba::irlba(W*Z+(1-W)*V,nv=M)
+      Gt <- Gt + (W*(Z-X))^2
+      print(mean((lr/(sqrt(0.01+Gt)))))
+      LRA <- irlba::irlba(V+(lr/(sqrt(0.01+Gt)))*W*(Z-X),nv=M)
       X <- LRA$u %*%(LRA$d*t(LRA$v))
     }
 
@@ -167,7 +173,7 @@ gbm.sc <- function(Y,
     out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
   }
   if(svd.free) {
-    LRA <- irlba::irlba(X)
+    LRA <- irlba::irlba(X,nv=M)
   }
   out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
   out$D <- LRA$d; names(out$D) <- 1:M

@@ -36,6 +36,8 @@ denoise.U <- function(out) {
 
 ## Quantify uncertainty
 
+## Quantify uncertainty
+
 uncertainty <- function(out) {
   ## Get corU
   M <- length(out$D)
@@ -43,54 +45,44 @@ uncertainty <- function(out) {
   V <- out$V
   W <- out$W
   J <- nrow(V)
+  I <- nrow(U)
 
   tV <- t(V)
-  cov.U <- array(apply(W,1,function(w) {
+  cov.U <- t(array(apply(W,1,function(w) {
     Mat <- tV %*% (w*V)
-    solve(Mat)
-  }),dim=c(M,M,I))
-
-  #Get FI.V
-  max.iter <- 25
-  for(r in 1:max.iter) {
-    print(r)
-    cov.V <- array(apply(W,2,function(w) {
-      Mat <- tU %*% (w*U)
-      for(m in 1:M) {
-        for(mp in 1:M) {
-          Mat[m,mp] <- Mat[m,mp] - sum(w*cov.U[m,mp,])
-        }
-      }
-      solve(Mat)
-    }),dim=c(M,M,J))
-
-    cov.U <- array(apply(W,1,function(w) {
-      Mat <- tV %*% (w*V)
-      for(m in 1:M) {
-        for(mp in 1:M) {
-          Mat[m,mp] <- Mat[m,mp] - sum(w*cov.V[m,mp,])
-        }
-      }
-      solve(Mat)
-    }),dim=c(M,M,I))
-  }
-
+    diag(solve(Mat))
+  }),dim=c(M,I)))
+  cov.U.init <- cov.U
 
   tU <- t(U)
-  cov.V <- array(apply(W,2,function(w) {
+  cov.V <- t(array(apply(W,2,function(w) {
     Mat <- tU %*% (w*U)
+    diag(solve(Mat))
+  }),dim=c(M,J)))
+  cov.V.init <- cov.V
+
+  #se.V <- sqrt(cov.V[1,1,])
+
+  X <- U %*% t(V)
+  Z <- X+(Y-W)/W
+  W.scale <- W/max(W)
+  Q <- W.scale*Z+(1-W.scale)*X
+  Q2 <- Q^2
+
+  iter.max <- 50
+  for(r in 1:iter.max) {
+    varVinvVtV <- matrix(0,nrow=J,ncol=M)
     for(m in 1:M) {
-      for(mp in 1:M) {
-        Mat[m,mp] <- Mat[m,mp] - sum(w*cov.U[m,mp,])
-      }
+      sm <- sum(V[,m]^2)
+      nabla.f <- -2*outer(V[,m],V[,m])/sm^2
+      diag(nabla.f) <- diag(nabla.f) + 1/sm
+      varVinvVtV[,m] <- diag(nabla.f %*% t(nabla.f * cov.V[,m]))
     }
-    solve(Mat)
-  }),dim=c(M,M,J))
+    cov.U <- cov.U.init + Q2 %*% varVinvVtV
+
+    cov.V <- cov.V.init + t(Q2) %*% cov.U
+    print(sqrt(cov.V[1,1]))
+  }
+
 }
-
-
-
-
-
-
 
