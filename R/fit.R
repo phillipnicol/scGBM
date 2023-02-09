@@ -144,7 +144,7 @@ gbm.sc <- function(Y,
     }
     cat("Iteration: ", i, ". Objective=", LL[i], "Learning rate: " ,lr, "\n")
     if(i >= 2) {
-      tau <- (LL[i]-LL[i-1])/LL[i-1]
+      tau <- (LL[i]-LL[i-1])/abs(LL[i-1])
       if(tau < tol) {
         if(tau < 0) {
           X <- Xt
