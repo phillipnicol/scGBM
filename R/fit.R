@@ -50,7 +50,7 @@ gbm.sc <- function(Y,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
                    svd.free=FALSE,
-                   lr=1) {
+                   lr=100) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -139,7 +139,13 @@ gbm.sc <- function(Y,
       start.time <- Sys.time()
     }
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
-    if(i > 2) {
+    if(i >= 2) {
+      if(LL[i] < LL[i-1]) {
+        print("HI")
+        X <- Xt
+        lr <- max(lr-10,1)
+        next
+      }
       tau <- abs((LL[i]-LL[i-1])/LL[i-1])
       if(tau < tol & i > min.iter) {
         break
@@ -159,14 +165,15 @@ gbm.sc <- function(Y,
       X <- LRA$u %*%t(LRA$v)
     } else {
       #Adadelta
-      if(i == 1) {
-        Gt <- (W*(Z-X))^2
-      } else{
-        Gt <- 0.1*Gt + 0.9*(W*(Z-X))^2
-      }
-
-      print(mean((lr/(sqrt(0.01+Gt)))))
-      LRA <- irlba::irlba(V+1/(sqrt(0.01+Gt))*W*(Z-X),nv=M)
+      #if(i == 1) {
+      #  Gt <- (W*(Z-X))^2
+      #} else{
+      #  Gt <- 0.1*Gt + 0.9*(W*(Z-X))^2
+      #}
+      print(lr)
+      #print(mean((lr/(sqrt(1e-8+Gt)))))
+      #LRA <- irlba::irlba(V+0.001/(sqrt(1e-8+Gt))*W*(Z-X),nv=M)
+      LRA <- irlba::irlba(V+lr*W*(Z-X),nv=M)
       X <- LRA$u %*%(LRA$d*t(LRA$v))
     }
 
@@ -334,7 +341,6 @@ gbm.sc2 <- function(Y,
   I <- nrow(Y); J <- ncol(Y)
   LL <- rep(0,max.iter)
   if(time.by.iter) {
-    print("H")
     loglik <- rep(0,max.iter)
     time <- rep(0, max.iter)
     start.time <- Sys.time()
