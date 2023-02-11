@@ -159,9 +159,6 @@ gbm.sc <- function(Y,
   if(return.W) {
     out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
   }
-  if(svd.free) {
-    LRA <- irlba::irlba(X,nv=M)
-  }
   out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
   out$D <- LRA$d; names(out$D) <- 1:M
   out$U <- LRA$u; rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
