@@ -73,6 +73,7 @@ gbm.sc <- function(Y,
 
   #Precompute relevant quantities
   max.Y <- max(Y)
+  nz <- which(Y != 0)
 
   #Starting estimate for alpha and W
   betas <- log(colSums(Y))
@@ -118,7 +119,7 @@ gbm.sc <- function(Y,
     #Z <- X+(Y-W)/W
 
     ## Compute log likelihood (no normalizing constant)
-    LL[i] <- sum(Y*log(W)-W)
+    LL[i] <- sum(Y[nz]*log(W[nz])-W)
     if(time.by.iter) {
       time <- c(time,difftime(Sys.time(),start.time,units="sec"))
       loglik <- c(loglik,LL[i])
