@@ -119,7 +119,7 @@ gbm.sc <- function(Y,
     #Z <- X+(Y-W)/W
 
     ## Compute log likelihood (no normalizing constant)
-    LL[i] <- sum(Y[nz]*log(W[nz])-W)
+    LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
     if(time.by.iter) {
       time <- c(time,difftime(Sys.time(),start.time,units="sec"))
       loglik <- c(loglik,LL[i])
