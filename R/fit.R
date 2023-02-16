@@ -122,7 +122,7 @@ gbm.sc <- function(Y,
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
     if(i >= 2) {
       if(LL[i] < LL[i-1]) {
-        lr <- lr/2
+        lr <- max(lr/2, 1)
         i <- i-1
         X <- Xt
         next
@@ -130,7 +130,7 @@ gbm.sc <- function(Y,
         lr <- lr*(1.05)
       }
       tau <- abs((LL[i]-LL[i-1])/LL[i])
-      if(tau < tol) {
+      if(tau < tol & lr <= 1) {
         break
       }
     }
