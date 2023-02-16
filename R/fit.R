@@ -48,7 +48,7 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
-                   lr=10) {
+                   lr=1) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -120,26 +120,26 @@ gbm.sc <- function(Y,
 
     ## Compute log likelihood (no normalizing constant)
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
+    if(i >= 2) {
+      if(LL[i] < LL[i-1]) {
+        lr <- lr/2
+        i <- i-1
+        X <- Xt
+        next
+      } else {
+        lr <- lr*(1.05)
+      }
+      tau <- abs((LL[i]-LL[i-1])/LL[i])
+      if(tau < tol) {
+        break
+      }
+    }
+
+    cat("Iteration: ", i, ". Objective=", LL[i], "lr: ", lr, "\n")
     if(time.by.iter) {
       time <- c(time,difftime(Sys.time(),start.time,units="sec"))
       loglik <- c(loglik,LL[i])
       start.time <- Sys.time()
-    }
-    cat("Iteration: ", i, ". Objective=", LL[i], "lr: ", lr, "\n")
-    if(i >= 2) {
-      if(LL[i] < LL[i-1]) {
-        lr <- lr/2
-        X <- Xt
-        next
-      } else if(i >= 10) {
-        if(LL[i] > max(LL[(i-10):(i-1)])) {
-          lr <- lr*(1.05)
-        }
-      }
-      tau <- abs((LL[i]-LL[i-1])/LL[i])
-      if(tau < tol & lr < 1) {
-        break
-      }
     }
 
     ## Gradient Step
