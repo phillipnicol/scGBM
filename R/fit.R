@@ -58,8 +58,8 @@ gbm.sc <- function(Y,
 
   I <- nrow(Y); J <- ncol(Y)
   LL <- rep(0,max.iter)
+  loglik <- c()
   if(time.by.iter) {
-    loglik <- c()
     time <- c()
     start.time <- Sys.time()
   }
@@ -121,24 +121,23 @@ gbm.sc <- function(Y,
     ## Compute log likelihood (no normalizing constant)
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
     if(i >= 2) {
-      if(LL[i] < LL[i-1]) {
+      if(LL[i] <= (LL[i-1]+0.1)) {
         lr <- max(lr/2, 1)
-        i <- i-1
         X <- Xt
         next
       } else {
         lr <- lr*(1.05)
       }
       tau <- abs((LL[i]-LL[i-1])/LL[i])
-      if(tau < tol & lr <= 1) {
+      if(tau < tol & lr <= 1.06) {
         break
       }
     }
 
+    loglik <- c(loglik,LL[i])
     cat("Iteration: ", i, ". Objective=", LL[i], "lr: ", lr, "\n")
     if(time.by.iter) {
       time <- c(time,difftime(Sys.time(),start.time,units="sec"))
-      loglik <- c(loglik,LL[i])
       start.time <- Sys.time()
     }
 
@@ -167,9 +166,8 @@ gbm.sc <- function(Y,
   out$beta <- betas; names(out$beta) <- colnames(Y)
   out$M <- M
   out$I <- nrow(out$W); out$J <- ncol(out$W)
-  out$obj <- LL[1:i]
+  out$loglik <- loglik
   if(time.by.iter) {
-    out$loglik <- loglik
     out$time <- cumsum(time)
   }
 
