@@ -91,11 +91,15 @@ gbm.sc <- function(Y,
   #Starting estimate of X
   Z <- (Y-W)/sqrt(W)
   c <- sqrt(2*log(I*J/0.025))
-  Z[Z > c] <- c
-  Z[Z < -c] <- -c
+  #Z[Z > c] <- c
+  #Z[Z < -c] <- -c
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X
+
+  print(sum(abs(X) > 8))
+  X[X > 8] <- 8
+  X[X < -8] <- -8
 
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
@@ -103,7 +107,7 @@ gbm.sc <- function(Y,
   for(i in 1:max.iter) {
     #Reweight
     alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
-      sweep(X[,batch==j],2,betas[batch==j],"+")
+      #sweep(X[,batch==j],2,betas[batch==j],"+")
       log.rsy[j,]-log(rowSums(exp(sweep(X[,batch==j],2,betas[batch==j],"+"))))
     })
     if(infer.beta) {
@@ -113,6 +117,7 @@ gbm.sc <- function(Y,
     W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
 
     #Prevent W from being too large (stability)
+    print(length(which(W > max.Y))/(I*J))
     W[W > max.Y] <- max.Y
 
     #Compute working variables
@@ -132,6 +137,7 @@ gbm.sc <- function(Y,
         next
       } else {
         lr <- lr*(1.05)
+        #lr <- lr
       }
     }
 
