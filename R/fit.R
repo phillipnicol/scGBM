@@ -125,8 +125,8 @@ gbm.sc <- function(Y,
 
     ## Compute log likelihood (no normalizing constant)
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
-    if(i >= 2) {
-      tau <- abs((LL[i]-LL[i-1])/LL[i])
+    if(i >= 3) {
+      tau <- abs((LL[i]-LL[i-2])/LL[i])
       if(tau < tol & lr <= 1.06) {
         break
       }
