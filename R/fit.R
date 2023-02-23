@@ -48,7 +48,8 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
-                   lr=1) {
+                   lr=1,
+                   min.iter=30) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -128,7 +129,7 @@ gbm.sc <- function(Y,
     if(i >= 3) {
       tau <- abs((LL[i]-LL[i-2])/LL[i])
       print(tau)
-      if(tau < tol & lr <= 1.06) {
+      if(tau < tol & lr <= 1.06 & i >= min.iter) {
         break
       }
 
