@@ -121,7 +121,6 @@ gbm.sc <- function(Y,
     W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
 
     #Prevent W from being too large (stability)
-    print(length(which(W > max.Y))/(I*J))
     W[W > max.Y] <- max.Y
 
     #Compute working variables
@@ -131,7 +130,6 @@ gbm.sc <- function(Y,
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
     if(i >= 3) {
       tau <- abs((LL[i]-LL[i-2])/LL[i])
-      print(tau)
       if(tau < tol & lr <= 1.06 & i >= min.iter) {
         break
       }
