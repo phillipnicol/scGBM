@@ -128,7 +128,12 @@ gbm.sc <- function(Y,
 
     ## Compute log likelihood (no normalizing constant)
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
-    if(is.na(LL[i])) {LL[i] <- -Inf}
+    if(is.na(LL[i]) | is.infinite(LL[i])) {
+      X <- Xt
+      lr <- lr/2
+      i <- i - 1
+      next
+    }
     if(i >= 3) {
       tau <- abs((LL[i]-LL[i-2])/LL[i])
       if(tau < tol & lr <= 1.06 & i >= min.iter) {
