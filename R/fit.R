@@ -78,7 +78,7 @@ gbm.sc <- function(Y,
 
   #Starting estimate for alpha and W
   betas <- log(colSums(Y))
-  betas <- betas - mean(betas) #Enforce the betas sum to 0
+  #betas <- betas - mean(betas) Enforce the betas sum to 0
   W <- matrix(0, nrow=I, ncol=J)
   log.rsy <- matrix(0,nrow=nbatch,ncol=I)
   for(j in 1:nbatch) {
@@ -87,6 +87,8 @@ gbm.sc <- function(Y,
   alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
     log.rsy[j,]-log(sum(exp(betas[batch==j])))
   })
+  betas <- betas + mean(alphas)
+  alphas <- alphas - mean(alphas)
   W <- exp(sweep(alphas[,batch], 2, betas, "+"))
 
   #Starting estimate of X
@@ -111,9 +113,10 @@ gbm.sc <- function(Y,
       #sweep(X[,batch==j],2,betas[batch==j],"+")
       log.rsy[j,]-log(rowSums(exp(sweep(X[,batch==j],2,betas[batch==j],"+"))))
     })
+    betas <- betas + mean(alphas)
+    alphas <- alphas - mean(alphas)
     if(infer.beta) {
       betas <- log(colSums(Y))-log(colSums(exp(alphas[,batch]+X)))
-      betas <- betas - mean(betas)
     }
     W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
 
@@ -202,8 +205,11 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
 
   U <- out$U
   #U <- as.data.frame(U)
-  colnames(U) <- paste0("U",1:M)
-  alpha <- alphas.full[ixs]
+  U <- cbind(rep(1,length(ixs)),U)
+  colnames(U) <- c("intercept",paste0("U",1:M))
+  #alpha <- alphas.full
+  alpha <- out$alpha[,1]
+  #alpha <- alphas.full[ixs]
 
   Y <- Y[ixs,]
   print(Sys.time())
@@ -219,7 +225,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
     }
     V.sub <- mclapply(start:stop, function(j) {
       cell <- as.vector(Y[,j])
-      o <- log(sum(cell))+alpha
+      o <- alpha#+log(sum(cell))
       val <- matrix(rep(0,2*M),nrow=1)
       try({
         fit <- fastglm::fastglm(x=U,y=cell,offset=o,
@@ -228,7 +234,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
         #fit <- glm(cell~0+offset(o)+.,
         #data=U,
         #family=poisson(link="log"))
-        val <- matrix(c(fit$coefficients,fit$se),
+        val <- matrix(c(fit$coefficients[-1],fit$se[-1]),
                       nrow=1)
       })
       val

@@ -6,6 +6,8 @@ get.se <- function(out) {
   W <- out$W
   J <- nrow(V)
   tU <- t(out$U)
+  EPS <- 0.001
+
   se_V <- apply(W,2,function(w) {
     Mat <- tU %*% (w*out$U)
     sqrt(diag(solve(Mat)))
