@@ -253,7 +253,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   alpha <- rep(0, I)
   alpha[ixs] <- out$alpha[,1]
   alpha[-ixs] <- min(out$alpha[,1])
-  out$alpha <- alphas.full
+  out$alpha <- alpha
   U <- matrix(0, nrow=I,ncol=M)
   U[ixs,] <- out$U
   out$U <- U
