@@ -217,7 +217,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
 
   Y <- Y[ixs,]
   print(Sys.time())
-  V <- matrix(0,nrow=J,ncol=2*M)
+  V <- matrix(0,nrow=J,ncol=2*M+1)
   split.len <- 200000
   max.iter <- ceiling(J/split.len)
   for(i in 1:max.iter) {
@@ -230,7 +230,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
     V.sub <- mclapply(start:stop, function(j) {
       cell <- as.vector(Y[,j])
       o <- alpha#+log(sum(cell))
-      val <- matrix(rep(0,2*M),nrow=1)
+      val <- matrix(rep(0,2*M+1),nrow=1)
       try({
         fit <- fastglm::fastglm(x=U,y=cell,offset=o,
                        family=poisson(),
@@ -238,17 +238,18 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
         #fit <- glm(cell~0+offset(o)+.,
         #data=U,
         #family=poisson(link="log"))
-        val <- matrix(c(fit$coefficients[-1],fit$se[-1]),
+        val <- matrix(c(fit$coefficients,fit$se[-1]),
                       nrow=1)
       })
       val
     },
     mc.cores = ncores)
-    V.sub <- matrix(unlist(V.sub),nrow=stop-start+1,ncol=2*M,byrow=TRUE)
+    V.sub <- matrix(unlist(V.sub),nrow=stop-start+1,ncol=2*M+1,byrow=TRUE)
     V[start:stop,] <- V.sub
   }
-  out$se_V <- V[,(M+1):(2*M)]
-  out$V <- V[,1:M]
+  out$se_V <- V[,(M+2):(2*M+1)]
+  out$V <- V[,2:(M+1)]
+  out$beta <- V[,1]
 
   alpha <- rep(0, I)
   alpha[ixs] <- out$alpha[,1]
