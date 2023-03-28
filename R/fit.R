@@ -195,7 +195,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
                               ncores,tol=10^{-4},max.iter=max.iter) {
 
   J <- ncol(Y); I <- nrow(Y)
-  alphas.full <- log(rowSums(Y))-log(sum(colSums(Y)))
+  alphas.full <- log(rowSums(Y))
   if(length(subsample)==1) {
     jxs <- sample(1:J,size=subsample,replace=FALSE)
     Y.sub <- Y[,jxs]
@@ -253,7 +253,9 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
 
   alpha <- rep(0, I)
   alpha[ixs] <- out$alpha[,1]
-  alpha[-ixs] <- 0
+  alpha[-ixs] <- alphas.full[-ixs] - log(sum(exp(out$beta)))
+  out$beta <- out$beta + mean(alpha)
+  alpha <- alpha - mean(alpha)
   out$alpha <- alpha
   U <- matrix(0, nrow=I,ncol=M)
   U[ixs,] <- out$U
