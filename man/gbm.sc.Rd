@@ -9,7 +9,6 @@ gbm.sc(
   Y,
   M,
   max.iter = 100,
-  min.iter = 0,
   tol = 10^{     -4 },
   subset = NULL,
   ncores = 1,
@@ -17,7 +16,8 @@ gbm.sc(
   return.W = TRUE,
   batch = as.factor(rep(1, ncol(Y))),
   time.by.iter = FALSE,
-  svd.free = FALSE
+  lr = 1,
+  min.iter = 30
 )
 }
 \arguments{
