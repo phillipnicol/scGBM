@@ -51,29 +51,10 @@ Cluster the cell scores using Seurat
 
 ``` r
 library(Seurat)
-```
-
-    ## Warning: package 'Seurat' was built under R version 4.0.5
-
-    ## Attaching SeuratObject
-
-``` r
 Sco <- CreateSeuratObject(counts=Y)
 colnames(out$V) <- 1:10
 Sco[["gbm"]] <- CreateDimReducObject(embeddings=out$V,key="GBM_")
-```
-
-    ## Warning: No assay specified, setting assay as RNA by default.
-
-``` r
 Sco <- FindNeighbors(Sco,reduction = "gbm")
-```
-
-    ## Computing nearest neighbor graph
-
-    ## Computing SNN
-
-``` r
 Sco <- FindClusters(Sco)
 ```
 
@@ -83,7 +64,7 @@ Plot the scores and color by the assigned clustering:
 plot_gbm(out, cluster=Sco$seurat_clusters)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Quantify the uncertainty in the low dimensional embedding:
 
@@ -116,7 +97,7 @@ library(ggforce)
 plot_gbm(out, cluster=Sco$seurat_clusters, se=TRUE)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Now we evaluate cluster stability using the cluster confidence index.
 First we need to define a function that takes as input a set of
@@ -148,14 +129,14 @@ pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
         colnames=TRUE)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 #Just the diagonal
 cci$cci.plot
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
 
 The heatmap shows there is significant overlap between the clusters.
 This makes sense because the data was simulated to have no latent

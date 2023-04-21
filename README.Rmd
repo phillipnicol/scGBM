@@ -39,7 +39,17 @@ out <- gbm.sc(Y,M=10)
 
 Cluster the cell scores using Seurat
 
-```{r, echo=T, results="hide"}
+```{r, echo=T, eval=F}
+library(Seurat)
+Sco <- CreateSeuratObject(counts=Y)
+colnames(out$V) <- 1:10
+Sco[["gbm"]] <- CreateDimReducObject(embeddings=out$V,key="GBM_")
+Sco <- FindNeighbors(Sco,reduction = "gbm")
+Sco <- FindClusters(Sco)
+```
+
+
+```{r, include=F}
 library(Seurat)
 Sco <- CreateSeuratObject(counts=Y)
 colnames(out$V) <- 1:10
