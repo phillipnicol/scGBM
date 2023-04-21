@@ -24,6 +24,7 @@ plot_gbm <- function(gbm,dims=c(1,2),cluster=NULL,
     }
     p <- ggplot(data=df,aes(x=x,y=y,color=cluster))
     p <- p + geom_point()
+    p <- p + xlab(paste0("GBM-",dims[1])) + ylab(paste0("GBM-",dims[2]))
     print(p)
   } else {
     se_V <- out$se_V
@@ -37,6 +38,7 @@ plot_gbm <- function(gbm,dims=c(1,2),cluster=NULL,
     df$angle <- rep(0,nrow(df))
     p <- ggplot(data=df,aes(x0=x0,y0=y0,fill=cluster,
                             a=a,b=b,angle=angle))
+    p <- p + xlab(paste0("GBM-",dims[1])) + ylab(paste0("GBM-",dims[2]))
     p <- p + geom_ellipse(alpha=0.5)
     print(p)
   }
