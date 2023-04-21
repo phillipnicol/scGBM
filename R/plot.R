@@ -1,3 +1,6 @@
+#' @import ggplot2
+NULL
+
 #' @export
 #'
 #' @title Plot the results of scGBM

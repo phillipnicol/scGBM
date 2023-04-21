@@ -225,7 +225,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
     } else {
       stop <- i*split.len
     }
-    V.sub <- mclapply(start:stop, function(j) {
+    V.sub <- parallel::mclapply(start:stop, function(j) {
       cell <- as.vector(Y[,j])
       o <- alpha#+log(sum(cell))
       val <- matrix(rep(0,2*M+1),nrow=1)
