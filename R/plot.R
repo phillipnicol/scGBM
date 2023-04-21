@@ -12,7 +12,7 @@
 #' returned.
 #'
 #' @author Phillip B. Nicol <philnicol740@gmail.com>
-plot.gbm <- function(gbm,dims=c(1,2),cluster=NULL,
+plot_gbm <- function(gbm,dims=c(1,2),cluster=NULL,
                      se=FALSE,return.gg=FALSE, plot=TRUE) {
   V <- out$V
   if(!se) {

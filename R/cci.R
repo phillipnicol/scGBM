@@ -118,7 +118,7 @@ CCI <- function(gbm,
 
 
   out <- list()
-  out$heatmap <- p
+  #out$heatmap <- p
   out$H.table <- H.table
 
   ##Plotting

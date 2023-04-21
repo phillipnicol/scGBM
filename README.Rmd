@@ -1,0 +1,115 @@
+---
+title: "Model-based Dimensionality Reduction for Single-cell RNA-seq with Generalized Bilinear Models"
+author: "R package version 0.1.0"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Installation 
+
+From the R console, `devtools::install_github("phillipnicol/scGBM")`. 
+
+## Demo 
+
+```{r}
+library(scGBM)
+library(ggplot2)
+set.seed(1126490984)
+```
+
+Generate a count matrix that is random Poisson noise:
+
+
+```{r, echo}
+I <- 500
+J <- 500
+Y <- matrix(rpois(I*J,lambda=1),nrow=I,ncol=J)
+colnames(Y) <- 1:J; rownames(Y) <- 1:I
+```
+
+
+Run scGBM with $M = 10$ latent factors
+
+```{r}
+out <- gbm.sc(Y,M=10)
+```
+
+Cluster the cell scores using Seurat
+
+```{r, echo=T, results="hide"}
+library(Seurat)
+Sco <- CreateSeuratObject(counts=Y)
+colnames(out$V) <- 1:10
+Sco[["gbm"]] <- CreateDimReducObject(embeddings=out$V,key="GBM_")
+Sco <- FindNeighbors(Sco,reduction = "gbm")
+Sco <- FindClusters(Sco)
+```
+
+
+Plot the scores and color by the assigned clustering:
+
+```{r}
+plot_gbm(out, cluster=Sco$seurat_clusters)
+```
+
+
+Quantify the uncertainty in the low dimensional embedding:
+
+```{r}
+out <- get.se(out)
+
+## Standard errors of V and U are now in the list
+head(out$se_V) 
+```
+
+You can visualize the uncertainty with ellipses around the points
+
+```{r}
+library(ggforce)
+plot_gbm(out, cluster=Sco$seurat_clusters, se=TRUE)
+```
+
+
+Now we evaluate cluster stability using the cluster confidence index. First we need to define a function that takes as input a set of simulated scores $\tilde{V}$ and returns a new clustering:
+
+```{r}
+cluster_fn <- function(V,Y) {
+  Sco <- CreateSeuratObject(Y)
+  colnames(V) <- 1:ncol(V)
+  Sco[["gbm"]] <- CreateDimReducObject(embeddings=V,key="GBM_")
+  Sco <- FindNeighbors(Sco,reduction = "gbm")
+  Sco <- FindClusters(Sco)
+  as.vector(Sco$seurat_clusters)
+}
+```
+
+Now we can run the CCI function. Here we set `reps=10` to make it fast but `reps=100` (or higher) is recommended on real analyses. 
+
+```{r, echo=T, eval=F}
+cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=10, cluster.fn = cluster_fn, Y=Y)
+```
+
+```{r, include=F}
+cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=10, cluster.fn = cluster_fn, Y=Y)
+```
+
+
+```{r}
+library(pheatmap)
+pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
+        breaks=seq(0,1,by=0.01),
+        rownames=TRUE,
+        colnames=TRUE)
+
+#Just the diagonal
+cci$cci.plot
+```
+
+
+The heatmap shows there is significant overlap between the clusters. This makes sense because the data was simulated to have no latent variability. 
+
+
+
