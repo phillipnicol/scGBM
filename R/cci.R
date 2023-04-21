@@ -27,7 +27,7 @@ cluster.default <- function(V,nstart=25,centers=5) {
 #' @param cluster.fn A function that takes as input a set of (simulated) scores V and
 #' returns a labeling of cells into clusters.
 #'
-#' @return
+#' @author Phillip B. Nicol <philnicol740@gmail.com>
 CCI <- function(gbm,
                 cluster.orig,
                 reps=100,

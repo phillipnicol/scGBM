@@ -1,5 +1,27 @@
 
 #' @export
+#'
+#' @title Simulate data from a Poisson bilinear model
+#'
+#'
+#' @param I The number of genes
+#' @param J The number of cells
+#' @param d The number of latent factors
+#' @param alpha.mean The mean of the gene-specific intercepts
+#' @param beta.mean The mean of the cell-specific intercepts
+#' @param K The latent variability, ratio of the largest to smallest singular value.
+#'
+#' @return A list with components
+#' \itemize{
+#' \item \code{Y} Simulated count matrix
+#' \item \code{V} Ground truth latent factor scores
+#' \item \code{U} Ground truth latent factor loadings
+#' \item \code{D} A vector of the ground truth scaling factors (singular values)
+#' \item \code{alpha} Ground truth gene-specific intercepts
+#' \item \code{beta} Ground truth cell-specific intercepts
+#' }
+#'
+#' @author Phillip B. Nicol <philnicol740@gmail.com>
 simData <- function(I,J,d,alpha.mean=0,beta.mean=0,K=2) {
   U <- rstiefel::rustiefel(m=I,R=d); V <- rustiefel(m=J,R=d)
   U <- U[,1:d]; V <- V[,1:d]
