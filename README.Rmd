@@ -16,7 +16,6 @@ From the R console, `devtools::install_github("phillipnicol/scGBM")`.
 
 ```{r}
 library(scGBM)
-library(ggplot2)
 set.seed(1126490984)
 ```
 
@@ -36,6 +35,14 @@ Run scGBM with $M = 10$ latent factors
 ```{r}
 out <- gbm.sc(Y,M=10)
 ```
+
+To use the projection method (faster version based on subsampling), use
+
+```{r, eval=FALSE}
+##Specify subsample size and number of cores
+out.proj <- gbm.sc(Y,M=10,subset=100,ncores=8) 
+```
+
 
 Cluster the cell scores using Seurat
 
@@ -78,7 +85,6 @@ head(out$se_V)
 You can visualize the uncertainty with ellipses around the points
 
 ```{r}
-library(ggforce)
 plot_gbm(out, cluster=Sco$seurat_clusters, se=TRUE)
 ```
 
@@ -108,8 +114,7 @@ cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=10, cluster.fn = cluster_f
 
 
 ```{r}
-library(pheatmap)
-pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
+pheatmap::pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
         breaks=seq(0,1,by=0.01),
         rownames=TRUE,
         colnames=TRUE)

@@ -42,7 +42,7 @@ plot_gbm <- function(gbm,dims=c(1,2),cluster=NULL,
     p <- ggplot(data=df,aes(x0=x0,y0=y0,fill=cluster,
                             a=a,b=b,angle=angle))
     p <- p + xlab(paste0("GBM-",dims[1])) + ylab(paste0("GBM-",dims[2]))
-    p <- p + geom_ellipse(alpha=0.5)
+    p <- p + ggforce::geom_ellipse(alpha=0.5)
     print(p)
   }
   if(return.gg) {

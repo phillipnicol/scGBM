@@ -11,7 +11,6 @@ From the R console, `devtools::install_github("phillipnicol/scGBM")`.
 
 ``` r
 library(scGBM)
-library(ggplot2)
 set.seed(1126490984)
 ```
 
@@ -47,6 +46,13 @@ out <- gbm.sc(Y,M=10)
     ## Iteration:  16 . Objective= -240267.4 
     ## Iteration:  17 . Objective= -240267
 
+To use the projection method (faster version based on subsampling), use
+
+``` r
+##Specify subsample size and number of cores
+out.proj <- gbm.sc(Y,M=10,subset=100,ncores=8) 
+```
+
 Cluster the cell scores using Seurat
 
 ``` r
@@ -64,7 +70,7 @@ Plot the scores and color by the assigned clustering:
 plot_gbm(out, cluster=Sco$seurat_clusters)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Quantify the uncertainty in the low dimensional embedding:
 
@@ -93,11 +99,10 @@ head(out$se_V)
 You can visualize the uncertainty with ellipses around the points
 
 ``` r
-library(ggforce)
 plot_gbm(out, cluster=Sco$seurat_clusters, se=TRUE)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Now we evaluate cluster stability using the cluster confidence index.
 First we need to define a function that takes as input a set of
@@ -122,21 +127,20 @@ cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=10, cluster.fn = cluster_f
 ```
 
 ``` r
-library(pheatmap)
-pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
+pheatmap::pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
         breaks=seq(0,1,by=0.01),
         rownames=TRUE,
         colnames=TRUE)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
 #Just the diagonal
 cci$cci.plot
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 
 The heatmap shows there is significant overlap between the clusters.
 This makes sense because the data was simulated to have no latent
