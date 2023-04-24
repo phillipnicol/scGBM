@@ -3,7 +3,6 @@
 #'
 #' @title Simulate data from a Poisson bilinear model
 #'
-#'
 #' @param I The number of genes
 #' @param J The number of cells
 #' @param d The number of latent factors
@@ -23,7 +22,7 @@
 #'
 #' @author Phillip B. Nicol <philnicol740@gmail.com>
 simData <- function(I,J,d,alpha.mean=0,beta.mean=0,K=2) {
-  U <- rstiefel::rustiefel(m=I,R=d); V <- rustiefel(m=J,R=d)
+  U <- rstiefel::rustiefel(m=I,R=d); V <- rstiefel::rustiefel(m=J,R=d)
   U <- U[,1:d]; V <- V[,1:d]
   D <- seq(K*(sqrt(I)+sqrt(J)),sqrt(I)+sqrt(J),length.out=d)
   for(m in 1:d) {
