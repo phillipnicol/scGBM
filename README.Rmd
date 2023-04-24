@@ -120,7 +120,7 @@ pheatmap::pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","re
         colnames=TRUE)
 
 #Just the diagonal
-cci$cci.plot
+cci$cci_diagonal
 ```
 
 

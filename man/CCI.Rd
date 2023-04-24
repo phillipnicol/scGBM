@@ -18,8 +18,18 @@ cells into clusters.}
 returns a labeling of cells into clusters.}
 }
 \value{
-
+A list with components
+\itemize{
+\item \code{H.table} - The values used to make the cluster confidence
+heatmap.
+\item \code{cci_diagonal} - A ggplot object that plots the distribution of intra-cluster
+CCI.
+\item \code{cci} - A 3-dimensional array of all CCI values (inter-and-intra-cluster).
+}
 }
 \description{
 Evaluate cluster stability using the Cluster Confidence Index (CCI)
+}
+\author{
+Phillip B. Nicol <philnicol740@gmail.com>
 }

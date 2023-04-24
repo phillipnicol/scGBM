@@ -137,7 +137,7 @@ pheatmap::pheatmap(cci$H.table,legend=TRUE, color=colorRampPalette(c("white","re
 
 ``` r
 #Just the diagonal
-cci$cci.plot
+cci$cci_diagonal
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
