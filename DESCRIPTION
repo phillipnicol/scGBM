@@ -1,7 +1,8 @@
 Package: scGBM
 Type: Package
 Title: Dimensionality Reduction for Single-cell RNA-seq using Generalized Bilinear Models
-Version: 0.1.0
+Version: 1.0.0
+Date: 2023-05-25
 Author: Phillip B. Nicol
 Maintainer: Phillip B. Nicol <philnicol740@gmail.com>
 License: GPL (>=2)
