@@ -9,14 +9,15 @@ gbm.sc(
   Y,
   M,
   max.iter = 100,
-  tol = 10^{     -4 },
+  tol = 10^{
+     -4
+ },
   subset = NULL,
   ncores = 1,
   infer.beta = FALSE,
   return.W = TRUE,
   batch = as.factor(rep(1, ncol(Y))),
   time.by.iter = FALSE,
-  lr = 1,
   min.iter = 30
 )
 }
@@ -44,12 +45,19 @@ during the projection step.}
 be FALSE for large datasets since it requires a lot of memory.}
 
 \item{batch}{An optional factor containing the assignment of cells to known batches.}
+
+\item{time.by.iter}{If TRUE, the elapsed time (in seconds) is given at each iteration of the algorithm.}
+
+\item{min.iter}{The minimum number of iterations.}
 }
 \value{
 A list with components
 \itemize{
-\item \code{V} - A matrix containing the factor scores.
-\item \code{U} - A matrix contianing the factor loadings
+\item \code{scores} - A matrix containing the factor scores (weight of each cell for each factor).
+\item \code{loadings} - A matrix (genes x factors) containing the factor loadings (weight of each cell for each factor).
+\item \code{V} - A matrix containing the unscaled factor scores.
+\item \code{U} - Factor loadings. This matrix is identical to \code{loadings} and is included
+for reverse compatibility.
 \item \code{D} - A vector containing the singular values (scaling factors)
 \item \code{alpha} - A matrix containing gene-specific intercepts. The number of columns
 is set to be equal to the number of batches (by default there are no batches so this is 1).

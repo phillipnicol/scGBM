@@ -1,7 +1,7 @@
 Model-based Dimensionality Reduction for Single-cell RNA-seq with
 Generalized Bilinear Models
 ================
-R package version 1.0.0
+R package version 1.0.1
 
 ## Installation
 
@@ -9,12 +9,16 @@ From the R console, `devtools::install_github("phillipnicol/scGBM")`.
 
 ## Demo
 
+We demonstrate scGBM by applying it to a random noise (i.e., a dataset
+with no latent variaiblity).
+
 ``` r
 library(scGBM)
 set.seed(1126490984)
 ```
 
-Generate a count matrix that is random Poisson noise:
+We begin by generating the count matrix such that each entry is
+(independently) Poisson with rate 1:
 
 ``` r
 I <- 500
@@ -58,8 +62,8 @@ Cluster the cell scores using Seurat
 ``` r
 library(Seurat)
 Sco <- CreateSeuratObject(counts=Y)
-colnames(out$V) <- 1:10
-Sco[["gbm"]] <- CreateDimReducObject(embeddings=out$V,key="GBM_")
+colnames(out$scores) <- 1:10
+Sco[["gbm"]] <- CreateDimReducObject(embeddings=out$scores,key="GBM_")
 Sco <- FindNeighbors(Sco,reduction = "gbm")
 Sco <- FindClusters(Sco)
 ```
@@ -77,8 +81,8 @@ Quantify the uncertainty in the low dimensional embedding:
 ``` r
 out <- get.se(out)
 
-## Standard errors of V and U are now in the list
-head(out$se_V) 
+## Standard errors of scores and loadings are now in the list
+head(out$se_scores) 
 ```
 
     ##              1         2         3         4         5         6         7
@@ -145,3 +149,11 @@ cci$cci_diagonal
 The heatmap shows there is significant overlap between the clusters.
 This makes sense because the data was simulated to have no latent
 variability.
+
+## Reference
+
+If you use `scGBM` in your work, please cite:
+
+Nicol, P.B. and Miller, J.W. (2023). Model-based dimensionality
+reduction for single-cell RNA-seq using generalized bilinear models.
+bioRxiv.
