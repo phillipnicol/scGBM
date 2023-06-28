@@ -45,8 +45,8 @@ CCI <- function(gbm,
   nc <- length(table(cluster.orig))
   cci <- array(0,dim=c(nc,nc,reps))
   H.table <- matrix(0,nrow=nc,ncol=nc)
-  V <- gbm$V
-  se_V <- gbm$se_V
+  V <- gbm$scores
+  se_V <- gbm$se_scores
   J <- nrow(V)
   for(i in 1:reps) {
     cat("Iteration ", i, "\n")

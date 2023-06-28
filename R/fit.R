@@ -21,21 +21,32 @@
 #' @param return.W If TRUE, the matrix of weights (which is equal to the estimated mean) is returned. This should
 #' be FALSE for large datasets since it requires a lot of memory.
 #' @param batch An optional factor containing the assignment of cells to known batches.
+#' @param time.by.iter If TRUE, the elapsed time (in seconds) is given at each iteration of the algorithm.
+#' @param min.iter The minimum number of iterations.
 #'
 #' @return A list with components
 #' \itemize{
-#' \item \code{V} - A matrix containing the factor scores.
-#' \item \code{U} - A matrix contianing the factor loadings
+#' \item \code{scores} - A matrix containing the factor scores (weight of each cell for each factor).
+#' \item \code{loadings} - A matrix (genes x factors) containing the factor loadings (weight of each cell for each factor).
+#' \item \code{V} - A matrix containing the unscaled factor scores.
+#' \item \code{U} - Factor loadings. This matrix is identical to \code{loadings} and is included
+#' for reverse compatibility.
 #' \item \code{D} - A vector containing the singular values (scaling factors)
 #' \item \code{alpha} - A matrix containing gene-specific intercepts. The number of columns
 #' is set to be equal to the number of batches (by default there are no batches so this is 1).
 #' \item \code{beta} - A vector of cell-specific intercepts.
-#' \item \code{I} - The number of genes
+#' \item \code{I} - The number of genes.
 #' \item \code{J} - The number of cells.
 #' \item \code{W} - The estimated mean (and by properties of the Poisson distribution, also the variance)
 #' for each entry of the count matrix.
-#' \item \code{obj} The value of the objective function for each iteration.
+#' \item \code{obj} - The value of the objective function for each iteration.
 #' }
+#'
+#' @details scGBM fits the following model to the \eqn{I \times J} count matrix \eqn{Y}:
+#' \deqn{Y \sim \text{Poisson}(\mu)}
+#' \deqn{\log \mu = \alpha 1_J^T + 1_I \beta^T + U \Sigma V^T}
+#' Here \eqn{\alpha} are gene-specific intercepts, \eqn{\beta_j} are cell-specific intercepts, \eqn{U} are the \eqn{I \times M} factor loadings
+#' (linear combinations of genes that define factors), and \eqn{V \Sigma} are the \eqn{J \times M} scores for each cell.
 #'
 #' @author Phillip B. Nicol <philnicol740@gmail.com>
 gbm.sc <- function(Y,
@@ -48,11 +59,12 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
-                   lr=1,
                    min.iter=30) {
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
+    ##Message for users of new version about scores
+    message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores.")
     return(out)
   }
 
@@ -64,6 +76,8 @@ gbm.sc <- function(Y,
     time <- c()
     start.time <- Sys.time()
   }
+
+  lr <- 1 #Default learning rate is set to 1
 
   if(!is.factor(batch)) {
     stop("Batch must be encoded as factor.")
@@ -78,7 +92,7 @@ gbm.sc <- function(Y,
 
   #Starting estimate for alpha and W
   betas <- log(colSums(Y))
-  #betas <- betas - mean(betas) Enforce the betas sum to 0
+
   W <- matrix(0, nrow=I, ncol=J)
   log.rsy <- matrix(0,nrow=nbatch,ncol=I)
   for(j in 1:nbatch) {
@@ -88,19 +102,16 @@ gbm.sc <- function(Y,
     log.rsy[j,]-log(sum(exp(betas[batch==j])))
   })
   betas <- betas + mean(alphas)
-  alphas <- alphas - mean(alphas)
+  alphas <- alphas - mean(alphas) #Ensure alphas sum to 0
   W <- exp(sweep(alphas[,batch], 2, betas, "+"))
 
   #Starting estimate of X
   Z <- (Y-W)/sqrt(W)
-  c <- sqrt(2*log(I*J/0.025))
-  #Z[Z > c] <- c
-  #Z[Z < -c] <- -c
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X
 
-  X[X > 8] <- 8
+  X[X > 8] <- 8 #Clipping
   X[X < -8] <- -8
 
   #For acceleration, save previous X
@@ -162,7 +173,7 @@ gbm.sc <- function(Y,
     w.max <- max(W)
 
     LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
-    X <- LRA$u %*%(LRA$d*t(LRA$v))
+    X <- LRA$u %*% (LRA$d*t(LRA$v))
 
     if(i == max.iter) {
       warning("Maximum number of iterations reached (increase max.iter).
@@ -177,16 +188,20 @@ gbm.sc <- function(Y,
   out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
   out$D <- LRA$d; names(out$D) <- 1:M
   out$U <- LRA$u; rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
+  out$loadings <- out$U
   out$alpha <- alphas; rownames(out$alpha) <- rownames(Y)
   out$beta <- betas; names(out$beta) <- colnames(Y)
   out$M <- M
   out$I <- nrow(out$W); out$J <- ncol(out$W)
-  out$loglik <- loglik
+  out$obj <- loglik
   if(time.by.iter) {
     out$time <- cumsum(time)
   }
 
   out <- process.results(out)
+
+  ##Message for users of new version about scores
+  message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.")
   return(out)
 }
 
@@ -245,8 +260,8 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
     V.sub <- matrix(unlist(V.sub),nrow=stop-start+1,ncol=2*M+1,byrow=TRUE)
     V[start:stop,] <- V.sub
   }
-  out$se_V <- V[,(M+2):(2*M+1)]
-  out$V <- V[,2:(M+1)]
+  out$se_scores <- V[,(M+2):(2*M+1)]
+  out$scores <- V[,2:(M+1)]
   out$beta <- V[,1]
 
   alpha <- rep(0, I)
@@ -258,6 +273,9 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   U <- matrix(0, nrow=I,ncol=M)
   U[ixs,] <- out$U
   out$U <- U
+  out$V <- NULL #In projection method, don't return V.
+  out$loadings <- loadings
+
   return(out)
 }
 
@@ -270,8 +288,7 @@ process.results <- function(gbm) {
       gbm$V[,m] <- -1*gbm$V[,m]
     }
   }
-
-  gbm$V <- t(diag(gbm$D) %*% t(gbm$V))
+  gbm$scores <- t(gbm$D*t(gbm$V))
 
   return(gbm)
 }

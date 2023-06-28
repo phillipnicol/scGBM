@@ -17,7 +17,7 @@ NULL
 #' @author Phillip B. Nicol <philnicol740@gmail.com>
 plot_gbm <- function(gbm,dims=c(1,2),cluster=NULL,
                      se=FALSE,return.gg=FALSE, plot=TRUE) {
-  V <- out$V
+  V <- out$scores
   if(!se) {
     df <- data.frame(x=V[,dims[1]],y=V[,dims[2]])
     if(is.null(cluster)) {
@@ -30,7 +30,7 @@ plot_gbm <- function(gbm,dims=c(1,2),cluster=NULL,
     p <- p + xlab(paste0("GBM-",dims[1])) + ylab(paste0("GBM-",dims[2]))
     print(p)
   } else {
-    se_V <- out$se_V
+    se_V <- out$se_scores
     df <- data.frame(x0=V[,dims[1]],y0=V[,dims[2]])
     if(is.null(cluster)) {
       df$cluster <- rep(1,nrow(df))
