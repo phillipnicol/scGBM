@@ -1,4 +1,6 @@
-## Version 1.0.1 TBD 
+## Version 1.0.1 June 28, 2023
+
+This patch contains minor bug fixes and changes the names of some objects. 
 
 **Changes to existing functionality:**
 
