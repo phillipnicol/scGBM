@@ -62,16 +62,23 @@ for reverse compatibility.
 \item \code{alpha} - A matrix containing gene-specific intercepts. The number of columns
 is set to be equal to the number of batches (by default there are no batches so this is 1).
 \item \code{beta} - A vector of cell-specific intercepts.
-\item \code{I} - The number of genes
+\item \code{I} - The number of genes.
 \item \code{J} - The number of cells.
 \item \code{W} - The estimated mean (and by properties of the Poisson distribution, also the variance)
 for each entry of the count matrix.
-\item \code{obj} The value of the objective function for each iteration.
+\item \code{obj} - The value of the objective function for each iteration.
 }
 }
 \description{
 Fit a Poisson bilinear model to the single-cell
 count matrix.
+}
+\details{
+scGBM fits the following model to the \eqn{I \times J} count matrix \eqn{Y}:
+\deqn{Y \sim \text{Poisson}(\mu)}
+\deqn{\log \mu = \alpha 1_J^T + 1_I \beta^T + U \Sigma V^T}
+Here \eqn{\alpha} are gene-specific intercepts, \eqn{\beta_j} are cell-specific intercepts, \eqn{U} are the \eqn{I \times M} factor loadings
+(linear combinations of genes that define factors), and \eqn{V \Sigma} are the \eqn{J \times M} scores for each cell.
 }
 \author{
 Phillip B. Nicol <philnicol740@gmail.com>
