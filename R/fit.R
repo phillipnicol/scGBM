@@ -63,6 +63,8 @@ gbm.sc <- function(Y,
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
+    ##Message for users of new version about scores
+    message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores.")
     return(out)
   }
 
@@ -197,6 +199,9 @@ gbm.sc <- function(Y,
   }
 
   out <- process.results(out)
+
+  ##Message for users of new version about scores
+  message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.")
   return(out)
 }
 
@@ -270,6 +275,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   out$U <- U
   out$V <- NULL #In projection method, don't return V.
   out$loadings <- loadings
+
   return(out)
 }
 

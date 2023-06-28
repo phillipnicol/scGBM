@@ -50,6 +50,8 @@ out <- gbm.sc(Y,M=10)
     ## Iteration:  16 . Objective= -240267.4 
     ## Iteration:  17 . Objective= -240267
 
+    ## For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.
+
 To use the projection method (faster version based on subsampling), use
 
 ``` r
