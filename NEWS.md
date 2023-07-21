@@ -1,3 +1,11 @@
+## Version TBD Date TBD 
+
+TODO: SUMMARY OF CHANGES
+
+**Other changes:**
+
+   * Added input checks for `gbm.sc`. 
+
 ## Version 1.0.1 June 28, 2023
 
 This patch contains minor bug fixes and changes the names of some objects. 

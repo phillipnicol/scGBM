@@ -60,6 +60,10 @@ gbm.sc <- function(Y,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
                    min.iter=30) {
+
+  #Check validity of input
+  gbm.sc.check.valid.input(as.list(environment()))
+
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -277,6 +281,20 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   out$loadings <- loadings
 
   return(out)
+}
+
+gbm.sc.check.valid.input <- function(my.args) {
+  ### Check count matrix for NA or negative values
+  if(sum(is.na(my.args$Y))) {
+    stop("Count matrix Y cannot contain NA values.")
+  }
+  else if(min(my.args$Y) < 0) {
+    stop("Count matrix Y cannot contain negative values.")
+  }
+  ### Check M
+  if(my.args$M < 1) {
+    stop("M must be >= 1")
+  }
 }
 
 process.results <- function(gbm) {
