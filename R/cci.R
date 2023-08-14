@@ -45,11 +45,22 @@ CCI <- function(gbm,
                 ...) {
   nc <- length(table(cluster.orig))
   cci <- array(0,dim=c(nc,nc,reps))
-  cci.null <- array(0,dim=c(nc,nc,reps))
   H.table <- matrix(0,nrow=nc,ncol=nc)
   V <- gbm$scores
   se_V <- gbm$se_scores
   J <- nrow(V)
+  M <- ncol(V)
+
+  if(null.dist) {
+    V.null <- matrix(rnorm(n=J*M,sd=se_V),nrow=J,ncol=M)
+    rownames(V.null) <- rownames(V); colnames(V.null) <- colnames(V)
+
+    cluster.null <- cluster.fn(V.null,...)
+
+    nc.null <- length(table(cluster.null))
+    cci.null <- array(0,dim=c(nc.null,nc.null,reps))
+  }
+
   for(i in 1:reps) {
     cat("Iteration ", i, "\n")
     M <- length(gbm$D)
@@ -82,16 +93,15 @@ CCI <- function(gbm,
     }
 
     if(null.dist) {
-      e <- matrix(rnorm(n=J*M,sd=sqrt(2)*se_V),nrow=J,ncol=M)
-      rownames(e) <- rownames(V)
-      colnames(e) <- colnames(V)
-      cluster <- cluster.fn(e,...)
+      e <- matrix(rnorm(n=J*M,sd=se_V),nrow=J,ncol=M)
+      V.new <- V.null + e
+      cluster <- cluster.fn(V.new,...)
       nc.new <- length(unique(cluster)) #New number of clusters
 
-      for(k in 1:nc) {
-        for(j in 1:nc) {
-          kxs <- which(cluster.orig==unique(cluster.orig)[k])
-          jxs <- which(cluster.orig==unique(cluster.orig)[j])
+      for(k in 1:nc.null) {
+        for(j in 1:nc.null) {
+          kxs <- which(cluster.null==unique(cluster.null)[k])
+          jxs <- which(cluster.null==unique(cluster.null)[j])
 
           new.jxs <- cluster[jxs]
           new.kxs <- cluster[kxs]
@@ -156,14 +166,49 @@ CCI <- function(gbm,
     cci.orig[,i] <- cci[i,i,]
   }
 
-
-  cci.null95 <- rep(0,nc)
+  cci.null95 <- rep(0, nc.null)
   if(null.dist) {
-    for(i in 1:nc) {
+    for(i in 1:nc.null) {
       cci.null95[i] <- quantile(cci.null[i,i,], 0.95)
     }
   }
 
+  ###Eigenanalysis
+  if(null.dist) {
+    null.eigen <- matrix(0, nrow=reps, ncol=nc.null)
+    for(i in 1:reps) {
+      null.eigen[i,] <- eigen(cci.null[,,i])$values
+    }
+
+    qeigen <- apply(null.eigen,2,function(x) quantile(x,0.95))
+
+    for(k in 2:nc) {
+      lambdak <- eigen(H.table)$values[k]
+
+      if(lambdak < qeigen[k]) {
+        kopt <- k-1
+        break
+      }
+      if(k == nc) {
+        kopt <- nc
+      }
+    }
+    print(kopt)
+
+    if(kopt > 1.5) {
+      new.cluster <- Spectrum::cluster_similarity(as.matrix(H.table),
+                                                  clusteralg="km",
+                                                  k=kopt)
+      names(new.cluster) <- unique(cluster.orig)
+      print(new.cluster)
+      coarse.cluster <- rep(1,J)
+      for(j in 1:J) {
+        coarse.cluster[j] <- new.cluster[cluster.orig[j]]
+      }
+    } else{
+      coarse.cluster <- rep(1,J)
+    }
+  }
 
   out <- list()
   #out$heatmap <- p
@@ -178,10 +223,7 @@ CCI <- function(gbm,
   p <- p + geom_boxplot(alpha=0.5)
   p <- p + theme_bw()
   if(null.dist) {
-    pointdata <- data.frame(Var2=unique(Sco$seurat_clusters),
-                            y=cci.null95)
-    p <- p + geom_point(data=pointdata,aes(x=Var2,y=y),
-                        pch=25,fill="blue")
+    p <- p + geom_hline(yintercept=cci.null95, linetype="dashed",color="blue")
   }
   p <- p + xlab("Cluster") + ylab("CCI")
   p <- p + ggtitle("Distribution of Cluster Confidence Index")
@@ -191,6 +233,17 @@ CCI <- function(gbm,
   out$cci <- cci
   if(null.dist) {
     out$cci.null <- cci.null
+    out$cci.null95 <- cci.null95
+    out$cluster.null <- cluster.null
+    out$cluster.coarse <- coarse.cluster
   }
   return(out)
+}
+
+
+recluster <- function(H, n) {
+  Sim <- H
+  diag(Sim) <- 0
+
+
 }
