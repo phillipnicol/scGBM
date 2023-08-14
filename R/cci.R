@@ -41,9 +41,11 @@ CCI <- function(gbm,
                 cluster.orig,
                 reps=100,
                 cluster.fn=cluster.default,
+                null.dist = FALSE,
                 ...) {
   nc <- length(table(cluster.orig))
   cci <- array(0,dim=c(nc,nc,reps))
+  cci.null <- array(0,dim=c(nc,nc,reps))
   H.table <- matrix(0,nrow=nc,ncol=nc)
   V <- gbm$scores
   se_V <- gbm$se_scores
@@ -76,6 +78,35 @@ CCI <- function(gbm,
 
         cci[k,j,i] <- overlap/max.overlap
 
+      }
+    }
+
+    if(null.dist) {
+      e <- matrix(rnorm(n=J*M,sd=sqrt(2)*se_V),nrow=J,ncol=M)
+      rownames(e) <- rownames(V)
+      colnames(e) <- colnames(V)
+      cluster <- cluster.fn(e,...)
+      nc.new <- length(unique(cluster)) #New number of clusters
+
+      for(k in 1:nc) {
+        for(j in 1:nc) {
+          kxs <- which(cluster.orig==unique(cluster.orig)[k])
+          jxs <- which(cluster.orig==unique(cluster.orig)[j])
+
+          new.jxs <- cluster[jxs]
+          new.kxs <- cluster[kxs]
+
+          new.jxs <- factor(new.jxs,levels=c(1:nc.new))
+          new.kxs <- factor(new.kxs,levels=c(1:nc.new))
+
+          tab.jxs <- table(new.jxs)
+          tab.kxs <- table(new.kxs)
+
+          overlap <- sum(tab.jxs*tab.kxs)
+          max.overlap <- length(kxs)*length(jxs)
+
+          cci.null[k,j,i] <- overlap/max.overlap
+        }
       }
     }
   }
@@ -126,6 +157,14 @@ CCI <- function(gbm,
   }
 
 
+  cci.null95 <- rep(0,nc)
+  if(null.dist) {
+    for(i in 1:nc) {
+      cci.null95[i] <- quantile(cci.null[i,i,], 0.95)
+    }
+  }
+
+
   out <- list()
   #out$heatmap <- p
   out$H.table <- H.table
@@ -138,11 +177,20 @@ CCI <- function(gbm,
   p <- ggplot(data=df,aes(x=Var2,y=value,fill=Var2))
   p <- p + geom_boxplot(alpha=0.5)
   p <- p + theme_bw()
+  if(null.dist) {
+    pointdata <- data.frame(Var2=unique(Sco$seurat_clusters),
+                            y=cci.null95)
+    p <- p + geom_point(data=pointdata,aes(x=Var2,y=y),
+                        pch=25,fill="blue")
+  }
   p <- p + xlab("Cluster") + ylab("CCI")
   p <- p + ggtitle("Distribution of Cluster Confidence Index")
   p  <- p + guides(fill="none")
   p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   out$cci_diagonal <- p
   out$cci <- cci
+  if(null.dist) {
+    out$cci.null <- cci.null
+  }
   return(out)
 }
