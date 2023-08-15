@@ -1,17 +1,38 @@
+loadings.volcano <- function(gbm, dim=1) {
+  Um <- gbm$loadings[,dim]
 
-plot.loadings <- function(fit, dim=1, n=5) {
-  Um <- fit$U[,dim]
+  wald <- (Um/gbm$se_loadings[,dim])^2
+  pval <- pchisq(wald, df=1, lower.tail=FALSE)
+  pval[pval < 10^{-15}] <- 10^{-15}
 
-  topn <- order(Um, decreasing=TRUE)[1:n]
-  bottomn <- order(Um)[1:n]
+  I <- nrow(gbm$loadings)
 
-  if(is.null(rownames(fit$U))) {
-    rownames(fit$U) <- 1:nrow(fit$U)
+  xmax <- max(abs(Um))
+
+  res <- data.frame(log2FC=Um,pvalue=pval)
+
+  EnhancedVolcano::EnhancedVolcano(res,x="log2FC",y="pvalue",
+                  lab=rownames(out$loadings),FCcutoff=2/(sqrt(I)),
+                  xlim=c(-1.05*xmax, 1.05*xmax),
+                  xlab="Loading",legendPosition="none",
+                  ylim=c(0,15),
+                  title=NULL,
+                  subtitle=paste0("Factor ", dim))
+}
+
+library('biomaRt')
+mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+genes <- rownames(out$loadings)
+
+ensembl = useMart(biomart = "ensembl", dataset="hsapiens_gene_ensembl")
+res <- getBM(attributes=c("ensembl_gene_id","hgnc_symbol"),
+      filters="ensembl_gene_id",
+      values=genes,
+      mart=ensembl)
+
+for(i in 1:nrow(out$loadings)) {
+  ix <- which(res$ensembl_gene_id == rownames(out$loadings)[i])
+  if(length(ix) > 0) {
+    rownames(out$loadings)[i] <- res$hgnc_symbol[i]
   }
-
-  df <- data.frame(y = as.character(rownames(fit$U)[c(topn,bottomn)]),
-                   x = Um[c(topn,bottomn)])
-
-  p <- ggplot(data=df,aes(x=x,y=y))
-  p <- p + geom_point()
 }

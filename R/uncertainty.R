@@ -11,25 +11,24 @@
 #' the list out containing the standard errors.
 #'
 #' @author Phillip B. Nicol <philnicol740@gmail.com>
-get.se <- function(out) {
+get.se <- function(out, EPS=0) {
   M <- length(out$D)
   U <- out$U
-  V <- out$V
+  V <- out$scores
   W <- out$W
   J <- nrow(V)
   tU <- t(out$U)
-  EPS <- 0.001
 
   se_V <- apply(W,2,function(w) {
     Mat <- tU %*% (w*out$U)
-    sqrt(diag(solve(Mat)))
+    sqrt(diag(solve(Mat + diag(EPS,nrow=M))))
   })
   out$se_scores <- t(se_V)
 
   tV <- t(V)
   se_U <- apply(W,1,function(w) {
     Mat <- (tV %*% (w*V))
-    sqrt(diag(solve(Mat)))
+    sqrt(diag(solve(Mat + diag(EPS,nrow=M))))
   })
   out$se_loadings <- t(se_U)
   return(out)
@@ -46,9 +45,10 @@ get.se <- function(out) {
 denoise.U <- function(out) {
   M <- length(out$D)
 
-  U.denoise <- out$U
+  U.denoise <- out$loadings
   for(m in 1:M) {
-    U.denoise[,m] <- ashr::get_pm(ashr::ash(U.denoise[,m],out$se_U[,m]))
+    U.denoise[,m] <- ashr::get_pm(ashr::ash(U.denoise[,m],
+                                            out$se_loadings[,m]))
   }
 
   out$loadings.denoised <- U.denoise

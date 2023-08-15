@@ -2,6 +2,11 @@
 
 TODO: SUMMARY OF CHANGES
 
+**Bug fixes:**
+
+   * Use `scores` instead of `V` in `get.se()`. 
+   * Use `loadings` in `denoise.U()`. 
+
 **Other changes:**
 
    * Added input checks for `gbm.sc`. 
@@ -12,7 +17,7 @@ This patch contains minor bug fixes and changes the names of some objects.
 
 **Changes to existing functionality:**
 
-   * `gbm.sc` now returns `scores` instead of `V` to be more consistent with the model defined in the paper.
+   * `gbm.sc()` now returns `scores` instead of `V` to be more consistent with the model defined in the paper.
 
 **Bug fixes:**
 
