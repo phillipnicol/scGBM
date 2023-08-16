@@ -1,6 +1,9 @@
 ## Version TBD Date TBD 
 
 TODO: SUMMARY OF CHANGES
+**Changes to existing functionality:**
+
+   * `get.se()` now has the option to add a small diagonal matrix with entries `EPS` in cases where the matrix inversion fails. 
 
 **Bug fixes:**
 
