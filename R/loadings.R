@@ -22,6 +22,7 @@ loadings.volcano <- function(gbm, dim=1) {
                       linetype="dashed")
   p <- p + geom_vline(xintercept=-sqrt(2*log(2*I)/I),color="red",
                       linetype="dashed")
+  p
 }
 
 library('biomaRt')
