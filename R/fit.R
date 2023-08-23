@@ -53,6 +53,7 @@ gbm.sc <- function(Y,
                    M,
                    max.iter=100,
                    tol=10^{-4},
+                   svd_method="rsvd",
                    subset=NULL,
                    ncores=1,
                    infer.beta=FALSE,
@@ -72,6 +73,9 @@ gbm.sc <- function(Y,
     return(out)
   }
 
+  Q.tau <- 1
+  Q.f <- NULL
+  Q <- NULL
 
   I <- nrow(Y); J <- ncol(Y)
   LL <- rep(0,max.iter)
@@ -123,16 +127,18 @@ gbm.sc <- function(Y,
 
   for(i in 1:max.iter) {
     #Reweight
+    Mu <- exp(Rfast::eachrow(X,betas,oper="+"))
     alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
       #sweep(X[,batch==j],2,betas[batch==j],"+")
-      log.rsy[j,]-log(rowSums(exp(sweep(X[,batch==j],2,betas[batch==j],"+"))))
+      log.rsy[j,]-log(rowSums(Mu[,batch==j]))
     })
     betas <- betas + mean(alphas)
     alphas <- alphas - mean(alphas)
     if(infer.beta) {
       betas <- log(colSums(Y))-log(colSums(exp(alphas[,batch]+X)))
     }
-    W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
+    W <- exp(alphas[,batch])*Mu
+    #W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
 
     #Prevent W from being too large (stability)
     W[W > max.Y] <- max.Y
@@ -154,7 +160,7 @@ gbm.sc <- function(Y,
         break
       }
 
-      if(LL[i] <= (LL[i-1]+0.1)) {
+      if(LL[i] < LL[i-1]) {
         lr <- max(lr/2, 1)
         X <- Xt
         next
@@ -171,13 +177,18 @@ gbm.sc <- function(Y,
       start.time <- Sys.time()
     }
 
-    ## Gradient Step
-    V <- X+((i-1)/(i+2))*(X-Xt)
-    Xt <- X
-    w.max <- max(W)
-
-    LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
-    X <- LRA$u %*% (LRA$d*t(LRA$v))
+    if(svd_method == "rsvd") {
+      pgd <- pgd_rsvd(X, Xt, i, lr, W, Y, Q, Q.tau, Q.f, M)
+      X <- pgd$X
+      Xt <- pgd$Xt
+      Q <- pgd$Q
+      Q.tau <- pgd$Q.tau
+      Q.f <- pgd$Q.f
+    } else if(svd_method == "irlba") {
+      pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
+      X <- pgd$X
+      Xt <- pgd$Xt
+    }
 
     if(i == max.iter) {
       warning("Maximum number of iterations reached (increase max.iter).
@@ -189,6 +200,7 @@ gbm.sc <- function(Y,
   if(return.W) {
     out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
   }
+  LRA <- pgd$LRA
   out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
   out$D <- LRA$d; names(out$D) <- 1:M
   out$U <- LRA$u; rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
@@ -309,4 +321,57 @@ process.results <- function(gbm) {
   gbm$scores <- t(gbm$D*t(gbm$V))
 
   return(gbm)
+}
+
+pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
+  out <- list()
+
+  ## Gradient Step
+  V <- X+((i-1)/(i+2))*(X-Xt)
+  out$Xt <- X
+  w.max <- max(W)
+
+  LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
+  out$X <- LRA$u %*% (LRA$d*t(LRA$v))
+  out$LRA <- LRA
+
+  return(out)
+}
+
+pgd_rsvd <- function(X, Xt, i, lr, W, Y, Q, Q.tau, Q.f, M) {
+  out <- list()
+
+  ## Gradient Step
+  V <- X+((i-1)/(i+2))*(X-Xt)
+  out$Xt <- X
+  w.max <- max(W)
+
+  if(i >= 2) {
+    if(i %% 5 != 0 & i >= 3) {
+      B <- crossprod(Q.f, V+(lr/w.max)*(Y-W))
+      LRA <- svd(B)
+      LRA$u <- Q.f %*% LRA$u
+      LRA$u <- LRA$u[,1:M]
+      LRA$v <- LRA$v[,1:M]
+      LRA$d <- LRA$d[1:M]
+    } else {
+      LRA <- irlba::svdr(V+(lr/w.max)*(Y-W), Q=Q, k=M,return.Q=TRUE, it=2L,
+                         extra=30)
+      Q.new <- LRA$Q
+      Q.tau <- mean(abs(Q-Q.new))
+      Q <- Q.new
+      Q.f <- qr.Q(qr((V+(lr/w.max)*(Y-W)) %*% Q.new))
+    }
+  } else {
+    LRA <- irlba::svdr(V+(lr/w.max)*(Y-W),k=M, return.Q=TRUE, it=3L,
+                       extra=30)
+    Q <- LRA$Q
+  }
+
+  out$X <- LRA$u %*% (LRA$d*t(LRA$v))
+  out$LRA <- LRA
+  out$Q <- Q
+  out$Q.f <- Q.f
+  out$Q.tau <- Q.tau
+  return(out)
 }

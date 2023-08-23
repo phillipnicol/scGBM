@@ -166,49 +166,14 @@ CCI <- function(gbm,
     cci.orig[,i] <- cci[i,i,]
   }
 
-  cci.null95 <- rep(0, nc.null)
   if(null.dist) {
+    cci.null95 <- c()
     for(i in 1:nc.null) {
-      cci.null95[i] <- quantile(cci.null[i,i,], 0.95)
+      cci.null95 <- c(cci.null95, cci.null[i,i,])
     }
   }
 
-  ###Eigenanalysis
-  if(null.dist) {
-    null.eigen <- matrix(0, nrow=reps, ncol=nc.null)
-    for(i in 1:reps) {
-      null.eigen[i,] <- eigen(cci.null[,,i])$values
-    }
-
-    qeigen <- apply(null.eigen,2,function(x) quantile(x,0.95))
-
-    for(k in 2:nc) {
-      lambdak <- eigen(H.table)$values[k]
-
-      if(lambdak < qeigen[k]) {
-        kopt <- k-1
-        break
-      }
-      if(k == nc) {
-        kopt <- nc
-      }
-    }
-    print(kopt)
-
-    if(kopt > 1.5) {
-      new.cluster <- Spectrum::cluster_similarity(as.matrix(H.table),
-                                                  clusteralg="km",
-                                                  k=kopt)
-      names(new.cluster) <- unique(cluster.orig)
-      print(new.cluster)
-      coarse.cluster <- rep(1,J)
-      for(j in 1:J) {
-        coarse.cluster[j] <- new.cluster[cluster.orig[j]]
-      }
-    } else{
-      coarse.cluster <- rep(1,J)
-    }
-  }
+  cci.null95 <- quantile(cci.null95, 0.95)
 
   out <- list()
   #out$heatmap <- p
@@ -235,15 +200,6 @@ CCI <- function(gbm,
     out$cci.null <- cci.null
     out$cci.null95 <- cci.null95
     out$cluster.null <- cluster.null
-    out$cluster.coarse <- coarse.cluster
   }
   return(out)
-}
-
-
-recluster <- function(H, n) {
-  Sim <- H
-  diag(Sim) <- 0
-
-
 }
