@@ -347,7 +347,7 @@ pgd_rsvd <- function(X, Xt, i, lr, W, Y, Q, Q.tau, Q.f, M) {
   w.max <- max(W)
 
   if(i >= 2) {
-    if(i %% 5 != 0 & i >= 3) {
+    if(Q.tau < 0.001) {
       B <- crossprod(Q.f, V+(lr/w.max)*(Y-W))
       LRA <- svd(B)
       LRA$u <- Q.f %*% LRA$u
@@ -359,6 +359,7 @@ pgd_rsvd <- function(X, Xt, i, lr, W, Y, Q, Q.tau, Q.f, M) {
                          extra=30)
       Q.new <- LRA$Q
       Q.tau <- mean(abs(Q-Q.new))
+      print(Q.tau)
       Q <- Q.new
       Q.f <- qr.Q(qr((V+(lr/w.max)*(Y-W)) %*% Q.new))
     }
