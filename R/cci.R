@@ -158,7 +158,9 @@ CCI <- function(gbm,
   pheatmap::pheatmap(H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
            breaks=seq(0,1,by=0.01),
            rownames=TRUE,
-           colnames=TRUE)
+           colnames=TRUE,
+           cluster_rows = ifelse(nrow(H.table) > 1, TRUE,FALSE),
+           cluster_cols = ifelse(nrow(H.table) > 1, TRUE,FALSE))
 
   #Standard CCI
   cci.orig <- matrix(0,nrow=reps,ncol=nc)
@@ -178,6 +180,23 @@ CCI <- function(gbm,
   out <- list()
   #out$heatmap <- p
   out$H.table <- H.table
+
+  coarse_cluster <- rep(0,J)
+  ctr <- 1
+  H.cut <- as.matrix(H.table)
+  print(H.cut)
+  diag(H.cut) <- 0
+  H.cut[H.cut < 0.5/nc] <- 0
+  G <- igraph::graph_from_adjacency_matrix(H.cut,
+                                           mode="undirected",
+                                           weighted=TRUE)
+  while(length(igraph::V(G)) > 0) {
+    vs <- igraph::largest.cliques(G)[[1]]
+    coarse_cluster[cluster.orig %in% names(vs)] <- ctr
+    print(table(coarse_cluster[cluster.orig %in% vs]))
+    ctr <- ctr + 1
+    G <- igraph::delete.vertices(G,vs)
+  }
 
   ##Plotting
   colnames(cci.orig) <- unique(cluster.orig)
@@ -201,5 +220,6 @@ CCI <- function(gbm,
     out$cci.null95 <- cci.null95
     out$cluster.null <- cluster.null
   }
+  out$coarse_cluster <- coarse_cluster
   return(out)
 }

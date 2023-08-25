@@ -132,6 +132,7 @@ gbm.sc <- function(Y,
     alphas <- alphas - mean(alphas)
     if(infer.beta) {
       betas <- log(colSums(Y))-log(colSums(exp(alphas[,batch]+X)))
+      Mu <- exp(Rfast::eachrow(X,betas,oper="+"))
     }
     W <- exp(alphas[,batch])*Mu
     #W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
