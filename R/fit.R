@@ -53,7 +53,6 @@ gbm.sc <- function(Y,
                    M,
                    max.iter=100,
                    tol=10^{-4},
-                   svd_method="rsvd",
                    subset=NULL,
                    ncores=1,
                    infer.beta=FALSE,
@@ -73,9 +72,6 @@ gbm.sc <- function(Y,
     return(out)
   }
 
-  Q.tau <- 1
-  Q.f <- NULL
-  Q <- NULL
 
   I <- nrow(Y); J <- ncol(Y)
   LL <- rep(0,max.iter)
@@ -177,18 +173,10 @@ gbm.sc <- function(Y,
       start.time <- Sys.time()
     }
 
-    if(svd_method == "rsvd") {
-      pgd <- pgd_rsvd(X, Xt, i, lr, W, Y, Q, Q.tau, Q.f, M)
-      X <- pgd$X
-      Xt <- pgd$Xt
-      Q <- pgd$Q
-      Q.tau <- pgd$Q.tau
-      Q.f <- pgd$Q.f
-    } else if(svd_method == "irlba") {
-      pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
-      X <- pgd$X
-      Xt <- pgd$Xt
-    }
+    ### Projected gradient descent step
+    pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
+    X <- pgd$X
+    Xt <- pgd$Xt
 
     if(i == max.iter) {
       warning("Maximum number of iterations reached (increase max.iter).
@@ -235,7 +223,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter)
+  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter,svd_method="irlba")
 
   U <- out$U
   #U <- as.data.frame(U)
@@ -335,44 +323,5 @@ pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
   out$X <- LRA$u %*% (LRA$d*t(LRA$v))
   out$LRA <- LRA
 
-  return(out)
-}
-
-pgd_rsvd <- function(X, Xt, i, lr, W, Y, Q, Q.tau, Q.f, M) {
-  out <- list()
-
-  ## Gradient Step
-  V <- X+((i-1)/(i+2))*(X-Xt)
-  out$Xt <- X
-  w.max <- max(W)
-
-  if(i >= 2) {
-    if(Q.tau < 0.001) {
-      B <- crossprod(Q.f, V+(lr/w.max)*(Y-W))
-      LRA <- svd(B)
-      LRA$u <- Q.f %*% LRA$u
-      LRA$u <- LRA$u[,1:M]
-      LRA$v <- LRA$v[,1:M]
-      LRA$d <- LRA$d[1:M]
-    } else {
-      LRA <- irlba::svdr(V+(lr/w.max)*(Y-W), Q=Q, k=M,return.Q=TRUE, it=2L,
-                         extra=30)
-      Q.new <- LRA$Q
-      Q.tau <- mean(abs(Q-Q.new))
-      print(Q.tau)
-      Q <- Q.new
-      Q.f <- qr.Q(qr((V+(lr/w.max)*(Y-W)) %*% Q.new))
-    }
-  } else {
-    LRA <- irlba::svdr(V+(lr/w.max)*(Y-W),k=M, return.Q=TRUE, it=3L,
-                       extra=30)
-    Q <- LRA$Q
-  }
-
-  out$X <- LRA$u %*% (LRA$d*t(LRA$v))
-  out$LRA <- LRA
-  out$Q <- Q
-  out$Q.f <- Q.f
-  out$Q.tau <- Q.tau
   return(out)
 }

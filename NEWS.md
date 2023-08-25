@@ -5,6 +5,8 @@ TODO: SUMMARY OF CHANGES
 
    * `get.se()` now has the option to add a small diagonal matrix with entries `EPS` in cases where the matrix inversion fails. 
 
+   * `gbm.sc()` OPTIONS FOR TYPE OF SVD 
+
 **Bug fixes:**
 
    * Use `scores` instead of `V` in `get.se()`. 

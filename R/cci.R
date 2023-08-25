@@ -173,7 +173,7 @@ CCI <- function(gbm,
     }
   }
 
-  cci.null95 <- quantile(cci.null95, 0.95)
+  #cci.null95 <- quantile(cci.null95, 0.95)
 
   out <- list()
   #out$heatmap <- p
