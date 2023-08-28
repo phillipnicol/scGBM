@@ -93,9 +93,10 @@ gbm.sc <- function(Y,
   #Precompute relevant quantities
   max.Y <- max(Y)
   nz <- which(Y != 0)
+  log.csY <- log(colSums(Y))
 
   #Starting estimate for alpha and W
-  betas <- log(colSums(Y))
+  betas <- log.csY
 
   W <- matrix(0, nrow=I, ncol=J)
   log.rsy <- matrix(0,nrow=nbatch,ncol=I)
@@ -123,19 +124,22 @@ gbm.sc <- function(Y,
 
   for(i in 1:max.iter) {
     #Reweight
-    Mu <- exp(Rfast::eachrow(X,betas,oper="+"))
     alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
       #sweep(X[,batch==j],2,betas[batch==j],"+")
-      log.rsy[j,]-log(rowSums(Mu[,batch==j]))
+      log.rsy[j,]-log(rowSums(exp(sweep(X[,batch==j],2,betas[batch==j],"+"))))
     })
     betas <- betas + mean(alphas)
     alphas <- alphas - mean(alphas)
     if(infer.beta) {
-      betas <- log(colSums(Y))-log(colSums(exp(alphas[,batch]+X)))
-      Mu <- exp(Rfast::eachrow(X,betas,oper="+"))
+      betas <- log.csY-log(colSums(exp(alphas[,batch]+X)))
     }
-    W <- exp(alphas[,batch])*Mu
-    #W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
+    W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
+
+    ## Timing
+    if(time.by.iter) {
+      time <- c(time,difftime(Sys.time(),start.time,units="sec"))
+      start.time <- Sys.time()
+    }
 
     #Prevent W from being too large (stability)
     W[W > max.Y] <- max.Y
@@ -169,10 +173,6 @@ gbm.sc <- function(Y,
 
     loglik <- c(loglik,LL[i])
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
-    if(time.by.iter) {
-      time <- c(time,difftime(Sys.time(),start.time,units="sec"))
-      start.time <- Sys.time()
-    }
 
     ### Projected gradient descent step
     pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
@@ -224,7 +224,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter,svd_method="irlba")
+  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter)
 
   U <- out$U
   #U <- as.data.frame(U)
