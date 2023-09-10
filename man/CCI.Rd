@@ -2,9 +2,16 @@
 % Please edit documentation in R/cci.R
 \name{CCI}
 \alias{CCI}
-\title{Evaluate cluster stability using the Cluster Confidence Index (CCI)}
+\title{Evaluate cluster stability using the Cluster Cohesion Index (CCI)}
 \usage{
-CCI(gbm, cluster.orig, reps = 100, cluster.fn = cluster.default, ...)
+CCI(
+  gbm,
+  cluster.orig,
+  reps = 100,
+  cluster.fn = cluster.default,
+  null.dist = FALSE,
+  ...
+)
 }
 \arguments{
 \item{gbm}{The scGBM object estimated from \code{gbm.sc}.}
@@ -20,7 +27,7 @@ returns a labeling of cells into clusters.}
 \value{
 A list with components
 \itemize{
-\item \code{H.table} - The values used to make the cluster confidence
+\item \code{H.table} - The values used to make the cluster cohesion
 heatmap.
 \item \code{cci_diagonal} - A ggplot object that plots the distribution of intra-cluster
 CCI.
@@ -28,7 +35,7 @@ CCI.
 }
 }
 \description{
-Evaluate cluster stability using the Cluster Confidence Index (CCI)
+Evaluate cluster stability using the Cluster Cohesion Index (CCI)
 }
 \author{
 Phillip B. Nicol <philnicol740@gmail.com>

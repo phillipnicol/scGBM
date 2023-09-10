@@ -2,7 +2,7 @@
 % Please edit documentation in R/cci.R
 \name{cluster.default}
 \alias{cluster.default}
-\title{Default algorithm for cluster confidence index}
+\title{Default algorithm for cluster cohesion index}
 \usage{
 cluster.default(V, nstart = 25, centers = 5)
 }
@@ -18,7 +18,7 @@ The function applies \code{kmeans} to \code{V} and returns
 the assignments of clusters
 }
 \description{
-Default algorithm for cluster confidence index
+Default algorithm for cluster cohesion index
 }
 \author{
 Phillip B. Nicol <philnicol740@gmail.com>

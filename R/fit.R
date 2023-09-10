@@ -60,6 +60,10 @@ gbm.sc <- function(Y,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
                    min.iter=30) {
+
+  #Check validity of input
+  gbm.sc.check.valid.input(as.list(environment()))
+
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
                              max.iter=max.iter)
@@ -89,9 +93,10 @@ gbm.sc <- function(Y,
   #Precompute relevant quantities
   max.Y <- max(Y)
   nz <- which(Y != 0)
+  log.csY <- log(colSums(Y))
 
   #Starting estimate for alpha and W
-  betas <- log(colSums(Y))
+  betas <- log.csY
 
   W <- matrix(0, nrow=I, ncol=J)
   log.rsy <- matrix(0,nrow=nbatch,ncol=I)
@@ -126,9 +131,15 @@ gbm.sc <- function(Y,
     betas <- betas + mean(alphas)
     alphas <- alphas - mean(alphas)
     if(infer.beta) {
-      betas <- log(colSums(Y))-log(colSums(exp(alphas[,batch]+X)))
+      betas <- log.csY-log(colSums(exp(alphas[,batch]+X)))
     }
     W <- exp(sweep(alphas[,batch]+X, 2, betas, "+"))
+
+    ## Timing
+    if(time.by.iter) {
+      time <- c(time,difftime(Sys.time(),start.time,units="sec"))
+      start.time <- Sys.time()
+    }
 
     #Prevent W from being too large (stability)
     W[W > max.Y] <- max.Y
@@ -150,7 +161,7 @@ gbm.sc <- function(Y,
         break
       }
 
-      if(LL[i] <= (LL[i-1]+0.1)) {
+      if(LL[i] < LL[i-1]) {
         lr <- max(lr/2, 1)
         X <- Xt
         next
@@ -162,18 +173,11 @@ gbm.sc <- function(Y,
 
     loglik <- c(loglik,LL[i])
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
-    if(time.by.iter) {
-      time <- c(time,difftime(Sys.time(),start.time,units="sec"))
-      start.time <- Sys.time()
-    }
 
-    ## Gradient Step
-    V <- X+((i-1)/(i+2))*(X-Xt)
-    Xt <- X
-    w.max <- max(W)
-
-    LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
-    X <- LRA$u %*% (LRA$d*t(LRA$v))
+    ### Projected gradient descent step
+    pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
+    X <- pgd$X
+    Xt <- pgd$Xt
 
     if(i == max.iter) {
       warning("Maximum number of iterations reached (increase max.iter).
@@ -185,6 +189,7 @@ gbm.sc <- function(Y,
   if(return.W) {
     out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
   }
+  LRA <- pgd$LRA
   out$V <- LRA$v; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
   out$D <- LRA$d; names(out$D) <- 1:M
   out$U <- LRA$u; rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
@@ -279,6 +284,20 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   return(out)
 }
 
+gbm.sc.check.valid.input <- function(my.args) {
+  ### Check count matrix for NA or negative values
+  if(sum(is.na(my.args$Y))) {
+    stop("Count matrix Y cannot contain NA values.")
+  }
+  else if(min(my.args$Y) < 0) {
+    stop("Count matrix Y cannot contain negative values.")
+  }
+  ### Check M
+  if(my.args$M < 1) {
+    stop("M must be >= 1")
+  }
+}
+
 process.results <- function(gbm) {
   #Enforce identifiability in U
   M <- gbm$M
@@ -291,4 +310,19 @@ process.results <- function(gbm) {
   gbm$scores <- t(gbm$D*t(gbm$V))
 
   return(gbm)
+}
+
+pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
+  out <- list()
+
+  ## Gradient Step
+  V <- X+((i-1)/(i+2))*(X-Xt)
+  out$Xt <- X
+  w.max <- max(W)
+
+  LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
+  out$X <- LRA$u %*% (LRA$d*t(LRA$v))
+  out$LRA <- LRA
+
+  return(out)
 }

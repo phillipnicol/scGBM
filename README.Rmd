@@ -91,7 +91,7 @@ plot_gbm(out, cluster=Sco$seurat_clusters, se=TRUE)
 ```
 
 
-Now we evaluate cluster stability using the cluster confidence index. First we need to define a function that takes as input a set of simulated scores $\tilde{V}$ and returns a new clustering:
+Now we evaluate cluster stability using the cluster cohesion index. First we need to define a function that takes as input a set of simulated scores $\tilde{V}$ and returns a new clustering:
 
 ```{r}
 cluster_fn <- function(V,Y) {
@@ -107,11 +107,11 @@ cluster_fn <- function(V,Y) {
 Now we can run the CCI function. Here we set `reps=10` to make it fast but `reps=100` (or higher) is recommended on real analyses. 
 
 ```{r, echo=T, eval=F}
-cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=10, cluster.fn = cluster_fn, Y=Y)
+cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=25, cluster.fn = cluster_fn, Y=Y)
 ```
 
 ```{r, include=F}
-cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=10, cluster.fn = cluster_fn, Y=Y)
+cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=25, cluster.fn = cluster_fn, Y=Y)
 ```
 
 
@@ -126,7 +126,12 @@ cci$cci_diagonal
 ```
 
 
-The heatmap shows there is significant overlap between the clusters. This makes sense because the data was simulated to have no latent variability. 
+The heatmap shows there is significant overlap between the clusters. This makes sense because the data was simulated to have no latent variability. The CCI function also returns a `coarse_cluster` which combines clusters that have high inter-CCI. Here it correctly identifies that there is only one "true" cluster.
+
+```{r}
+plot_gbm(out,cluster=as.character(cci$coarse_cluster))
+```
+
 
 
 ## Reference 
