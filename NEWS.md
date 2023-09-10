@@ -1,6 +1,7 @@
-## Version TBD Date TBD 
+## Version 1.1.0 September 10, 2023
 
-TODO: SUMMARY OF CHANGES
+This update contains new functionality related to interpreting the loadings and also some updates to the `CCI` function. 
+
 **New functionality:**
 
    * `loadings.volcano()` makes a volcano plot to show the genes that are driving a particular latent factor. 
