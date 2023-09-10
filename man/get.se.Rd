@@ -4,7 +4,7 @@
 \alias{get.se}
 \title{Uncertainty quantification}
 \usage{
-get.se(out)
+get.se(out, EPS = 0)
 }
 \arguments{
 \item{out}{a list that is the return value of \code{gbm.sc}}

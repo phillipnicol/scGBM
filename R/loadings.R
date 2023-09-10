@@ -1,3 +1,17 @@
+#' @export
+#'
+#' @title Plot the factor loadings
+#'
+#' @description A volcano plot shows which genes are driving
+#' a particular scGBM factor
+#'
+#' @param gbm A list that is the return value of \code{gbm.sc}
+#' @param dim Which latent factor to plot
+#' @param return.plot Should ggplot object containing the plot be returned?
+#'
+#' @return If `return.plot` is TRUE, a `ggplot2` object is returned.
+#'
+#' @author Phillip B. Nicol <philnicol740@gmail.com>
 loadings.volcano <- function(gbm, dim=1, return.plot=FALSE) {
   Um <- gbm$loadings[,dim]
 

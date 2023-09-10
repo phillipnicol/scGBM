@@ -1,8 +1,7 @@
 
-
 #' @export
 #'
-#' @title Default algorithm for cluster confidence index
+#' @title Default algorithm for cluster cohesion index
 #'
 #' @param V The scGBM scores
 #' @param nstart A \code{kmeans} parameter
@@ -18,7 +17,7 @@ cluster.default <- function(V,nstart=25,centers=5) {
 
 #' @export
 #'
-#' @title Evaluate cluster stability using the Cluster Confidence Index (CCI)
+#' @title Evaluate cluster stability using the Cluster Cohesion Index (CCI)
 #'
 #' @param gbm The scGBM object estimated from \code{gbm.sc}.
 #' @param cluster.orig A vector of length J containing the labeling of
@@ -29,11 +28,13 @@ cluster.default <- function(V,nstart=25,centers=5) {
 #'
 #' @return A list with components
 #' \itemize{
-#' \item \code{H.table} - The values used to make the cluster confidence
+#' \item \code{H.table} - The values used to make the cluster cohesion
 #' heatmap.
 #' \item \code{cci_diagonal} - A ggplot object that plots the distribution of intra-cluster
 #' CCI.
 #' \item \code{cci} - A 3-dimensional array of all CCI values (inter-and-intra-cluster).
+#' \item \code{coarse_cluster} - A vector of length J containing the new coarse cluster
+#' labels where clusters with high inter-CCI have been combined into a single cluster.
 #' }
 #'
 #' @author Phillip B. Nicol <philnicol740@gmail.com>
@@ -173,9 +174,9 @@ CCI <- function(gbm,
     for(i in 1:nc.null) {
       cci.null95 <- c(cci.null95, cci.null[i,i,])
     }
-  }
 
-  cci.null95 <- quantile(cci.null95, 0.95)
+    cci.null95 <- quantile(cci.null95, 0.95)
+  }
 
   out <- list()
   #out$heatmap <- p
@@ -184,7 +185,7 @@ CCI <- function(gbm,
   coarse_cluster <- rep(0,J)
   ctr <- 1
   H.cut <- as.matrix(H.table)
-  print(H.cut)
+  #print(H.cut)
   diag(H.cut) <- 0
   H.cut[H.cut < 0.5/nc] <- 0
   G <- igraph::graph_from_adjacency_matrix(H.cut,
@@ -193,7 +194,7 @@ CCI <- function(gbm,
   while(length(igraph::V(G)) > 0) {
     vs <- igraph::largest.cliques(G)[[1]]
     coarse_cluster[cluster.orig %in% names(vs)] <- ctr
-    print(table(coarse_cluster[cluster.orig %in% vs]))
+    #print(table(coarse_cluster[cluster.orig %in% vs]))
     ctr <- ctr + 1
     G <- igraph::delete.vertices(G,vs)
   }
@@ -210,7 +211,7 @@ CCI <- function(gbm,
     p <- p + geom_hline(yintercept=cci.null95, linetype="dashed",color="blue")
   }
   p <- p + xlab("Cluster") + ylab("CCI")
-  p <- p + ggtitle("Distribution of Cluster Confidence Index")
+  p <- p + ggtitle("Distribution of Cluster Cohesion Index")
   p  <- p + guides(fill="none")
   p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   out$cci_diagonal <- p

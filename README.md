@@ -48,7 +48,18 @@ out <- gbm.sc(Y,M=10)
     ## Iteration:  14 . Objective= -240268.6 
     ## Iteration:  15 . Objective= -240268 
     ## Iteration:  16 . Objective= -240267.4 
-    ## Iteration:  17 . Objective= -240267
+    ## Iteration:  17 . Objective= -240267 
+    ## Iteration:  18 . Objective= -240266.9 
+    ## Iteration:  20 . Objective= -240266.9 
+    ## Iteration:  21 . Objective= -240266.8 
+    ## Iteration:  22 . Objective= -240266.7 
+    ## Iteration:  23 . Objective= -240266.5 
+    ## Iteration:  24 . Objective= -240266.4 
+    ## Iteration:  25 . Objective= -240266.4 
+    ## Iteration:  26 . Objective= -240266.3 
+    ## Iteration:  27 . Objective= -240266.2 
+    ## Iteration:  28 . Objective= -240266 
+    ## Iteration:  29 . Objective= -240265.9
 
     ## For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.
 
@@ -88,19 +99,19 @@ head(out$se_scores)
 ```
 
     ##              1         2         3         4         5         6         7
-    ## [1,] 0.9848234 0.9689303 0.9880989 0.9986832 1.0013979 0.9967517 1.0013323
-    ## [2,] 0.9852984 0.9585690 0.9950856 1.0178229 0.9912398 0.9935041 0.9989354
-    ## [3,] 0.9707660 0.9574002 0.9675917 0.9309583 0.9522230 0.9566709 0.9655341
-    ## [4,] 0.9670084 0.9667028 0.9483449 0.9458617 0.9434126 0.9551795 0.9546598
-    ## [5,] 1.0068426 1.0176532 0.9865573 0.9884981 1.0084605 0.9853104 0.9968485
-    ## [6,] 1.0560701 1.0437247 1.0455669 1.0654722 1.0435426 1.0575476 1.0455543
+    ## [1,] 0.9827696 0.9604884 0.9833750 0.9986217 0.9961750 0.9939438 1.0024827
+    ## [2,] 0.9868728 0.9573743 0.9942293 1.0230468 1.0038184 0.9887006 0.9953444
+    ## [3,] 0.9692269 0.9614666 0.9672354 0.9273413 0.9547951 0.9570453 0.9664860
+    ## [4,] 0.9676738 0.9670946 0.9542210 0.9424605 0.9483404 0.9524144 0.9460106
+    ## [5,] 1.0063214 1.0163037 0.9823466 0.9929520 0.9971580 1.0056245 1.0034012
+    ## [6,] 1.0528522 1.0371955 1.0451813 1.0685987 1.0542485 1.0463961 1.0422791
     ##              8         9        10
-    ## [1,] 1.0005233 0.9963515 0.9813010
-    ## [2,] 0.9927224 1.0027732 0.9775374
-    ## [3,] 0.9640886 0.9741119 0.9676006
-    ## [4,] 0.9548456 0.9476875 0.9471757
-    ## [5,] 0.9990949 1.0173108 0.9915947
-    ## [6,] 1.0514588 1.0454769 1.0315178
+    ## [1,] 0.9955121 1.0007955 0.9854292
+    ## [2,] 0.9969187 0.9981072 0.9745440
+    ## [3,] 0.9675816 0.9671162 0.9636636
+    ## [4,] 0.9595275 0.9457462 0.9502666
+    ## [5,] 1.0019558 1.0120540 0.9979084
+    ## [6,] 1.0487410 1.0483612 1.0355369
 
 You can visualize the uncertainty with ellipses around the points
 
@@ -110,7 +121,7 @@ plot_gbm(out, cluster=Sco$seurat_clusters, se=TRUE)
 
 ![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
-Now we evaluate cluster stability using the cluster confidence index.
+Now we evaluate cluster stability using the cluster cohesion index.
 First we need to define a function that takes as input a set of
 simulated scores $\tilde{V}$ and returns a new clustering:
 
@@ -150,7 +161,15 @@ cci$cci_diagonal
 
 The heatmap shows there is significant overlap between the clusters.
 This makes sense because the data was simulated to have no latent
-variability.
+variability. The CCI function also returns a `coarse_cluster` which
+combines clusters that have high inter-CCI. Here it correctly identifies
+that there is only one “true” cluster.
+
+``` r
+plot_gbm(out,cluster=as.character(cci$coarse_cluster))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ## Reference
 

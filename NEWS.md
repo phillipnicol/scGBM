@@ -1,11 +1,14 @@
 ## Version TBD Date TBD 
 
 TODO: SUMMARY OF CHANGES
+**New functionality:**
+
+   * `loadings.volcano()` makes a volcano plot to show the genes that are driving a particular latent factor. 
+   * Several changes to the `CCI` function, including a function that automatically combines clusters with low inter-CCI and, if `null.dist = TRUE`, a cutoff line corresponding to the CCI that would be expected under the null of no latent variability. 
+
 **Changes to existing functionality:**
 
    * `get.se()` now has the option to add a small diagonal matrix with entries `EPS` in cases where the matrix inversion fails. 
-
-   * `gbm.sc()` OPTIONS FOR TYPE OF SVD 
 
 **Bug fixes:**
 
