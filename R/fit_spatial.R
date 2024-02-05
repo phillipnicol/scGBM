@@ -49,9 +49,10 @@
 #' (linear combinations of genes that define factors), and \eqn{V \Sigma} are the \eqn{J \times M} scores for each cell.
 #'
 #' @author Phillip B. Nicol <philnicol740@gmail.com>
-gbm.sc <- function(Y,
+gbm.sc.spat <- function(Y,
                    M,
-                   GX,
+                   kk=3,
+                   Nx,
                    max.iter=100,
                    tol=10^{-4},
                    subset=NULL,
@@ -151,7 +152,8 @@ gbm.sc <- function(Y,
     #Z <- X+(Y-W)/W
 
     ## Compute log likelihood (no normalizing constant)
-    LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
+    #LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
+    LL[i] <- i
     if(is.na(LL[i]) | is.infinite(LL[i])) {
       X <- Xt
       lr <- lr/2
@@ -184,7 +186,11 @@ gbm.sc <- function(Y,
     P <- Z%*%V
     pc <- svd(P)
     U <- pc$u %*% pc$v
-    V <- t(Z)%*%U%*%solve(t(U) %*% U)
+
+    print(dim(V))
+    #IpOmega <- getIpOmega(V, Nx, kk)
+    IpOmega <- getIpOmega(V,Nx)
+    V <- as.matrix(Matrix::solve(IpOmega, t(Z)%*%U))
     X <- U %*% t(V)
 
     if(i == max.iter) {
@@ -198,9 +204,7 @@ gbm.sc <- function(Y,
     out$W <- t(t(exp(alphas[,batch]+X))*exp(betas))
   }
   #LRA <- pgd$LRA
-  out$V <- V; rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
-  #out$D <- LRA$d; names(out$D) <- 1:M
-  out$U <- U; rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
+  out$V <- V; out$U <- U
   out$loadings <- out$U
   out$alpha <- alphas; rownames(out$alpha) <- rownames(Y)
   out$beta <- betas; names(out$beta) <- colnames(Y)
@@ -211,9 +215,60 @@ gbm.sc <- function(Y,
     out$time <- cumsum(time)
   }
 
+  out$IpOmega <- IpOmega
   out <- process.results(out)
 
-  ##Message for users of new version about scores
-  message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.")
+  perm <- order(colSums(out$V^2), decreasing=TRUE)
+  out$V <- out$V[,perm] #rownames(out$V) <- colnames(Y); colnames(out$V) <- 1:M
+  #out$D <- LRA$d; names(out$D) <- 1:M
+  out$U <- out$U[,perm] #rownames(out$U) <- rownames(Y); colnames(out$U) <- 1:M
+
   return(out)
+}
+
+getIpOmega <- function(V,Nx) {
+  J <- nrow(V)
+  M <- ncol(V)
+  Omega <- Matrix::sparseMatrix(i=1:J,j=1:J,x=2)
+  for(j in 1:J) {
+    w <- rep(0,M)
+    for(k in 1:M) {
+      dist <- sum((V[j,]-V[Nx[j,k],])^2)
+      w[k] <- exp(-beta*dist)
+    }
+    w <- w/sum(w)
+    Omega[j,Nx[j,]] <- -w
+  }
+  print(sum(is.na(Omega)))
+  return(Omega)
+}
+
+#getIpOmega <- function(V, Nx,kk) {
+#  J <- nrow(V)
+#  Omega <- Matrix::sparseMatrix(i=1:J,j=1:J,x=kk+1)
+#  for(j in 1:J) {
+#    dist <- rep(0, 10)
+#    for(k in 1:10) {
+#      dist[k] <- sum((V[j,]-V[Nx[j,k],])^2)
+      #print(dist)
+      #Omega[j,Nx[j,k]] <- -(1/(dist[k]+1))
+#    }
+#    bestk <- order(dist)[1:kk]
+#    Omega[j,Nx[j,bestk]] <- -1
+#  }
+#  return(Omega)
+#}
+
+holder <- function() {
+  Adj <- as.matrix(out$IpOmega)
+  diag(Adj) <- 0
+  Adj[Adj < -0.5] <- 1
+
+  G <- graph_from_adjacency_matrix(Adj,mode="directed")
+  G <- simplify(G)
+
+  layout <- ggraph::create_layout(G,layout="manual", x=X[,1],y=X[,2])
+  p <- ggraph(graph, layout=layout)
+  p <- p + geom_node_point(aes(colour=out$V[,1])) + geom_edge_link()
+  p <- p + scale_color_gradient2(low="blue",high="red")
 }
