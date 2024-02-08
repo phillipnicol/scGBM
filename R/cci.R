@@ -35,6 +35,7 @@ cluster.default <- function(V,nstart=25,centers=5) {
 #' \item \code{cci} - A 3-dimensional array of all CCI values (inter-and-intra-cluster).
 #' \item \code{coarse_cluster} - A vector of length J containing the new coarse cluster
 #' labels where clusters with high inter-CCI have been combined into a single cluster.
+#' Disclaimer: this part is experimental and has not been thoroughly benchmarked.
 #' }
 #'
 #' @author Phillip B. Nicol <philnicol740@gmail.com>

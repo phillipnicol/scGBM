@@ -1,6 +1,6 @@
 ---
 title: "Model-based Dimensionality Reduction for Single-cell RNA-seq with Generalized Bilinear Models"
-author: "R package version 1.0.1"
+author: "R package version 1.1.0"
 output: github_document
 ---
 
@@ -126,12 +126,7 @@ cci$cci_diagonal
 ```
 
 
-The heatmap shows there is significant overlap between the clusters. This makes sense because the data was simulated to have no latent variability. The CCI function also returns a `coarse_cluster` which combines clusters that have high inter-CCI. Here it correctly identifies that there is only one "true" cluster.
-
-```{r}
-plot_gbm(out,cluster=as.character(cci$coarse_cluster))
-```
-
+The heatmap shows there is significant overlap between the clusters. This makes sense because the data was simulated to have no latent variability.
 
 
 ## Reference 
