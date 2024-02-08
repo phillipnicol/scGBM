@@ -1,7 +1,7 @@
 Model-based Dimensionality Reduction for Single-cell RNA-seq with
 Generalized Bilinear Models
 ================
-R package version 1.1.0
+R package version 1.1.1
 
 ## Installation
 
