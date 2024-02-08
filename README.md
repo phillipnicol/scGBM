@@ -1,7 +1,7 @@
 Model-based Dimensionality Reduction for Single-cell RNA-seq with
 Generalized Bilinear Models
 ================
-R package version 1.0.1
+R package version 1.1.1
 
 ## Installation
 
@@ -140,7 +140,7 @@ Now we can run the CCI function. Here we set `reps=10` to make it fast
 but `reps=100` (or higher) is recommended on real analyses.
 
 ``` r
-cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=10, cluster.fn = cluster_fn, Y=Y)
+cci <- CCI(out,cluster.orig=Sco$seurat_clusters, reps=25, cluster.fn = cluster_fn, Y=Y)
 ```
 
 ``` r
@@ -161,15 +161,7 @@ cci$cci_diagonal
 
 The heatmap shows there is significant overlap between the clusters.
 This makes sense because the data was simulated to have no latent
-variability. The CCI function also returns a `coarse_cluster` which
-combines clusters that have high inter-CCI. Here it correctly identifies
-that there is only one “true” cluster.
-
-``` r
-plot_gbm(out,cluster=as.character(cci$coarse_cluster))
-```
-
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+variability.
 
 ## Reference
 
