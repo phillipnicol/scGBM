@@ -1,3 +1,7 @@
+## Version 1.1.1 February 8, 2024
+
+This update contains minor changes to the code structure and also no longer emphasizes the use of the coarse cluster feature of the `CCI` function. 
+
 ## Version 1.1.0 September 10, 2023
 
 This update contains new functionality related to interpreting the loadings and also some updates to the `CCI` function. 
