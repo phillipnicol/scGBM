@@ -42,8 +42,8 @@ ds <- scGBM:::data.split(Y,p=0.5)
 Y1 <- ds$Y1; Y2 <- ds$Y2
 I <- nrow(Y); J <- ncol(Y)
 
-max.iter <- 10^4
-out <- gbm.sc(Y1,oos.Y=Y2,M=20,max.iter=max.iter,tol=10^{-4},infer.beta=TRUE,time.by.iter = TRUE)
+max.iter <- 250
+out <- gbm.sc(Y1,oos.Y=Y2,M=20,max.iter=max.iter,tol=10^{-5},infer.beta=TRUE,time.by.iter = TRUE)
 print(out$ll.oos)
 
 time.1 <- out$time
@@ -57,7 +57,7 @@ library(fastglm)
 proj.time <- c()
 proj.ll <- c()
 subset <- sample(1:ncol(Y),size=400,replace=FALSE)
-for(k in seq(5,100,by=5)) {
+for(k in seq(25,250,by=25)) {
   print(k)
   start <- Sys.time()
   out <- gbm.sc(Y1,M=20,max.iter=k,subset=subset,ncores=12,tol=10^{-4})
@@ -79,28 +79,25 @@ time.2 <- proj.time
 
 ## GLM-PCA Avagrad
 library(glmpca)
-max.iter <- 10^4
+max.iter <- 250
 
 time.3 <- c(1:max.iter)
 ll.3 <- c(1:max.iter)
 
-fit <- glmpca(Y1,L=20,Y.oos=Y2,ctl=list(verbose=TRUE,minDev=Inf,minIter=max.iter-1,
-                                maxIter=max.iter))
+fit <- glmpca(Y1,L=20,Y.oos=Y2,ctl=list(maxIter=max.iter))
 time.3 <- fit$mylist$time[-1]
 ll.3 <- fit$mylist$LL
 
-max.iter <- 10^4
-fit <- glmpca(Y1,L=20,Y.oos=Y2,optimizer="fisher",ctl=list(verbose=TRUE,minDev=Inf,minIter=max.iter-1,
-                                maxIter=max.iter))
+max.iter <- 100
+fit <- glmpca(Y1,L=20,Y.oos=Y2,optimizer="fisher",ctl=list(verbose=TRUE,maxIter=max.iter))
 
 
 time.4 <- fit$mylist$time[-1]
 ll.4 <- fit$mylist$LL
 
 set.seed(1)
-max.iter <- 10^4
-fit <- glmpca(Y1,Y.oos=Y2,L=20,minibatch="stochastic",ctl=list(verbose=TRUE,minDev=0,minIter=max.iter-1,
-                                maxIter=max.iter,batch_size=400))
+max.iter <- 500
+fit <- glmpca(Y1,Y.oos=Y2,L=20,minibatch="stochastic",ctl=list(verbose=TRUE,max.iter=max.iter,batch_size=400))
 
 
 time.5 <- fit$mylist$time[-1]
