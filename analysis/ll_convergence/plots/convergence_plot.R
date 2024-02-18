@@ -48,7 +48,7 @@ p <- p + xlab("") + ylab("")
 p <- p + theme_bw()
 p <- p + annotation_logticks(sides = 'b')
 p <- p + ggtitle("10X Immune (J=3,994)")
-p <- p + guides(color="none")
+#p <- p + guides(color="none")
 p_tenximmune <- p
 
 
