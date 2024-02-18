@@ -49,6 +49,7 @@ p <- p + theme_bw()
 p <- p + annotation_logticks(sides = 'b')
 p <- p + ggtitle("10X Immune (J=3,994)")
 #p <- p + guides(color="none")
+p <- p + xlab("Time") + ylab("Out of sample LL")
 p_tenximmune <- p
 
 
