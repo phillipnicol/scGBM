@@ -1,3 +1,5 @@
+## Version 1.2.0 TBD
+
 ## Version 1.1.1 February 8, 2024
 
 This update contains minor changes to the code structure and also no longer emphasizes the use of the coarse cluster feature of the `CCI` function. 
