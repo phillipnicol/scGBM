@@ -59,7 +59,8 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
-                   min.iter=30) {
+                   min.iter=30,
+                   oos.Y=NULL) {
 
   #Check validity of input
   gbm.sc.check.valid.input(as.list(environment()))
@@ -79,6 +80,10 @@ gbm.sc <- function(Y,
   if(time.by.iter) {
     time <- c()
     start.time <- Sys.time()
+  }
+
+  if(!is.null(oos.Y)) {
+    ll.oos <- rep(-Inf, max.iter)
   }
 
   lr <- 1 #Default learning rate is set to 1
@@ -115,9 +120,10 @@ gbm.sc <- function(Y,
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X
+  LRA <- irlba::irlba(X,nv=M)
+  LRA$d <- sort(rexp(n=M,rate=1))
+  X <- LRA$u %*% (LRA$d * t(LRA$v))
 
-  X[X > 8] <- 8 #Clipping
-  X[X < -8] <- -8
 
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
@@ -141,14 +147,14 @@ gbm.sc <- function(Y,
       start.time <- Sys.time()
     }
 
-    #Prevent W from being too large (stability)
-    W[W > max.Y] <- max.Y
-
-    #Compute working variables
-    #Z <- X+(Y-W)/W
-
     ## Compute log likelihood (no normalizing constant)
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
+
+    ## Out of sample likelihood
+    if(!is.null(oos.Y)) {
+      ll.oos[i] <- sum(oos.Y*log(W)) - sum(W)
+    }
+
     if(is.na(LL[i]) | is.infinite(LL[i])) {
       X <- Xt
       lr <- lr/2
@@ -203,6 +209,10 @@ gbm.sc <- function(Y,
     out$time <- cumsum(time)
   }
 
+  if(!is.null(oos.Y)) {
+    out$ll.oos <- ll.oos
+  }
+
   out <- process.results(out)
 
   ##Message for users of new version about scores
@@ -251,8 +261,8 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
       val <- matrix(rep(0,2*M+1),nrow=1)
       try({
         fit <- fastglm::fastglm(x=U,y=cell,offset=o,
-                       family=poisson(),
-                       method=3)
+                                family=poisson(),
+                                method=3)
         #fit <- glm(cell~0+offset(o)+.,
         #data=U,
         #family=poisson(link="log"))
@@ -321,6 +331,9 @@ pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
   w.max <- max(W)
 
   LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
+  LRA$d <- ifelse(LRA$d > 1, LRA$d - 1, 0)
+  print(max(LRA$d))
+  print(max(W))
   out$X <- LRA$u %*% (LRA$d*t(LRA$v))
   out$LRA <- LRA
 
