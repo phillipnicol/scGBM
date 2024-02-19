@@ -120,6 +120,8 @@ gbm.sc <- function(Y,
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X
+  X[X > 8] <- 8
+  X[X < -8] <- -8
   LRA <- irlba::irlba(X,nv=M)
   LRA$d <- sort(rexp(n=M,rate=1))
   X <- LRA$u %*% (LRA$d * t(LRA$v))
