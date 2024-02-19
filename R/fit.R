@@ -155,6 +155,7 @@ gbm.sc <- function(Y,
     ## Out of sample likelihood
     if(!is.null(oos.Y)) {
       ll.oos[i] <- sum(oos.Y*log(W)) - sum(W)
+      print(ll.oos[i])
     }
 
     if(is.na(LL[i]) | is.infinite(LL[i])) {
