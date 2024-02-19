@@ -120,10 +120,10 @@ gbm.sc <- function(Y,
   LRA <-  irlba::irlba(Z,nv=M,nu=M)
   X <- LRA$u %*%(LRA$d*t(LRA$v))
   X <- sqrt(1/W)*X
-  X[X > 8] <- 8
-  X[X < -8] <- -8
+  #X[X > 8] <- 8
+  #X[X < -8] <- -8
   LRA <- irlba::irlba(X,nv=M)
-  LRA$d <- sort(rexp(n=M,rate=1))
+  LRA$d <- sort(rexp(n=M,rate=0.1))
   X <- LRA$u %*% (LRA$d * t(LRA$v))
 
 
@@ -183,6 +183,7 @@ gbm.sc <- function(Y,
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
 
     ### Projected gradient descent step
+    print(lr)
     pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
     X <- pgd$X
     Xt <- pgd$Xt
@@ -333,7 +334,7 @@ pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
   w.max <- max(W)
 
   LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
-  LRA$d <- ifelse(LRA$d > 1, LRA$d - 1, 0)
+  LRA$d <- ifelse(LRA$d > 0.1, LRA$d - 0.1, 0)
   print(max(LRA$d))
   print(max(W))
   out$X <- LRA$u %*% (LRA$d*t(LRA$v))
