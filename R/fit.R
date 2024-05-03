@@ -123,15 +123,16 @@ gbm.sc <- function(Y,
   #X[X > 8] <- 8
   #X[X < -8] <- -8
   LRA <- irlba::irlba(X,nv=M)
+
   LRA$d <- sort(rexp(n=M,rate=0.1))
   X <- LRA$u %*% (LRA$d * t(LRA$v))
-
 
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
 
   for(i in 1:max.iter) {
     #Reweight
+    print(i)
     alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
       #sweep(X[,batch==j],2,betas[batch==j],"+")
       log.rsy[j,]-log(rowSums(exp(sweep(X[,batch==j],2,betas[batch==j],"+"))))
@@ -183,8 +184,11 @@ gbm.sc <- function(Y,
     loglik <- c(loglik,LL[i])
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
 
+
+    print(i)
     ### Projected gradient descent step
     print(lr)
+    #lr <- 1
     pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
     X <- pgd$X
     Xt <- pgd$Xt
@@ -217,7 +221,7 @@ gbm.sc <- function(Y,
     out$ll.oos <- ll.oos
   }
 
-  out <- process.results(out)
+  out <- process.results(out,Y)
 
   ##Message for users of new version about scores
   message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.")
@@ -312,7 +316,7 @@ gbm.sc.check.valid.input <- function(my.args) {
   }
 }
 
-process.results <- function(gbm) {
+process.results <- function(gbm,Y) {
   #Enforce identifiability in U
   M <- gbm$M
   for(m in 1:M) {
@@ -321,7 +325,24 @@ process.results <- function(gbm) {
       gbm$V[,m] <- -1*gbm$V[,m]
     }
   }
+
+  dev.full <- sum(Y*log(gbm$W) - gbm$W)
+  dev.diff <- rep(0,M)
+  print(gbm$D)
+  for(m in 1:M) {
+    Etam <- matrix(gbm$alpha[,1], nrow=gbm$I, ncol=gbm$J)+
+      matrix(gbm$beta,nrow=gbm$I,ncol=gbm$J) +
+      gbm$U[,-m] %*% diag(gbm$D[-m]) %*% t(gbm$V[,-m])
+    dev.diff[m] <- dev.full - sum(Y*Etam - exp(Etam))
+  }
+  print(dev.diff)
+  my.order <- order(dev.diff,decreasing=TRUE)
+  gbm$U <- gbm$U[,my.order]
+  gbm$V <- gbm$V[,my.order]
+  gbm$D <- gbm$D[my.order]
+
   gbm$scores <- t(gbm$D*t(gbm$V))
+  print(gbm$D)
 
   return(gbm)
 }
