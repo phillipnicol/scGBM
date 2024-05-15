@@ -37,12 +37,12 @@ Sco <- FindVariableFeatures(Sco,nfeatures=2000)
 Y <- Sco@assays$originalexp@counts[Sco@assays$originalexp@var.features,]
 Y <- as.matrix(Y)
 
-Y <- Y[rowSums(Y) >= 50,] 
-ds <- scGBM:::data.split(Y,p=0.5)
+Y <- Y[rowSums(Y) >= 50,]
+ds <- data.split(Y,p=0.5)
 Y1 <- ds$Y1; Y2 <- ds$Y2
 I <- nrow(Y); J <- ncol(Y)
 
-max.iter <- 250
+max.iter <- 100
 out <- gbm.sc(Y1,oos.Y=Y2,M=20,max.iter=max.iter,tol=10^{-5},infer.beta=TRUE,time.by.iter = TRUE)
 print(out$ll.oos)
 
@@ -60,7 +60,7 @@ subset <- sample(1:ncol(Y),size=400,replace=FALSE)
 for(k in seq(25,250,by=25)) {
   print(k)
   start <- Sys.time()
-  out <- gbm.sc(Y1,M=20,max.iter=k,subset=subset,ncores=12,tol=10^{-4})
+  out <- gbm.sc(Y1,M=20,max.iter=k,subset=400,ncores=12,tol=10^{-4})
   end <- Sys.time()
   proj.time <- c(proj.time,difftime(end,start,units="secs")[[1]])
 

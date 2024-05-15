@@ -1,0 +1,115 @@
+
+library(tidyverse)
+set.seed(1)
+library(Seurat)
+pt.size <- 0.5
+
+set.seed(1)
+I <- 1000
+J <- 1000
+baseline.means <- rexp(n=I, rate=1)
+Mu <- matrix(baseline.means,nrow=I,ncol=J)
+Mu[1,] <- 100
+Mu[1,1:10] <- 1
+Mu[1,11:20] <- 10
+Mu[2,] <- 1
+Mu[2,667:1000] <- 50
+Y <- matrix(rpois(n=I*J,lambda=as.vector(Mu)),nrow=I,ncol=J)
+
+
+true_cluster <- rep(1,J)
+true_cluster[1:10] <- "A"
+true_cluster[11:20] <- "B"
+true_cluster[21:666] <- "C"
+true_cluster[667:1000] <- "D"
+true_cluster <- as.character(true_cluster)
+
+df <- data.frame(y=Y[1,],x=true_cluster,fill=true_cluster)
+pg1 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
+  theme_bw() + guides(fill="none") +
+  xlab("") + ylab("Counts") + ggtitle("Gene 1") +
+  scale_y_sqrt()
+
+df <- data.frame(y=Y[2,],x=true_cluster,fill=true_cluster)
+pg2 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
+  theme_bw() + guides(fill="none") +
+  xlab("") + ylab("Counts") + ggtitle("Gene 2") +
+  scale_y_sqrt()
+
+
+### LOG + SCALE + PCA (SEURAT)
+colnames(Y) <- 1:J
+rownames(Y) <- 1:I
+Sco <- CreateSeuratObject(counts=Y)
+Sco <- NormalizeData(Sco)
+Sco <- FindVariableFeatures(Sco)
+Sco <- ScaleData(Sco)
+Sco$group <- true_cluster
+Sco <- RunPCA(Sco)
+lpca <- Sco@reductions$pca@cell.embeddings
+df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
+  ggtitle("Log+Scale+PCA") + theme(plot.title = element_text(size = 10))
+p_lpcascale <- p
+
+
+
+### SCTRANSFORM (SEURAT)
+colnames(Y) <- 1:J
+rownames(Y) <- 1:I
+Sco <- CreateSeuratObject(counts=Y)
+Sco$group <- true_cluster
+Sco <- SCTransform(Sco)
+Sco <- RunPCA(Sco)
+sct <- Sco@reductions$pca@cell.embeddings
+df <- data.frame(x=sct[,1],y=sct[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("SCT+PCA")
+p_sct <- p
+
+
+### ANALYTIC PEARSON RESIDUALS
+apr <- sctransform::vst(Y, method="offset")
+pca.apr <- prcomp(t(apr$y))
+df <- data.frame(x=pca.apr$x[,1],y=pca.apr$x[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
+  ggtitle("APR+PCA")
+p_apr <- p
+
+### LOG +  PCA
+colnames(Y) <- 1:J
+rownames(Y) <- 1:I
+YL <- log(sweep(Y,MARGIN=2,STATS=L^{-1}*colSums(Y),FUN="/") + 1)
+my.pca <- prcomp(t(YL))
+lpca <- my.pca$x
+df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("Log+PCA")
+p_lpca <- p
+
+
+library(ggpubr)
+ggarrange(ggarrange(pg1, pg2, nrow=1),
+          ggarrange(p_lpca, p_lpcascale,
+                    p_sct, p_apr, nrow=1), nrow=2,
+        heights=c(1.25,1))
+
+
+###scGBM
+out <- gbm.sc(Y,M=20,sigma=10, infer.beta=TRUE)
+df <- data.frame(x=out$scores[,1], y=out$scores[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none")
+p_GBM <- p
+
+
+df <- data.frame(x=my.umap$layout[,1],y=my.umap$layout[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("Log+PCA")
+p_umap <- p
+

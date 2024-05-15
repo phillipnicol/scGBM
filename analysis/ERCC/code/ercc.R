@@ -41,7 +41,7 @@ p <- data.frame(x=log(colSums(expr)), y=my.pca$rotation[,1],
   scale_color_gradient(low="blue", high="red")
 
 ## scGBM with prior on sigma
-out <- gbm.sc(expr |> as.matrix(),M=10)
+out <- gbm.sc(expr |> as.matrix(),M=20,sigma=10)
 
 
 
@@ -56,13 +56,13 @@ expr2 <- as.matrix(expr2)
 
 ## Default ScTransform
 apr <- sctransform::vst(expr2)
-my.pca <- irlba::prcomp_irlba(apr$y)
-umap.sct <- umap::umap(my.pca$rotation)
+my.pca <- irlba::prcomp_irlba(t(apr$y))
+umap.sct <- umap::umap(my.pca$x)
 
 
 ## APR
 apr <- sctransform::vst(expr2, method="offset")
-my.pca <- irlba::prcomp_irlba(apr$y)
+my.pca <- irlba::prcomp_irlba(t(apr$y))
 umap.apr <- umap::umap(my.pca$rotation)
 
 ## Log + PCA
@@ -79,7 +79,7 @@ log2CPM <- log2(CPM+1)
 my.pca <- prcomp(log2CPM)
 
 ## scGBM with prior on sigma
-out <- gbm.sc(expr2,M=10)
+out <- gbm.sc(expr2,M=10,sigma=1)
 
 
 
@@ -136,7 +136,7 @@ p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("SCT1")+ylab("SCT2")+guides(color="none")
 p_sct <- p
 
-out <- gbm.sc(Y,M=20)
+out <- gbm.sc(Y,M=10)
 df <- data.frame(x=out$scores[,1],y=out$scores[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()

@@ -60,14 +60,17 @@ gbm.sc <- function(Y,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
                    min.iter=30,
-                   oos.Y=NULL) {
+                   oos.Y=NULL,
+                   sigma=10,
+                   order.by.deviance=TRUE) {
 
   #Check validity of input
   gbm.sc.check.valid.input(as.list(environment()))
 
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
-                             max.iter=max.iter)
+                             max.iter=max.iter,
+                             order.by.deviance=order.by.deviance)
     ##Message for users of new version about scores
     message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores.")
     return(out)
@@ -124,7 +127,8 @@ gbm.sc <- function(Y,
   #X[X < -8] <- -8
   LRA <- irlba::irlba(X,nv=M)
 
-  LRA$d <- sort(rexp(n=M,rate=0.1))
+  prior.mean <- sigma
+  LRA$d <- sort(rexp(n=M,rate=1/10))
   X <- LRA$u %*% (LRA$d * t(LRA$v))
 
   #For acceleration, save previous X
@@ -189,7 +193,7 @@ gbm.sc <- function(Y,
     ### Projected gradient descent step
     print(lr)
     #lr <- 1
-    pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
+    pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M, prior.mean)
     X <- pgd$X
     Xt <- pgd$Xt
 
@@ -221,7 +225,7 @@ gbm.sc <- function(Y,
     out$ll.oos <- ll.oos
   }
 
-  out <- process.results(out,Y)
+  out <- process.results(out,Y, order.by.deviance)
 
   ##Message for users of new version about scores
   message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.")
@@ -229,7 +233,8 @@ gbm.sc <- function(Y,
 }
 
 gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
-                              ncores,tol=10^{-4},max.iter=max.iter) {
+                              ncores,tol=10^{-4},max.iter=max.iter,
+                              order.by.deviance=TRUE) {
 
   J <- ncol(Y); I <- nrow(Y)
   alphas.full <- log(rowSums(Y))
@@ -242,7 +247,8 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter)
+  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter,
+                order.by.deviance = order.by.deviance)
 
   U <- out$U
   #U <- as.data.frame(U)
@@ -316,7 +322,8 @@ gbm.sc.check.valid.input <- function(my.args) {
   }
 }
 
-process.results <- function(gbm,Y) {
+process.results <- function(gbm,Y,
+                            order.by.deviance=TRUE) {
   #Enforce identifiability in U
   M <- gbm$M
   for(m in 1:M) {
@@ -326,28 +333,27 @@ process.results <- function(gbm,Y) {
     }
   }
 
-  dev.full <- sum(Y*log(gbm$W) - gbm$W)
-  dev.diff <- rep(0,M)
-  print(gbm$D)
-  for(m in 1:M) {
-    Etam <- matrix(gbm$alpha[,1], nrow=gbm$I, ncol=gbm$J)+
-      matrix(gbm$beta,nrow=gbm$I,ncol=gbm$J) +
-      gbm$U[,-m] %*% diag(gbm$D[-m]) %*% t(gbm$V[,-m])
-    dev.diff[m] <- dev.full - sum(Y*Etam - exp(Etam))
+  if(order.by.deviance) {
+    dev.full <- sum(Y*log(gbm$W) - gbm$W)
+    dev.diff <- rep(0,M)
+    print(gbm$D)
+    for(m in 1:M) {
+      Etam <- matrix(gbm$alpha[,1], nrow=gbm$I, ncol=gbm$J)+
+        matrix(gbm$beta,nrow=gbm$I,ncol=gbm$J) +
+        gbm$U[,-m] %*% diag(gbm$D[-m]) %*% t(gbm$V[,-m])
+      dev.diff[m] <- dev.full - sum(Y*Etam - exp(Etam))
+    }
+    my.order <- order(dev.diff,decreasing=TRUE)
+    gbm$U <- gbm$U[,my.order]
+    gbm$V <- gbm$V[,my.order]
+    gbm$D <- gbm$D[my.order]
   }
-  print(dev.diff)
-  my.order <- order(dev.diff,decreasing=TRUE)
-  gbm$U <- gbm$U[,my.order]
-  gbm$V <- gbm$V[,my.order]
-  gbm$D <- gbm$D[my.order]
 
   gbm$scores <- t(gbm$D*t(gbm$V))
-  print(gbm$D)
-
   return(gbm)
 }
 
-pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
+pgd_irlba <- function(X,Xt,i,lr,W,Y,M,prior.mean) {
   out <- list()
 
   ## Gradient Step
@@ -356,7 +362,7 @@ pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
   w.max <- max(W)
 
   LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
-  LRA$d <- ifelse(LRA$d > 0.1, LRA$d - 0.1, 0)
+  LRA$d <- ifelse(LRA$d > 1/prior.mean, LRA$d - 1/prior.mean, 0)
   print(max(LRA$d))
   print(max(W))
   out$X <- LRA$u %*% (LRA$d*t(LRA$v))
