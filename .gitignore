@@ -3,3 +3,8 @@
 .RData
 .Ruserdata
 .DS_Store
+# exclude everything
+analysis/data/*
+
+# exception to the rule
+!analysis/data/.gitkeep 

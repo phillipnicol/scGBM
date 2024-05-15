@@ -1,7 +1,7 @@
-library(rsteifel)
+library(rstiefel)
 library(glmpca)
 library(scGBM)
-
+library(fastglm)
 
 I <- 10^3
 J <- 10^4
@@ -52,8 +52,11 @@ for(i in 1:reps) {
   }
   X.pred <- fit$res$loadings %*% t(fit$res$factors)
   res2[i,3] <- sqrt(mean((X.true - X.pred)^2))
-
-  fit <- glmpca(Y=sim$Y,L=10,minibatch="stochastic",ctl=list(batch_size=200))
+  
+  print("SGD")
+  print(typeof(sim$Y))
+  rownames(sim$Y) <- 1:I; colnames(sim$Y) <- 1:J
+  fit <- glmpca(Y=sim$Y,L=10,minibatch="stochastic",ctl=list(batch_size=1000))
   fit$res$factors <- as.matrix(fit$res$factors)
   fit$res$loadings <- as.matrix(fit$res$loadings)
   for(m in 1:M) {

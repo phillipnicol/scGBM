@@ -1,0 +1,163 @@
+               _                           
+platform       x86_64-pc-linux-gnu         
+arch           x86_64                      
+os             linux-gnu                   
+system         x86_64, linux-gnu           
+status                                     
+major          4                           
+minor          1.0                         
+year           2021                        
+month          05                          
+day            18                          
+svn rev        80317                       
+language       R                           
+version.string R version 4.1.0 (2021-05-18)
+nickname       Camp Pontanezen             
+Attaching SeuratObject
+‘SeuratObject’ was built with package ‘Matrix’ 1.6.1 but the current
+version is 1.6.5; it is recomended that you reinstall ‘SeuratObject’ as
+the ABI for ‘Matrix’ may have changed
+Seurat v4 was just loaded with SeuratObject v5; disabling v5 assays and
+validation routines, and ensuring assays work in strict v3/v4
+compatibility mode
+Loading required package: bigmemory
+Performing log-normalization
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating gene variances
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Calculating feature variances of standardized and clipped values
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+[1]  1580 44721
+[1] -8649663
+Iteration:  1 . Objective= -8608762 
+[1] 1
+[1] 90.89421
+[1] 182.8332
+[1] -7326307
+Iteration:  2 . Objective= -7277207 
+[1] 1
+[1] 116.0839
+[1] 2742.784
+[1] -6824358
+Iteration:  3 . Objective= -6773995 
+[1] 1.05
+[1] 128.6977
+[1] 2863.024
+[1] -6506853
+Iteration:  4 . Objective= -6456039 
+[1] 1.1025
+[1] 136.7204
+[1] 2871.237
+[1] -6311862
+Iteration:  5 . Objective= -6260570 
+[1] 1.157625
+[1] 142.5267
+[1] 2857.189
+[1] -6163711
+Iteration:  6 . Objective= -6111896 
+[1] 1.215506
+[1] 147.0946
+[1] 2808.577
+[1] -6034394
+Iteration:  7 . Objective= -5982068 
+[1] 1.276282
+[1] 150.9518
+[1] 2660.096
+[1] -5913531
+Iteration:  8 . Objective= -5860706 
+[1] 1.340096
+[1] 154.4202
+[1] 2528.525
+[1] -5798066
+Iteration:  9 . Objective= -5744662 
+[1] 1.4071
+[1] 157.7037
+[1] 2523.595
+[1] -5687298
+Iteration:  10 . Objective= -5633161 
+[1] 1.477455
+[1] 160.9757
+[1] 2510.048
+[1] -5578534
+Iteration:  11 . Objective= -5523556 
+[1] 1.551328
+[1] 164.4053
+[1] 2469.489
+[1] -5470076
+Iteration:  12 . Objective= -5414190 
+[1] 1.628895
+[1] 168.1931
+[1] 2342.258
+[1] -5361451
+Iteration:  13 . Objective= -5304543 
+[1] 1.710339
+[1] 172.6661
+[1] 2021.758
+[1] -5249913
+Iteration:  14 . Objective= -5191728 
+[1] 1.795856
+[1] 177.9973
+[1] 1990.064
+[1] -5136819
+Iteration:  15 . Objective= -5077031 
+[1] 1.885649
+[1] 184.3594
+[1] 1913.017
+[1] -5020247
+Iteration:  16 . Objective= -4958482 
+[1] 1.979932
+[1] 191.8697
+[1] 1859.427
+[1] -4901128
+Iteration:  17 . Objective= -4837044 
+[1] 2.078928
+[1] 200.601
+[1] 1822.625
+[1] -4782702
+Iteration:  18 . Objective= -4716054 
+[1] 2.182875
+[1] 210.3435
+[1] 2020.846
+[1] -4670175
+Iteration:  19 . Objective= -4600898 
+[1] 2.292018
+[1] 220.9851
+[1] 2144.58
+[1] -4564534
+Iteration:  20 . Objective= -4492618 
+[1] 2.406619
+[1] 232.5274
+[1] 2123.506
+[1] -4464672
+Iteration:  21 . Objective= -4390088 
+[1] 2.52695
+[1] 245.0311
+[1] 1978.127
+[1] -4369163
+Iteration:  22 . Objective= -4291853 
+[1] 2.653298
+[1] 258.527
+[1] 1799.644
+[1] -4276614
+Iteration:  23 . Objective= -4196492 
+[1] 2.785963
+[1] 272.735
+[1] 1861.073
+[1] -4187723
+Iteration:  24 . Objective= -4104771 
+[1] 2.925261
+[1] 287.4742
+[1] 1871.651
+[1] -4102488
+Iteration:  25 . Objective= -4016732 
+[1] 3.071524
+Error in irlba::irlba(V + (lr/w.max) * (Y - W), nv = M) : 
+  BLAS/LAPACK routine 'DLASCLS' gave error code -4
+Calls: gbm.sc -> pgd_irlba -> <Anonymous>
+Execution halted
