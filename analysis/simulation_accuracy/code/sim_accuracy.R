@@ -56,7 +56,7 @@ for(i in 1:reps) {
   print("SGD")
   print(typeof(sim$Y))
   rownames(sim$Y) <- 1:I; colnames(sim$Y) <- 1:J
-  fit <- glmpca(Y=sim$Y,L=10,minibatch="stochastic",ctl=list(batch_size=1000))
+  fit <- glmpca(Y=sim$Y,Y.oos=sim$Y,L=10,minibatch="stochastic",ctl=list(batch_size=1000))
   fit$res$factors <- as.matrix(fit$res$factors)
   fit$res$loadings <- as.matrix(fit$res$loadings)
   for(m in 1:M) {
