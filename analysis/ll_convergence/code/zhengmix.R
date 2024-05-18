@@ -33,8 +33,8 @@ sce <- sce_full_Zhengmix8eq()
 
 Sco <- as.Seurat(sce)
 Sco <- NormalizeData(Sco)
-Sco <- FindVariableFeatures(Sco,nfeatures=2000)
-Y <- Sco@assays$originalexp@counts[Sco@assays$originalexp@var.features,]
+#Sco <- FindVariableFeatures(Sco,nfeatures=2000)
+Y <- Sco@assays$originalexp@counts
 Y <- as.matrix(Y)
 
 Y <- Y[rowSums(Y) >= 50,]

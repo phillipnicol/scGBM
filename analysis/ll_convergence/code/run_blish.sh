@@ -2,11 +2,9 @@
 #SBATCH --job-name=gbm_convergence_blish    # Job name
 #SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=philnicol740@gmail.com     # Where to send mail
-#SBATCH --mem=128gb                    # Job memory request               # Time limit hrs:min:sec
+#SBATCH --mem=256gb                    # Job memory request               # Time limit hrs:min:sec
 #SBATCH --output=../logs/blish.log   # Standard output and error log
 #SBATCH -c 64
 
 module load gcc/9.2.0
-module unload R/4.3.2b
-module load R/4.1
 Rscript blish.R
