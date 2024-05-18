@@ -26,18 +26,18 @@ find.best.cor <- function(V.true, factor.test) {
 set.seed(1)
 for(i in 1:reps) {
   sim <- simData(I,J,d=M)
-  X.true <- sim$U %*% t(sim$V)
+  Pv.true <- sim$V %*% solve(t(sim$V) %*% sim$V) %*% t(sim$V)
 
   #gbm-sc
   out <- gbm.sc(sim$Y,M=10,order.by.deviance = FALSE)
   for(m in 1:M) {
     res[i,1,m] <- find.best.cor(sim$V,out$scores[,m])
   }
-  X.pred <- out$U %*% t(out$scores)
-  res2[i,1] <- sqrt(mean((X.true - X.pred)^2))
+  Pv.pred <- out$V %*% t(out$V)
+  res2[i,1] <- sqrt(mean((Pv.true-Pv.pred)^2))
 
   out <- gbm.sc(sim$Y,M=10,order.by.deviance = FALSE,
-                subset=10^3, ncores=8)
+                subset=round(0.1*J), ncores=8)
   for(m in 1:M) {
     res[i,2,m] <- find.best.cor(sim$V,out$scores[,m])
   }
@@ -52,11 +52,11 @@ for(i in 1:reps) {
   }
   X.pred <- fit$res$loadings %*% t(fit$res$factors)
   res2[i,3] <- sqrt(mean((X.true - X.pred)^2))
-  
+
   print("SGD")
   print(typeof(sim$Y))
   rownames(sim$Y) <- 1:I; colnames(sim$Y) <- 1:J
-  fit <- glmpca(Y=sim$Y,Y.oos=sim$Y,L=10,minibatch="stochastic",ctl=list(batch_size=1000))
+  fit <- glmpca(Y=sim$Y,Y.oos=sim$Y,L=10,minibatch="stochastic",ctl=list(batch_size=0.1*J))
   fit$res$factors <- as.matrix(fit$res$factors)
   fit$res$loadings <- as.matrix(fit$res$loadings)
   for(m in 1:M) {
@@ -77,4 +77,13 @@ for(i in 1:reps) {
 
 saveRDS(res, "../data/factor_correlation.RDS")
 saveRDS(res2, "../data/mse.RDS")
+
+
+### Plotting
+res <- readRDS("../data/factor_correlation.RDS")
+res2 <- readRDS("../data/mse.RDS")
+
+
+
+
 
