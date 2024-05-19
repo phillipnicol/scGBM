@@ -20,6 +20,20 @@ for(i in 1:nrow(Y)) {
   gene.vars[i] <- var(mean(colSums(Y))*Y[i,]/colSums(Y))
 }
 
+plain <- function(x,...) {
+  format(x, ..., scientific = FALSE, drop0trailing=TRUE)
+}
+
+df <- data.frame(x=gene.means,y=gene.vars) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=1) +
+  theme_bw() +
+  xlab("Gene mean") +
+  ylab("Gene variance") +
+  scale_x_log10(labels=plain) +
+  scale_y_log10(labels=plain)
+
+ggsave(df, filename="../plots/mean_variance_relationship.png")
 
 ## Default ScTransform
 apr <- sctransform::vst(expr)
