@@ -10,6 +10,17 @@ nz <- apply(expr, 1, function(x) sum(x != 0))
 
 expr <- expr[nz >= 5,]
 
+Y <- as.matrix(expr)
+
+gene.means <- rep(0, nrow(Y))
+gene.vars <- rep(0, nrow(Y))
+
+for(i in 1:nrow(Y)) {
+  gene.means[i] <- mean(mean(colSums(Y))*Y[i,]/colSums(Y))
+  gene.vars[i] <- var(mean(colSums(Y))*Y[i,]/colSums(Y))
+}
+
+
 ## Default ScTransform
 apr <- sctransform::vst(expr)
 my.pca <- irlba::prcomp_irlba(apr$y)
