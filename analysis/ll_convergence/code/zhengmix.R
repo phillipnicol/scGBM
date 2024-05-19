@@ -1,6 +1,7 @@
 
 library(scGBM)
 library(rstiefel)
+library(SingleCellExperiment)
 
 #Compute log-likelihood
 gbm.ll <- function(W,Y) {
@@ -22,7 +23,6 @@ print(R.version)
 
 set.seed(1)
 library(DuoClustering2018)
-library(Seurat)
 library(scGBM)
 library(fastglm)
 library(bigmemory)
@@ -31,14 +31,15 @@ library(bigmemory)
 
 sce <- sce_full_Zhengmix8eq()
 
-Sco <- as.Seurat(sce)
-Sco <- NormalizeData(Sco)
+#Sco <- as.Seurat(sce)
+#Sco <- NormalizeData(Sco)
 #Sco <- FindVariableFeatures(Sco,nfeatures=2000)
-Y <- Sco@assays$originalexp@counts
+#Y <- Sco@assays$originalexp@counts
+Y <- counts(sce)
 Y <- as.matrix(Y)
 
 Y <- Y[rowSums(Y) >= 50,]
-ds <- data.split(Y,p=0.5)
+ds <- scGBM:::data.split(Y,p=0.5)
 Y1 <- ds$Y1; Y2 <- ds$Y2
 I <- nrow(Y); J <- ncol(Y)
 

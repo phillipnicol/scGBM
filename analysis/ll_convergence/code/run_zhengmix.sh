@@ -7,6 +7,4 @@
 #SBATCH -c 32
 
 module load gcc/9.2.0
-module unload R/4.3.2b
-module load R/4.1
 Rscript zhengmix.R
