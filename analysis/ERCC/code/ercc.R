@@ -10,6 +10,31 @@ nz <- apply(expr, 1, function(x) sum(x != 0))
 
 expr <- expr[nz >= 5,]
 
+Y <- as.matrix(expr)
+
+gene.means <- rep(0, nrow(Y))
+gene.vars <- rep(0, nrow(Y))
+
+for(i in 1:nrow(Y)) {
+  gene.means[i] <- mean(mean(colSums(Y))*Y[i,]/colSums(Y))
+  gene.vars[i] <- var(mean(colSums(Y))*Y[i,]/colSums(Y))
+}
+
+plain <- function(x,...) {
+  format(x, ..., scientific = FALSE, drop0trailing=TRUE)
+}
+
+df <- data.frame(x=gene.means,y=gene.vars) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=1) +
+  theme_bw() +
+  xlab("Gene mean") +
+  ylab("Gene variance") +
+  scale_x_log10(labels=plain) +
+  scale_y_log10(labels=plain)
+
+ggsave(df, filename="../plots/mean_variance_relationship.png")
+
 ## Default ScTransform
 apr <- sctransform::vst(expr)
 my.pca <- irlba::prcomp_irlba(apr$y)
