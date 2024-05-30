@@ -41,8 +41,8 @@ for(i in 1:reps) {
   for(m in 1:M) {
     res[i,2,m] <- find.best.cor(sim$V,out$scores[,m])
   }
-  X.pred <- out$U %*% t(out$scores)
-  res2[i,2] <- sqrt(mean((X.true - X.pred)^2))
+  Pv.pred <- out$scores %*% solve(t(out$scores) %*% out$scores) %*% t(out$scores)
+  res2[i,2] <- sqrt(mean((Pv.true-Pv.pred)^2))
 
   fit <- glmpca(Y=sim$Y,L=10)
   fit$res$factors <- as.matrix(fit$res$factors)
@@ -50,8 +50,9 @@ for(i in 1:reps) {
   for(m in 1:M) {
     res[i,3,m] <- find.best.cor(sim$V,fit$res$factors[,m])
   }
+  Pv.pred <- fit$res$factors %*% solve(t(fit$res$factors) %*% fit$res$factors) %*% t(fit$res$factors)
   X.pred <- fit$res$loadings %*% t(fit$res$factors)
-  res2[i,3] <- sqrt(mean((X.true - X.pred)^2))
+  res2[i,3] <- sqrt(mean((Pv.true-Pv.pred)^2))
 
   print("SGD")
   print(typeof(sim$Y))
@@ -62,8 +63,9 @@ for(i in 1:reps) {
   for(m in 1:M) {
     res[i,4,m] <- find.best.cor(sim$V,fit$res$factors[,m])
   }
+  Pv.pred <- fit$res$factors %*% solve(t(fit$res$factors) %*% fit$res$factors) %*% t(fit$res$factors)
   X.pred <- fit$res$loadings %*% t(fit$res$factors)
-  res2[i,4] <- sqrt(mean((X.true - X.pred)^2))
+  res2[i,4] <-sqrt(mean((Pv.true-Pv.pred)^2))
 
   fit <- glmpca(Y=sim$Y, L=10,optimizer = "fisher")
   fit$res$factors <- as.matrix(fit$res$factors)
@@ -72,7 +74,8 @@ for(i in 1:reps) {
     res[i,5,m] <- find.best.cor(sim$V,fit$res$factors[,m])
   }
   X.pred <- fit$res$loadings %*% t(fit$res$factors)
-  res2[i,5] <- sqrt(mean((X.true - X.pred)^2))
+  Pv.pred <- fit$res$factors %*% solve(t(fit$res$factors) %*% fit$res$factors) %*% t(fit$res$factors)
+  res2[i,5] <- sqrt(mean((Pv.true-Pv.pred)^2))
 }
 
 saveRDS(res, "../data/factor_correlation.RDS")
@@ -83,7 +86,32 @@ saveRDS(res2, "../data/mse.RDS")
 res <- readRDS("../data/factor_correlation.RDS")
 res2 <- readRDS("../data/mse.RDS")
 
+df <- reshape2::melt(res)
+
+library(tidyverse)
+method.names = c("scGBM-full",
+                 "scGBM-proj",
+                 "GLM-PCA (AvaGrad)",
+                 "GLM-PCA (SGD)",
+                 "GLM-PCA (Fisher)")
+
+df <- df |> mutate(Method = method.names[Var2]) |>
+  group_by(Method, Var3) |>
+  summarise(mean=mean(value^2),
+            ymin=mean(value^2) - sd(value^2),
+            ymax=mean(value^2) + sd(value^2))
+
+p <- ggplot(df, aes(x=Var3, y=mean, color=Method,ymin=ymin,ymax=ymax)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  xlab("Latent factor") +
+  ylab("r^2 with ground truth")
 
 
-
-
+df <- reshape2::melt(res2)
+df <- df |> mutate(Method = method.names[Var2])
+p <- ggplot(df,aes(x=Method, y=value)) +
+  geom_point() +
+  ylab("RMSE")
+p
