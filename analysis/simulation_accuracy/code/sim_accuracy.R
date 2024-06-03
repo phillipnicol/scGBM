@@ -110,8 +110,19 @@ p <- ggplot(df, aes(x=Var3, y=mean, color=Method,ymin=ymin,ymax=ymax)) +
 
 
 df <- reshape2::melt(res2)
+df$value <- sqrt(I*J)*df$value
 df <- df |> mutate(Method = method.names[Var2])
-p <- ggplot(df,aes(x=Method, y=value)) +
-  geom_point() +
-  ylab("RMSE")
+p <- ggplot(df,aes(x=Method, y=value, fill=Method)) +
+  geom_boxplot(alpha=0.5) +
+  geom_jitter(shape=16,position=position_jitter(0.2)) +
+  ylab("Norm of difference of projection")
+p
+
+df <- reshape2::melt(res2)
+df$value <- (sqrt(2*M) - sqrt(I*J)*df$value)/sqrt(2*M)
+df <- df |> mutate(Method = method.names[Var2])
+p <- ggplot(df,aes(x=Method, y=value, fill=Method)) +
+  geom_boxplot(alpha=0.5) +
+  geom_jitter(shape=16,position=position_jitter(0.2)) +
+  ylab("Accuracy")
 p
