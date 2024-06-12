@@ -57,11 +57,11 @@ library(fastglm)
 
 proj.time <- c()
 proj.ll <- c()
-subset <- sample(1:ncol(Y),size=1000,replace=FALSE)
-for(k in seq(25,250,by=25)) {
+#subset <- sample(1:ncol(Y),size=1000,replace=FALSE)
+for(k in seq(100,1000,by=100)) {
   print(k)
   start <- Sys.time()
-  out <- gbm.sc(Y1,M=20,max.iter=k,subset=subset,ncores=12,tol=10^{-4})
+  out <- gbm.sc(Y1,M=20,max.iter=100,subset=k,ncores=12,tol=10^{-4})
   end <- Sys.time()
   proj.time <- c(proj.time,difftime(end,start,units="secs")[[1]])
 

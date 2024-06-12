@@ -85,7 +85,7 @@ time.3 <- fit$mylist$time[-1]
 ll.3 <- fit$mylist$LL
 
 max.iter <- 100
-#fit <- glmpca(Y1,L=20,Y.oos=Y2,optimizer="fisher",ctl=list(verbose=TRUE,maxIter=max.iter))
+fit <- glmpca(Y1,L=20,Y.oos=Y2,optimizer="fisher",ctl=list(verbose=TRUE,maxIter=max.iter))
 #No fisher for this one 
 
 time.4 <- fit$mylist$time[-1]
