@@ -29,7 +29,7 @@ library(bigmemory)
 
 
 
-sce <- sce_full_Zhengmix8eq()
+sce <- sce_full_Zhengmix4eq()
 
 #Sco <- as.Seurat(sce)
 #Sco <- NormalizeData(Sco)
@@ -57,7 +57,7 @@ library(fastglm)
 
 proj.time <- c()
 proj.ll <- c()
-subset <- sample(1:ncol(Y),size=1000,replace=FALSE)
+subset <- sample(1:ncol(Y),size=400,replace=FALSE)
 for(k in seq(25,250,by=25)) {
   print(k)
   start <- Sys.time()
