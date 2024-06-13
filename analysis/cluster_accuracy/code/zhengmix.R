@@ -9,7 +9,7 @@ library(scGBM)
 
 ## 8eq
 sce <- DuoClustering2018::sce_full_Zhengmix8eq()
-phenoid <- sce$phenoid 
+phenoid <- sce$phenoid
 Y <- sce@assays@data$counts
 Y <- Y[rowSums(Y) >= 5,]
 
@@ -56,14 +56,18 @@ Sco <- FindClusters(Sco)
 apr <- adj.rand.index(phenoid, Sco$seurat_clusters)
 
 library(fastglm)
-outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
-Sco <- CreateSeuratObject(counts=Y)
-colnames(outproj$scores) <- 1:20
-rownames(outproj$scores) <- colnames(Y)
-Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
-Sco <- FindNeighbors(Sco,reduction = "gbm")
-Sco <- FindClusters(Sco)
-gbmproj <- adj.rand.index(phenoid, Sco$seurat_clusters)
+proj_res <- rep(0, 10)
+for(j in 1:10) {
+  outproj <- gbm.sc(Y,M=20,subset=640,ncores=8)
+  Sco <- CreateSeuratObject(counts=Y)
+  colnames(outproj$scores) <- 1:20
+  rownames(outproj$scores) <- colnames(Y)
+  Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
+  Sco <- FindNeighbors(Sco,reduction = "gbm")
+  Sco <- FindClusters(Sco)
+  proj_res[j] <- adj.rand.index(phenoid, Sco$seurat_clusters)
+}
+gbmproj <- mean(proj_res)
 
 results <- c(gbm,gbmproj, l2pca, sct,apr,glmpca)
 names(results) <- c("scGBM-full", "scGBM-proj", "log+scale+PCA", "SCT", "APR","GLM-PCA")
@@ -130,14 +134,18 @@ Sco <- FindClusters(Sco)
 apr <- adj.rand.index(phenoid, Sco$seurat_clusters)
 
 library(fastglm)
-outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
-Sco <- CreateSeuratObject(counts=Y)
-colnames(outproj$scores) <- 1:20
-rownames(outproj$scores) <- colnames(Y)
-Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
-Sco <- FindNeighbors(Sco,reduction = "gbm")
-Sco <- FindClusters(Sco)
-gbmproj <- adj.rand.index(phenoid, Sco$seurat_clusters)
+proj_res <- rep(0, 10)
+for(j in 1:10) {
+  outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
+  Sco <- CreateSeuratObject(counts=Y)
+  colnames(outproj$scores) <- 1:20
+  rownames(outproj$scores) <- colnames(Y)
+  Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
+  Sco <- FindNeighbors(Sco,reduction = "gbm")
+  Sco <- FindClusters(Sco)
+  proj_res[j] <- adj.rand.index(phenoid, Sco$seurat_clusters)
+}
+gbmproj <- mean(proj_res)
 
 results <- c(gbm,gbmproj, l2pca, sct,apr,glmpca)
 names(results) <- c("scGBM-full", "scGBM-proj", "log+scale+PCA", "SCT", "APR","GLM-PCA")
@@ -150,7 +158,7 @@ saveRDS(results, file="../data/zhengmix8uneq.RDS")
 
 ## 4eq
 sce <- DuoClustering2018::sce_full_Zhengmix4eq()
-phenoid <- sce$phenoid 
+phenoid <- sce$phenoid
 Y <- sce@assays@data$counts
 Y <- Y[rowSums(Y) >= 5,]
 
@@ -197,14 +205,18 @@ Sco <- FindClusters(Sco)
 apr <- adj.rand.index(phenoid, Sco$seurat_clusters)
 
 library(fastglm)
-outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
-Sco <- CreateSeuratObject(counts=Y)
-colnames(outproj$scores) <- 1:20
-rownames(outproj$scores) <- colnames(Y)
-Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
-Sco <- FindNeighbors(Sco,reduction = "gbm")
-Sco <- FindClusters(Sco)
-gbmproj <- adj.rand.index(phenoid, Sco$seurat_clusters)
+proj_res <- rep(0, 10)
+for(j in 1:10) {
+  outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
+  Sco <- CreateSeuratObject(counts=Y)
+  colnames(outproj$scores) <- 1:20
+  rownames(outproj$scores) <- colnames(Y)
+  Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
+  Sco <- FindNeighbors(Sco,reduction = "gbm")
+  Sco <- FindClusters(Sco)
+  proj_res[j] <- adj.rand.index(phenoid, Sco$seurat_clusters)
+}
+gbmproj <- mean(proj_res)
 
 results <- c(gbm,gbmproj, l2pca, sct,apr,glmpca)
 names(results) <- c("scGBM-full", "scGBM-proj", "log+scale+PCA", "SCT", "APR","GLM-PCA")
@@ -215,7 +227,7 @@ saveRDS(results, file="../data/zhengmix4eq.RDS")
 ## 4uneq
 
 sce <- DuoClustering2018::sce_filteredExpr10_Zhengmix4uneq()
-phenoid <- sce$phenoid 
+phenoid <- sce$phenoid
 Y <- sce@assays@data$counts
 Y <- Y[rowSums(Y) >= 5,]
 
@@ -262,14 +274,18 @@ Sco <- FindClusters(Sco)
 apr <- adj.rand.index(phenoid, Sco$seurat_clusters)
 
 library(fastglm)
-outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
-Sco <- CreateSeuratObject(counts=Y)
-colnames(outproj$scores) <- 1:20
-rownames(outproj$scores) <- colnames(Y)
-Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
-Sco <- FindNeighbors(Sco,reduction = "gbm")
-Sco <- FindClusters(Sco)
-gbmproj <- adj.rand.index(phenoid, Sco$seurat_clusters)
+proj_res <- rep(0, 10)
+for(j in 1:10) {
+  outproj <- gbm.sc(Y,M=20,subset=640,ncores=8)
+  Sco <- CreateSeuratObject(counts=Y)
+  colnames(outproj$scores) <- 1:20
+  rownames(outproj$scores) <- colnames(Y)
+  Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
+  Sco <- FindNeighbors(Sco,reduction = "gbm")
+  Sco <- FindClusters(Sco)
+  proj_res[j] <- adj.rand.index(phenoid, Sco$seurat_clusters)
+}
+gbmproj <- mean(proj_res)
 
 results <- c(gbm,gbmproj, l2pca, sct,apr,glmpca)
 names(results) <- c("scGBM-full", "scGBM-proj", "log+scale+PCA", "SCT", "APR","GLM-PCA")
