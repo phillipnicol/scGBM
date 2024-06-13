@@ -9,7 +9,7 @@ library(scGBM)
 
 ## 8eq
 sce <- DuoClustering2018::sce_full_Zhengmix8eq()
-
+phenoid <- sce$phenoid 
 Y <- sce@assays@data$counts
 Y <- Y[rowSums(Y) >= 5,]
 
@@ -150,7 +150,7 @@ saveRDS(results, file="../data/zhengmix8uneq.RDS")
 
 ## 4eq
 sce <- DuoClustering2018::sce_full_Zhengmix4eq()
-
+phenoid <- sce$phenoid 
 Y <- sce@assays@data$counts
 Y <- Y[rowSums(Y) >= 5,]
 
@@ -215,7 +215,7 @@ saveRDS(results, file="../data/zhengmix4eq.RDS")
 ## 4uneq
 
 sce <- DuoClustering2018::sce_filteredExpr10_Zhengmix4uneq()
-
+phenoid <- sce$phenoid 
 Y <- sce@assays@data$counts
 Y <- Y[rowSums(Y) >= 5,]
 
