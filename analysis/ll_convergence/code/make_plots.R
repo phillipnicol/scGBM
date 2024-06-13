@@ -99,7 +99,7 @@ p <- p + geom_point() + geom_line()
 p <- p + scale_x_log10(
   breaks = scales::trans_breaks("log10", function(x) 10^x),
   labels = scales::trans_format("log10", scales::math_format(10^.x)),
-  limits=c(10,10^{4})/3600
+  limits=c(10^2,10^{5})/3600
 )
 p <- p + xlab("") + ylab("")
 p <- p + annotation_logticks(sides = 'b')
