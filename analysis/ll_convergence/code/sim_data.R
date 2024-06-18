@@ -101,5 +101,5 @@ Time <- list(time.1,time.2,time.3,time.4, time.5)
 LL <- list(ll.1,ll.2,ll.3,ll.4, ll.5)
 
 
-save(Time,file="../data/zhengmix_time.RData")
-save(LL,file="../data/zhengmix_LL.RData")
+save(Time,file="../data/simdata_time.RData")
+save(LL,file="../data/simdata_LL.RData")
