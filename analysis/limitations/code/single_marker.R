@@ -2,7 +2,9 @@
 library(tidyverse)
 set.seed(1)
 library(Seurat)
+library(viridis)
 pt.size <- 0.5
+L <- 10^4
 
 set.seed(1)
 I <- 1000
@@ -27,6 +29,7 @@ true_cluster <- as.character(true_cluster)
 df <- data.frame(y=Y[1,],x=true_cluster,fill=true_cluster)
 pg1 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
   theme_bw() + guides(fill="none") +
+  scale_fill_viridis_d(direction=-1)+
   xlab("") + ylab("Counts") + ggtitle("Gene 1") +
   scale_y_sqrt()
 
@@ -34,6 +37,7 @@ df <- data.frame(y=Y[2,],x=true_cluster,fill=true_cluster)
 pg2 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
   theme_bw() + guides(fill="none") +
   xlab("") + ylab("Counts") + ggtitle("Gene 2") +
+  scale_fill_viridis_d(-1) +
   scale_y_sqrt()
 
 
@@ -50,7 +54,8 @@ lpca <- Sco@reductions$pca@cell.embeddings
 df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
-  ggtitle("Log+Scale+PCA") + theme(plot.title = element_text(size = 10))
+  ggtitle("Log+Scale+PCA") + theme(plot.title = element_text(size = 10)) +
+  scale_color_viridis_d(direction=-1)
 p_lpcascale <- p
 
 
@@ -66,7 +71,7 @@ sct <- Sco@reductions$pca@cell.embeddings
 df <- data.frame(x=sct[,1],y=sct[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
-  ggtitle("SCT+PCA")
+  ggtitle("SCT+PCA") + scale_color_viridis_d(direction=-1)
 p_sct <- p
 
 
@@ -76,7 +81,7 @@ pca.apr <- prcomp(t(apr$y))
 df <- data.frame(x=pca.apr$x[,1],y=pca.apr$x[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
-  ggtitle("APR+PCA")
+  ggtitle("APR+PCA") +   scale_color_viridis_d(direction=-1)
 p_apr <- p
 
 ### LOG +  PCA
@@ -88,22 +93,25 @@ lpca <- my.pca$x
 df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
-  ggtitle("Log+PCA")
+  ggtitle("Log+PCA") +   scale_color_viridis_d(direction=-1)
 p_lpca <- p
 
 
 library(ggpubr)
-ggarrange(ggarrange(pg1, pg2, nrow=1),
+p.single.full <- ggarrange(ggarrange(pg1, pg2, nrow=1),
           ggarrange(p_lpca, p_lpcascale,
                     p_sct, p_apr, nrow=1), nrow=2,
         heights=c(1.25,1))
-
+ggsave(p.single.full,
+       filename="../plots/single_marker.png",
+       width=10.1,height=6.35)
 
 ###scGBM
 out <- gbm.sc(Y,M=20,sigma=10, infer.beta=TRUE)
 df <- data.frame(x=out$scores[,1], y=out$scores[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
-p <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none")
+p <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
+  scale_color_viridis_d(direction=-1)
 p_GBM <- p
 
 
