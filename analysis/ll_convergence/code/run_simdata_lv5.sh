@@ -1,0 +1,10 @@
+#!/bin/bash
+#SBATCH --job-name=gbm_convergence_simlv5    # Job name
+#SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=philnicol740@gmail.com     # Where to send mail
+#SBATCH --mem=256gb                    # Job memory request               # Time limit hrs:min:sec
+#SBATCH --output=../logs/simdata.log   # Standard output and error log
+#SBATCH -c 64
+
+module load gcc/9.2.0
+Rscript sim_data_lv5.R
