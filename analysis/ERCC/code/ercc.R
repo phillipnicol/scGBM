@@ -34,6 +34,7 @@ df <- data.frame(x=gene.means,y=gene.vars) |>
   ylab("Gene variance") +
   scale_x_log10(labels=plain) +
   scale_y_log10(labels=plain)
+  #ggtitle("Mean variance relationship: ERCC controls")
 
 ggsave(df, filename="../plots/mean_variance_relationship.png")
 
@@ -143,3 +144,28 @@ p.ercc.full <- ggarrange(p.sct, p.sct.scaled,
 
 
 ggsave(p.ercc.full,filename="../plots/ercc_full.png")
+
+
+
+## Make scGBM plot
+
+p.gbm.unscaled <- data.frame(x=out$scores[,1], y=out$scores[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  xlab("GBM1") + ylab("GBM2") +
+  ggtitle("ERCC (GBM)") +
+  theme_bw()
+
+
+p.gbm.scaled <- data.frame(x=out.2$scores[,1], y=out.2$scores[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  xlab("GBM1") + ylab("GBM2") +
+  ggtitle("ERCC scaled (GBM)") +
+  theme_bw()
+
+p.ercc.gbm <- ggarrange(p.gbm.unscaled,p.gbm.scaled,
+                         nrow=1, ncol=2)
+
+ggsave(p.ercc.gbm,filename="../plots/ercc_gbm.png",
+       width=8.72, height=3.47, units="in")

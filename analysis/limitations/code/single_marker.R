@@ -29,6 +29,7 @@ true_cluster <- as.character(true_cluster)
 df <- data.frame(y=Y[1,],x=true_cluster,fill=true_cluster)
 pg1 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
   theme_bw() + guides(fill="none") +
+  geom_jitter(alpha=0.5, size=0.5,width=0.3) +
   scale_fill_viridis_d(direction=-1)+
   xlab("") + ylab("Counts") + ggtitle("Gene 1") +
   scale_y_sqrt()
@@ -36,8 +37,22 @@ pg1 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
 df <- data.frame(y=Y[2,],x=true_cluster,fill=true_cluster)
 pg2 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
   theme_bw() + guides(fill="none") +
+  geom_jitter(alpha=0.5, size=0.5,width=0.3) +
   xlab("") + ylab("Counts") + ggtitle("Gene 2") +
-  scale_fill_viridis_d(-1) +
+  scale_fill_viridis_d(direction=-1) +
+  scale_y_sqrt()
+
+pg3 <- Y[3:1000,] |> rbind(true_cluster) |>
+  t() |>
+  as.data.frame() |>
+  pivot_longer(cols=-c(999)) |>
+  mutate(value=as.numeric(value)) |>
+  sample_n(10^4) |>
+  ggplot(aes(x=true_cluster,y=value,fill=true_cluster))+geom_boxplot()+
+  theme_bw() + guides(fill="none") +
+  geom_jitter(alpha=0.5, size=0.5,width=0.3) +
+  xlab("") + ylab("Counts") + ggtitle("Genes 3-1000 (random noise)") +
+  scale_fill_viridis_d(direction=-1) +
   scale_y_sqrt()
 
 
@@ -98,7 +113,7 @@ p_lpca <- p
 
 
 library(ggpubr)
-p.single.full <- ggarrange(ggarrange(pg1, pg2, nrow=1),
+p.single.full <- ggarrange(ggarrange(pg1, pg2, pg3, nrow=1),
           ggarrange(p_lpca, p_lpcascale,
                     p_sct, p_apr, nrow=1), nrow=2,
         heights=c(1.25,1))
@@ -107,12 +122,15 @@ ggsave(p.single.full,
        width=10.1,height=6.35)
 
 ###scGBM
+set.seed(42)
 out <- gbm.sc(Y,M=20,sigma=10, infer.beta=TRUE)
 df <- data.frame(x=out$scores[,1], y=out$scores[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
   scale_color_viridis_d(direction=-1)
 p_GBM <- p
+
+ggsave(p_GBM, filename="../plots/gbm_singlemarker.png")
 
 
 df <- data.frame(x=my.umap$layout[,1],y=my.umap$layout[,2],color=true_cluster)
