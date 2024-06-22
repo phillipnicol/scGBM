@@ -55,24 +55,34 @@ ll.1 <- out$ll.oos
 library(parallel)
 library(fastglm)
 
-proj.time <- c()
-proj.ll <- c()
-subset <- sample(1:ncol(Y),size=400,replace=FALSE)
-for(k in seq(25,250,by=25)) {
-  print(k)
-  start <- Sys.time()
-  out <- gbm.sc(Y1,M=20,max.iter=k,subset=subset,ncores=12,tol=10^{-4})
-  end <- Sys.time()
-  proj.time <- c(proj.time,difftime(end,start,units="secs")[[1]])
+niter <- length(seq(25,250,by=25))
+proj.time.all <- matrix(0, nrow=niter,ncol=10) #ten reps
+proj.ll.all <- proj.time.all
 
-  Alpha <- matrix(out$alpha,nrow=I,ncol=J)
-  Beta <- matrix(out$beta,nrow=I,ncol=J,byrow=TRUE)
-  W <- exp(Alpha+Beta+out$U %*% t(out$scores))
-  proj.ll <- c(proj.ll,sum(Y2*log(W) - W))
-  print(sum(Y2*log(W) - W))
+for(i in 1:10) {
+  proj.time <- c()
+  proj.ll <- c()
+  subset <- sample(1:ncol(Y),size=400,replace=FALSE)
+
+  for(k in seq(25,250,by=25)) {
+    print(k)
+    start <- Sys.time()
+    out <- gbm.sc(Y1,M=20,max.iter=k,subset=subset,ncores=12,tol=10^{-4})
+    end <- Sys.time()
+    proj.time <- c(proj.time,difftime(end,start,units="secs")[[1]])
+
+    Alpha <- matrix(out$alpha,nrow=I,ncol=J)
+    Beta <- matrix(out$beta,nrow=I,ncol=J,byrow=TRUE)
+    W <- exp(Alpha+Beta+out$U %*% t(out$scores))
+    proj.ll <- c(proj.ll,sum(Y2*log(W) - W))
+    print(sum(Y2*log(W) - W))
+  }
+
+  proj.time.all[,i] <- proj.time
+  proj.ll.all[,i] <- proj.ll
 }
-ll.2 <- proj.ll
-time.2 <- proj.time
+ll.2 <- proj.ll.all
+time.2 <- proj.time.all
 print(ll.2)
 
 
