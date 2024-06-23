@@ -42,6 +42,7 @@ Y <- Y[rowSums(Y) >= 50,]
 ds <- scGBM:::data.split(Y,p=0.5)
 Y1 <- ds$Y1; Y2 <- ds$Y2
 I <- nrow(Y); J <- ncol(Y)
+print(dim(Y))
 
 max.iter <- 100
 out <- gbm.sc(Y1,oos.Y=Y2,M=20,max.iter=max.iter,tol=10^{-5},infer.beta=TRUE,time.by.iter = TRUE)
@@ -55,7 +56,7 @@ ll.1 <- out$ll.oos
 library(parallel)
 library(fastglm)
 
-niter <- length(seq(25,250,by=25))
+niter <- length(seq(50,1000,by=50))
 proj.time.all <- matrix(0, nrow=niter,ncol=10) #ten reps
 proj.ll.all <- proj.time.all
 
@@ -64,10 +65,10 @@ for(i in 1:10) {
   proj.ll <- c()
   subset <- sample(1:ncol(Y),size=400,replace=FALSE)
 
-  for(k in seq(25,250,by=25)) {
+  for(k in seq(50,1000,by=50)) {
     print(k)
     start <- Sys.time()
-    out <- gbm.sc(Y1,M=20,max.iter=k,subset=subset,ncores=12,tol=10^{-4})
+    out <- gbm.sc(Y1,M=20,max.iter=k,subset=subset,ncores=12,tol=10^{-5})
     end <- Sys.time()
     proj.time <- c(proj.time,difftime(end,start,units="secs")[[1]])
 
