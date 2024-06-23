@@ -33,10 +33,12 @@ df <- data.frame(x=gene.means,y=gene.vars) |>
   xlab("Gene mean") +
   ylab("Gene variance") +
   scale_x_log10(labels=plain) +
-  scale_y_log10(labels=plain)
-  #ggtitle("Mean variance relationship: ERCC controls")
+  scale_y_log10(labels=plain) +
+  ggtitle("Mean variance relationship: ERCC controls") +
+  theme(plot.title = element_text(size = 9))
 
-ggsave(df, filename="../plots/mean_variance_relationship.png")
+ggsave(df, filename="../plots/mean_variance_relationship.png",
+       width=4, height=2.92, units="in")
 
 ## Default ScTransform
 apr <- sctransform::vst(expr)
