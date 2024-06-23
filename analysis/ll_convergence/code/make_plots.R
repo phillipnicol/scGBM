@@ -15,9 +15,9 @@ df.1 <- data.frame(time=Time[[1]],
                    ll=LL[[1]])
 
 
-df.2 <- data.frame(time=Time[[2]],
+df.2 <- data.frame(time=rowMeans(Time[[2]]),
                    Method="scGBM-proj",
-                   ll=LL[[2]])
+                   ll=rowMeans(LL[[2]]))
 
 
 df.3 <- data.frame(time=Time[[3]],
@@ -49,7 +49,7 @@ p <- p + scale_x_log10(
 p <- p + xlab("") + ylab("")
 p <- p + theme_bw()
 p <- p + annotation_logticks(sides = 'b')
-p <- p + ggtitle("10X Immune (J=3,994)")
+p <- p + ggtitle("10X Immune (J=3,994; I=6,049)")
 p <- p + guides(color="none")
 p  <- p
 p_tenximmune <- p
@@ -101,10 +101,11 @@ p <- p + scale_x_log10(
   labels = scales::trans_format("log10", scales::math_format(10^.x)),
   limits=c(10^2,10^{5})/3600
 )
-p <- p + xlab("") + ylab("")
+p <- p + xlab("") + ylab("") +
+  ylim(-5*10^7, NA)
 p <- p + annotation_logticks(sides = 'b')
 p <- p + theme_bw()
-p <- p + ggtitle("COVID-19 (J=44,721)")
+p <- p + ggtitle("COVID-19 (J=44,721; I=17,393)")
 pblish <- p
 
 
@@ -155,12 +156,12 @@ p <- p + scale_x_log10(
   labels = scales::trans_format("log10", scales::math_format(10^.x)),
   limits=c(10^{1.2},10^{3.5})/3600
 )
-p <- p + xlab("") + ylab("")
+p <- p + xlab("") + ylab("")+
+  ylim(2.24*10^8, NA)
 p <- p + theme_bw()
 p <- p + annotation_logticks(sides = 'b')
 p <- p + ggtitle("LLV Sim (J=100,000; I = 1000)")
 p <- p + guides(color="none")
-p  <- p
 p_simdata <- p
 
 
@@ -211,12 +212,12 @@ p <- p + scale_x_log10(
   labels = scales::trans_format("log10", scales::math_format(10^.x)),
   limits=c(10^{1.2},10^{3.5})/3600
 )
-p <- p + xlab("") + ylab("")
+p <- p + xlab("") + ylab("")+
+  ylim(2.5*10^8, NA)
 p <- p + theme_bw()
 p <- p + annotation_logticks(sides = 'b')
 p <- p + ggtitle("HLV Simulation (J=100,000; I = 1000)")
 p <- p + guides(color="none")
-p  <- p
 p_simdatalv5 <- p
 
 
@@ -228,7 +229,11 @@ p <- ggarrange(pblish, p_tenximmune,
 ggsave(p, filename="../plots/all_runtime_plots.png")
 
 p_isba <- ggarrange(pblish, p_tenximmune,
-               p_simdata, p_simdata, nrow=1, ncol=4, common.legend = TRUE)
+               p_simdata, p_simdatalv5, nrow=1, ncol=4, common.legend = TRUE)
+p_isba <- annotate_figure(p_isba,
+                          left = text_grob("Out-of-sample LL", rot = 90,size=20),
+                          bottom = text_grob("Wall time (hours)",size=20))
+
 
 ggsave(p_isba, filename="../plots/all_runtime_plots_isba.png",
-       width=20.7, units=5.96, units="in")
+       width=20.7, height=5.96, units="in")

@@ -115,14 +115,9 @@ df <- df |> mutate(Method = method.names[Var2])
 p <- ggplot(df,aes(x=Method, y=value, fill=Method)) +
   geom_boxplot(alpha=0.5) +
   geom_jitter(shape=16,position=position_jitter(0.2)) +
-  ylab("Norm of difference of projection")
-p
+  ylab(expression(paste("||", Pi[hat(V)], " - ", Pi[V], "||"))) +
+  theme_bw() + xlab(NULL) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  guides(fill="none")
 
-df <- reshape2::melt(res2)
-df$value <- (sqrt(2*M) - sqrt(I*J)*df$value)/sqrt(2*M)
-df <- df |> mutate(Method = method.names[Var2])
-p <- ggplot(df,aes(x=Method, y=value, fill=Method)) +
-  geom_boxplot(alpha=0.5) +
-  geom_jitter(shape=16,position=position_jitter(0.2)) +
-  ylab("Accuracy")
-p
+ggsave(p, filename="../plots/sim_accuracy.png")

@@ -30,8 +30,11 @@ df <- data.frame(y=Y[1,],x=true_cluster,fill=true_cluster)
 pg1 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
   theme_bw() + guides(fill="none") +
   geom_jitter(alpha=0.5, size=0.5,width=0.3) +
-  scale_fill_viridis_d(direction=-1)+
   xlab("") + ylab("Counts") + ggtitle("Gene 1") +
+  scale_fill_manual(values = c("A" = "#FF0000", # Bright red
+                               "B" = "#0000FF", # Bright blue
+                               "C" = "#CCCCCC", # Light grey
+                               "D" = "#999999"))+  # Darker grey
   scale_y_sqrt()
 
 df <- data.frame(y=Y[2,],x=true_cluster,fill=true_cluster)
@@ -39,7 +42,10 @@ pg2 <- ggplot(data=df,aes(x=x,y=y,fill=fill))+geom_boxplot()+
   theme_bw() + guides(fill="none") +
   geom_jitter(alpha=0.5, size=0.5,width=0.3) +
   xlab("") + ylab("Counts") + ggtitle("Gene 2") +
-  scale_fill_viridis_d(direction=-1) +
+  scale_fill_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))+  # Darker grey
   scale_y_sqrt()
 
 pg3 <- Y[3:1000,] |> rbind(true_cluster) |>
@@ -52,7 +58,10 @@ pg3 <- Y[3:1000,] |> rbind(true_cluster) |>
   theme_bw() + guides(fill="none") +
   geom_jitter(alpha=0.5, size=0.5,width=0.3) +
   xlab("") + ylab("Counts") + ggtitle("Genes 3-1000 (random noise)") +
-  scale_fill_viridis_d(direction=-1) +
+  scale_fill_manual(values = c("A" = "#FF0000", # Bright red
+                               "B" = "#0000FF", # Bright blue
+                               "C" = "#CCCCCC", # Light grey
+                               "D" = "#999999"))+  # Darker grey
   scale_y_sqrt()
 
 
@@ -70,7 +79,10 @@ df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
   ggtitle("Log+Scale+PCA") + theme(plot.title = element_text(size = 10)) +
-  scale_color_viridis_d(direction=-1)
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))  # Darker grey
 p_lpcascale <- p
 
 
@@ -86,7 +98,11 @@ sct <- Sco@reductions$pca@cell.embeddings
 df <- data.frame(x=sct[,1],y=sct[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
-  ggtitle("SCT+PCA") + scale_color_viridis_d(direction=-1)
+  ggtitle("SCT+PCA") +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))  # Darker grey
 p_sct <- p
 
 
@@ -96,7 +112,11 @@ pca.apr <- prcomp(t(apr$y))
 df <- data.frame(x=pca.apr$x[,1],y=pca.apr$x[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
-  ggtitle("APR+PCA") +   scale_color_viridis_d(direction=-1)
+  ggtitle("APR+PCA") +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))  # Darker grey
 p_apr <- p
 
 ### LOG +  PCA
@@ -108,7 +128,11 @@ lpca <- my.pca$x
 df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
-  ggtitle("Log+PCA") +   scale_color_viridis_d(direction=-1)
+  ggtitle("Log+PCA") +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                               "B" = "#0000FF", # Bright blue
+                               "C" = "#CCCCCC", # Light grey
+                               "D" = "#999999"))  # Darker grey
 p_lpca <- p
 
 
@@ -116,21 +140,27 @@ library(ggpubr)
 p.single.full <- ggarrange(ggarrange(pg1, pg2, pg3, nrow=1),
           ggarrange(p_lpca, p_lpcascale,
                     p_sct, p_apr, nrow=1), nrow=2,
-        heights=c(1.25,1))
+        heights=c(1,1))
 ggsave(p.single.full,
-       filename="../plots/single_marker.png",
-       width=10.1,height=6.35)
+       filename="../plots/single_marker_pca.png",
+       width=11.9, height=6.32, units="in")
 
 ###scGBM
 set.seed(42)
 out <- gbm.sc(Y,M=20,sigma=10, infer.beta=TRUE)
+
+
 df <- data.frame(x=out$scores[,1], y=out$scores[,2],color=true_cluster)
+
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
-  scale_color_viridis_d(direction=-1)
-p_GBM <- p
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                              "B" = "#0000FF", # Bright blue
+                              "C" = "#CCCCCC", # Light grey
+                              "D" = "#999999")) +
+  ggtitle("GBM")
 
-ggsave(p_GBM, filename="../plots/gbm_singlemarker.png")
+ggsave(p, filename="../plots/single_marker.png")
 
 
 df <- data.frame(x=my.umap$layout[,1],y=my.umap$layout[,2],color=true_cluster)
