@@ -235,5 +235,5 @@ p_isba <- annotate_figure(p_isba,
                           bottom = text_grob("Wall time (hours)",size=20))
 
 
-ggsave(p_isba, filename="../plots/all_runtime_plots_isba.png",
+ggsave(p_isba, filename="../plots/all_runtime_plots_isba.pdf",
        width=20.7, height=5.96, units="in")

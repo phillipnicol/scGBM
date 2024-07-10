@@ -158,7 +158,7 @@ p <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
                               "B" = "#0000FF", # Bright blue
                               "C" = "#CCCCCC", # Light grey
                               "D" = "#999999")) +
-  ggtitle("GBM")
+  ggtitle("Simulated data with four clusters")
 
 ggsave(p, filename="../plots/single_marker.png")
 
