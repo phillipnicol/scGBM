@@ -75,7 +75,7 @@ Sco <- ScaleData(Sco)
 Sco$group <- true_cluster
 Sco <- RunPCA(Sco)
 lpca <- Sco@reductions$pca@cell.embeddings
-lpca.scale.umap <- umap::umap(lpca[,1:10])
+lpca.scale.umap <- umap::umap(lpca[,1:20])$layout
 df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
@@ -85,6 +85,18 @@ p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
                                 "C" = "#CCCCCC", # Light grey
                                 "D" = "#999999"))  # Darker grey
 p_lpcascale <- p
+
+df <- data.frame(x=lpca.scale.umap[,1],
+                 y=lpca.scale.umap[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("LOG+SCALE+PCA+UMAP") +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))  # Darker grey
+p_lpcascale_umap <- p
+
 
 
 
@@ -96,7 +108,7 @@ Sco$group <- true_cluster
 Sco <- SCTransform(Sco)
 Sco <- RunPCA(Sco)
 sct <- Sco@reductions$pca@cell.embeddings
-sct.umap <- umap::umap(sct[,1:10])
+sct.umap <- umap::umap(sct[,1:20])$layout
 df <- data.frame(x=sct[,1],y=sct[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
@@ -107,10 +119,32 @@ p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
                                 "D" = "#999999"))  # Darker grey
 p_sct <- p
 
+df <- data.frame(x=sct.umap[,1],y=sct.umap[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("SCT+PCA+UMAP") +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))  # Darker grey
+p_sct_umap <- p
+
+g1 <- Sco@assays$SCT@scale.data[1,]
+g2 <- Sco@assays$SCT@scale.data[2,]
+nullg <- as.vector(Sco@assays$SCT@scale.data[3:1000,])
+df <- data.frame(x=rep(c("Gene 1", "Gene 2", "Null Genes"), times=c(1000, 1000, 998000)),
+                 y=c(g1,g2,nullg))
+p <- ggplot(data=df,aes(x=x,y=abs(y),fill=x)) +
+  geom_boxplot()
+p
+
+
+
 
 ### ANALYTIC PEARSON RESIDUALS
 apr <- sctransform::vst(Y, method="offset")
 pca.apr <- prcomp(t(apr$y))
+apr.umap <- umap::umap(pca.apr$x[,1:20])$layout
 df <- data.frame(x=pca.apr$x[,1],y=pca.apr$x[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
@@ -121,6 +155,26 @@ p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
                                 "D" = "#999999"))  # Darker grey
 p_apr <- p
 
+df <- data.frame(x=apr.umap[,1],y=apr.umap[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("APR+PCA+UMAP") +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))  # Darker grey
+p_apr_umap <- p
+
+gene.var.apr <- apply(apr$y, 1, var)[-2]
+df <- data.frame(x=rep("APR",998),
+                 y=gene.var.apr[-1])
+
+p <- ggplot(data=df,aes(x=x,y=y)) + geom_boxplot(outlier.shape = NA,fill="lightblue")+
+  geom_jitter(width=0.2,size=0.5) +
+  geom_point(x="APR",y=gene.var.apr[1], color="red", size=2, shape=8) +
+  ylim(0.8,1.35) +
+  xlab("") + ylab("Variance") + theme_bw()
+
 ### LOG +  PCA
 colnames(Y) <- 1:J
 rownames(Y) <- 1:I
@@ -128,7 +182,7 @@ L <- median(colSums(Y))
 YL <- log(sweep(Y,MARGIN=2,STATS=L^{-1}*colSums(Y),FUN="/") + 1)
 my.pca <- prcomp(t(YL))
 lpca <- my.pca$x
-lpca.umap <- umap::umap(lpca[,1:10])
+lpca.umap <- umap::umap(lpca[,1:20])$layout
 df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
@@ -139,6 +193,25 @@ p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
                                "D" = "#999999"))  # Darker grey
 p_lpca <- p
 
+df <- data.frame(x=lpca.umap[,1],y=lpca.umap[,2],color=true_cluster)
+p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("APR+PCA+UMAP") +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#CCCCCC", # Light grey
+                                "D" = "#999999"))  # Darker grey
+p_lpca_umap <- p
+
+gene.var.log <- apply(YL, 1, var)[-2]
+df <- data.frame(x=rep("LOG",998),
+                 y=gene.var.log[-1])
+
+p <- ggplot(data=df,aes(x=x,y=y)) + geom_boxplot(outlier.shape = NA,fill="lightblue")+
+  geom_jitter(width=0.2,size=0.5) +
+  geom_point(x="LOG",y=gene.var.log[1], color="red", size=2, shape=8) +
+  xlab("") + ylab("Variance") + theme_bw()
+p <- p_log_var
 
 library(ggpubr)
 p.single.full <- ggarrange(ggarrange(pg1, pg2, pg3, nrow=1),
@@ -150,8 +223,8 @@ ggsave(p.single.full,
        width=11.9, height=6.32, units="in")
 
 
-p.umap <- ggarrange(p_lpca, p_lpcascale,
-                    p_sct, p_apr, nrow=1)
+p.umap <- ggarrange(p_lpca_umap, p_lpcascale_umap,
+                    p_sct_umap, p_apr_umap)
 
 
 ###scGBM
