@@ -4,12 +4,12 @@ set.seed(1)
 library(Seurat)
 library(viridis)
 pt.size <- 0.5
-L <- 10^4
 
 set.seed(1)
 I <- 1000
 J <- 1000
-baseline.means <- rexp(n=I, rate=1)
+#baseline.means <- rexp(n=I, rate=1)
+baseline.means <- rep(1, I)
 Mu <- matrix(baseline.means,nrow=I,ncol=J)
 Mu[1,] <- 100
 Mu[1,1:10] <- 1
@@ -75,9 +75,10 @@ Sco <- ScaleData(Sco)
 Sco$group <- true_cluster
 Sco <- RunPCA(Sco)
 lpca <- Sco@reductions$pca@cell.embeddings
+lpca.scale.umap <- umap::umap(lpca[,1:10])
 df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
-p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
+p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
   ggtitle("Log+Scale+PCA") + theme(plot.title = element_text(size = 10)) +
   scale_color_manual(values = c("A" = "#FF0000", # Bright red
                                 "B" = "#0000FF", # Bright blue
@@ -95,6 +96,7 @@ Sco$group <- true_cluster
 Sco <- SCTransform(Sco)
 Sco <- RunPCA(Sco)
 sct <- Sco@reductions$pca@cell.embeddings
+sct.umap <- umap::umap(sct[,1:10])
 df <- data.frame(x=sct[,1],y=sct[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
@@ -122,9 +124,11 @@ p_apr <- p
 ### LOG +  PCA
 colnames(Y) <- 1:J
 rownames(Y) <- 1:I
+L <- median(colSums(Y))
 YL <- log(sweep(Y,MARGIN=2,STATS=L^{-1}*colSums(Y),FUN="/") + 1)
 my.pca <- prcomp(t(YL))
 lpca <- my.pca$x
+lpca.umap <- umap::umap(lpca[,1:10])
 df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
@@ -144,6 +148,11 @@ p.single.full <- ggarrange(ggarrange(pg1, pg2, pg3, nrow=1),
 ggsave(p.single.full,
        filename="../plots/single_marker_pca.png",
        width=11.9, height=6.32, units="in")
+
+
+p.umap <- ggarrange(p_lpca, p_lpcascale,
+                    p_sct, p_apr, nrow=1)
+
 
 ###scGBM
 set.seed(42)

@@ -1,5 +1,5 @@
 
-
+set.seed(42)
 library(Seurat)
 expr <- ReadMtx("../../data/Zheng_ERCC/matrix.mtx",
                 cells="../../data/Zheng_ERCC/barcodes.tsv",
@@ -10,109 +10,85 @@ nz <- apply(expr, 1, function(x) sum(x != 0))
 
 expr <- expr[nz >= 5,]
 
-## Default ScTransform
-#apr <- sctransform::vst(expr)
-#my.pca <- irlba::prcomp_irlba(apr$y)
-#umap.sct <- umap::umap(my.pca$rotation)
-
-## APR
-apr <- sctransform::vst(expr, method="offset")
-my.pca <- irlba::prcomp_irlba(t(apr$y),n=20)
-umap.apr <- umap::umap(my.pca$x)
-
-p.apr.pca <- data.frame(x=my.pca$x[,1], y=my.pca$x[,2]) |>
-  ggplot(aes(x=x,y=y)) +
-  geom_point(size=0.5) +
-  theme_bw() +
-  xlab("PCA1") + ylab("PCA2") +
-  ggtitle("ERCC (APR + PCA)")
-
-p.apr.umap <- data.frame(x=umap.apr$layout[,1], y=umap.apr$layout[,2]) |>
-  ggplot(aes(x=x,y=y)) +
-  geom_point(size=0.5) +
-  theme_bw() +
-  xlab("UMAP1") + ylab("UMAP2") +
-  ggtitle("ERCC (APR + PCA + UMAP)")
-
-## Log + scale + PCA
-#size.factor <- colSums(expr)
-#CPM <- 10^6*sweep(expr2, 2, size.factor, "/")
-#log2CPM <- log2(CPM+1)
-#my.pca <- prcomp(log2CPM)
-#umap.log.scale <- umap::umap(my.pca$rotation[,1:10])
-
-## Log + PCA
-#size.factor <- colSums(expr)
-#normalized <- sweep(expr, 2, size.factor, "/")
-#log2.counts <- log(normalized + 1,base=2)
-#my.pca <- irlba::prcomp_irlba(log2.counts)
-#umap.log2 <- umap::umap(my.pca$rotation)
-
-#p <- data.frame(x=log(colSums(expr)), y=my.pca$rotation[,1],
-#                color=log(colSums(expr))) |>
-#  ggplot(aes(x=x,y=y,color=color)) + geom_point() +
-#  scale_color_gradient(low="blue", high="red")
-
-## scGBM with prior on sigma
-out <- gbm.sc(expr |> as.matrix(),M=20,sigma=10)
-p.gbm1 <- data.frame(x=out$scores[,1], y=out$scores[,2]) |>
-  ggplot(aes(x=x,y=y)) +
-  geom_point(size=0.5) +
-  theme_bw() +
-  xlab("GBM1") + ylab("GBM2") +
-  ggtitle("ERCC (GBM)")
-
-
-
-### Make it even worse by multiplying each row
-set.seed(1)
-row.multiplier <- rexp(n=nrow(expr), rate=0.01)
+row.multiplier <- rexp(n=nrow(expr), rate=0.1)
 
 expr2 <- sweep(expr, 1, row.multiplier, `*`)
 expr2 <- as.matrix(expr2)
 
+## APR + PCA + (UMAP)
 
-## Default ScTransform
-#apr <- sctransform::vst(expr2)
-#my.pca <- irlba::prcomp_irlba(t(apr$y))
-#umap.sct <- umap::umap(my.pca$x)
-
-
-
-## APR
-apr <- sctransform::vst(expr2, method="offset")
-my.pca <- irlba::prcomp_irlba(t(apr$y),n=20)
+apr <- sctransform::vst(expr, method="offset")
+my.pca <- irlba::prcomp_irlba(t(apr$y),n=10)
 umap.apr <- umap::umap(my.pca$x)
-
-p.scale.apr.pca <- data.frame(x=my.pca$x[,1], y=my.pca$x[,2]) |>
+p.apr <- data.frame(x=my.pca$x[,1], y=my.pca$x[,2]) |>
   ggplot(aes(x=x,y=y)) +
   geom_point(size=0.5) +
-  theme_bw() +
   xlab("PCA1") + ylab("PCA2") +
-  ggtitle("ERCC Scaled (APR + PCA)")
+  ggtitle("ERCC (APR + PCA)") +
+  theme_bw() +
+  xlab("") + ylab("")
 
-p.scale.apr.umap <- data.frame(x=umap.apr$layout[,1], y=umap.apr$layout[,2]) |>
+apr <- sctransform::vst(expr2, method="offset")
+my.pca.scaled <- irlba::prcomp_irlba(t(apr$y),n=10)
+umap.apr.scaled <- umap::umap(my.pca$x)
+p.apr.scaled <- data.frame(x=my.pca.scaled$x[,1], y=my.pca.scaled$x[,2]) |>
   ggplot(aes(x=x,y=y)) +
   geom_point(size=0.5) +
+  xlab("PCA1") + ylab("PCA2") +
+  ggtitle("ERCC Scaled (APR + PCA)") +
   theme_bw() +
-  xlab("UMAP1") + ylab("UMAP2") +
-  ggtitle("ERCC Scaled (APR + PCA + UMAP)")
+  xlab("") + ylab("")
 
-ggarrange(p.apr.pca, p.scale.apr.pca, nrow=1)
-ggarrange(p.apr.umap,p.scale.apr.umap,nrow=1)
+p.umap.scaled <- data.frame(x=umap.apr.scaled$layout[,1],
+                           y=umap.apr.scaled$layout[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  xlab("PCA1") + ylab("PCA2") +
+  ggtitle("ERCC Scaled (APR + PCA + UMAP)") +
+  theme_bw() +
+  xlab("") + ylab("")
 
-## Log + PCA
-#size.factor <- colSums(expr2)
-#normalized <- sweep(expr2, 2, size.factor, "/")
-#log2.counts <- log(normalized + 1,base=2)
-#my.pca <- irlba::prcomp_irlba(log2.counts)
-#umap.log2 <- umap::umap(my.pca$rotation)
+## SCT + PCA + (UMAP)
 
-## Log + scale + PCA
-#size.factor <- colSums(expr2)
-#CPM <- 10^6*sweep(expr2, 2, size.factor, "/")
-#log2CPM <- log2(CPM+1)
-#my.pca <- prcomp(log2CPM)
+apr <- sctransform::vst(expr)
+my.pca <- irlba::prcomp_irlba(t(apr$y),n=10)
+umap.apr <- umap::umap(my.pca$x)
+p.sct <- data.frame(x=my.pca$x[,1], y=my.pca$x[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  xlab("PCA1") + ylab("PCA2") +
+  ggtitle("ERCC (SCT + PCA)") +
+  theme_bw() +
+  xlab("") + ylab("")
+
+apr <- sctransform::vst(expr2)
+my.pca.scaled <- irlba::prcomp_irlba(t(apr$y),n=10)
+umap.apr.scaled <- umap::umap(my.pca$x)
+p.sct.scaled <- data.frame(x=my.pca.scaled$x[,1], y=my.pca.scaled$x[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  xlab("PCA1") + ylab("PCA2") +
+  ggtitle("ERCC Scaled (SCT + PCA)") +
+  theme_bw() +
+  xlab("") + ylab("")
+
+p.sct.umap.scaled <- data.frame(x=umap.apr.scaled$layout[,1],
+                            y=umap.apr.scaled$layout[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  xlab("PCA1") + ylab("PCA2") +
+  ggtitle("ERCC Scaled (SCT + PCA + UMAP)") +
+  theme_bw() +
+  xlab("") + ylab("")
+
+
+library(ggpubr)
+
+ggarrange(p.apr, p.apr.scaled, p.umap.scaled,
+          p.sct, p.sct.scaled, p.sct.umap.scaled,
+          nrow=2,ncol=3)
+
+
 
 ## scGBM with prior on sigma
 out <- gbm.sc(expr2,M=20,sigma=10)
