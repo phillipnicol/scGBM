@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .DS_Store
+*.png
 # exclude everything including subdirectories
 analysis/data/*
 Analysis/data/*/*
