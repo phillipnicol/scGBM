@@ -157,6 +157,3 @@ df <- data.frame(x=out$scores[,1],y=out$scores[,2],color=true_cluster)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()
 
-out <- gbm.sc(Y,M=2)
-fit <- fastglmpca::fit_glmpca_pois(Y,K=20)
-

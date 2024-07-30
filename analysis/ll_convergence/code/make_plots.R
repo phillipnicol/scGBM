@@ -223,17 +223,58 @@ p_simdatalv5 <- p
 
 library(ggpubr)
 
-p <- ggarrange(pblish, p_tenximmune,
+p_ll <- ggarrange(pblish, p_tenximmune,
                p_simdata, p_simdatalv5, nrow=2, ncol=2, common.legend = TRUE)
 
-ggsave(p, filename="../plots/all_runtime_plots.png")
-
-p_isba <- ggarrange(pblish, p_tenximmune,
-               p_simdata, p_simdatalv5, nrow=1, ncol=4, common.legend = TRUE)
-p_isba <- annotate_figure(p_isba,
-                          left = text_grob("Out-of-sample LL", rot = 90,size=20),
-                          bottom = text_grob("Wall time (hours)",size=20))
+ggsave(p_ll, filename="../plots/all_runtime_plots.png")
 
 
-ggsave(p_isba, filename="../plots/all_runtime_plots_isba.pdf",
-       width=20.7, height=5.96, units="in")
+
+### Plotting
+res <- readRDS("../../simulation_accuracy/data/factor_correlation.RDS")
+res2 <- readRDS("../../simulation_accuracy/data/mse.RDS")
+
+df <- reshape2::melt(res)
+
+
+I <- 10^3
+J <- 10^4
+M <- 10
+
+library(tidyverse)
+method.names = c("scGBM-full",
+                 "scGBM-proj",
+                 "GLM-PCA (AvaGrad)",
+                 "GLM-PCA (SGD)",
+                 "GLM-PCA (Fisher)")
+
+df <- df |> mutate(Method = method.names[Var2]) |>
+  group_by(Method, Var3) |>
+  summarise(mean=mean(value^2),
+            ymin=mean(value^2) - sd(value^2),
+            ymax=mean(value^2) + sd(value^2))
+
+p <- ggplot(df, aes(x=Var3, y=mean, color=Method,ymin=ymin,ymax=ymax)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  xlab("Latent factor") +
+  ylab("r^2 with ground truth")
+
+
+df <- reshape2::melt(res2)
+df$value <- sqrt(I*J)*df$value
+df <- df |> mutate(Method = method.names[Var2])
+p <- ggplot(df,aes(x=Method, y=value, fill=Method)) +
+  geom_boxplot(alpha=0.5) +
+  geom_jitter(shape=16,position=position_jitter(0.2)) +
+  ylab(expression(paste("||", Pi[hat(V)], " - ", Pi[V], "||"))) +
+  theme_bw() + xlab(NULL) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  guides(fill="none")
+
+p <- ggarrange(p, p_ll, nrow=2, heights=c(1,2), labels=c("a","b"))
+
+ggsave(p, filename="../plots/glmpca_comparison.png",
+       width=11.1, height=11.7)
+
