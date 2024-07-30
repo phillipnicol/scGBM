@@ -346,19 +346,62 @@ out <- gbm.sc(Y,M=20,sigma=10, infer.beta=TRUE)
 df <- data.frame(x=out$scores[,1], y=out$scores[,2],color=true_cluster)
 
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
-p <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
+p_sm <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
   scale_color_manual(values = c("A" = "#FF0000", # Bright red
                               "B" = "#0000FF", # Bright blue
                               "C" = "#FFD700", # Light grey
-                              "D" = "#999999")) +
-  ggtitle("Simulated data with four clusters")
-
-ggsave(p, filename="../plots/single_marker.png")
+                              "D" = "#999999"))
 
 
-df <- data.frame(x=my.umap$layout[,1],y=my.umap$layout[,2],color=true_cluster)
-p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
-p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
-  ggtitle("Log+PCA")
-p_umap <- p
+## scGBM with prior on sigma
+out <- gbm.sc(expr |> as.matrix(),M=20,sigma=10)
+
+p.gbm1 <- data.frame(x=out$scores[,1], y=out$scores[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  theme_bw() +
+  xlab("GBM1") + ylab("GBM2") +
+  ggtitle("ERCC Scaled (GBM)")
+
+out <- gbm.sc(expr2 |> as.matrix(),M=20,sigma=10)
+
+p.gbm2 <- data.frame(x=out$scores[,1], y=out$scores[,2]) |>
+  ggplot(aes(x=x,y=y)) +
+  geom_point(size=0.5) +
+  theme_bw() +
+  xlab("GBM1") + ylab("GBM2") +
+  ggtitle("ERCC Scaled (GBM)")
+
+p_ercc <- ggarrange(p.gbm1,p.gbm2,nrow=1)
+
+res <- readRDS("../../cluster_accuracy/data/zhengmix8eq.RDS")
+res2 <- readRDS("../../cluster_accuracy/data/zhengmix8uneq.RDS")
+
+names(res) <- c("scGBM-full", "scGBM-proj",
+                "log+scale+PCA",
+                "SCT+PCA",
+                "APR+PCA",
+                "GLM-PCA")
+
+df <- data.frame(equal = res,
+                 unequal = res2, Method=names(res) |> fct_inorder())
+
+p <- reshape2::melt(df,id.vars="Method") |>
+  ggplot(aes(x = Method, y=value, fill=variable)) +
+  geom_bar(stat="identity", position="dodge") +
+  scale_fill_manual(labels=c("Equal", "Unequal"),
+                    values=c("firebrick", "forestgreen")) +
+  ylab("ARI") +
+  labs(fill = "Size distribution") +
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+
+
+
+p <- ggarrange(p_sm, p_ercc, p, nrow=3, labels=c("a","b","c"))
+
+ggsave(p, filename="../plots/gbm_limitations.png")
+
+
+
 
