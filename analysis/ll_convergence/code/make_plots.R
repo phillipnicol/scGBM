@@ -273,7 +273,7 @@ p <- ggplot(df,aes(x=Method, y=value, fill=Method)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
   guides(fill="none")
 
-p <- ggarrange(p, p_ll, nrow=2, heights=c(1,2), labels=c("a","b"))
+p <- ggarrange(p, p_ll, nrow=2, heights=c(1.5,2), labels=c("a","b"))
 
 ggsave(p, filename="../plots/glmpca_comparison.png",
        width=11.1, height=11.7)
