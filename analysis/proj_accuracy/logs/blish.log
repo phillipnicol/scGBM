@@ -1,0 +1,8 @@
+Loading required package: Matrix
+Warning message:
+In asMethod(object) :
+  sparse->dense coercion: allocating vector of size 8.8 GiB
+Loading required package: bigmemory
+Loading required package: foreach
+Loading required package: iterators
+Loading required package: parallel
