@@ -113,7 +113,7 @@ Sco <- SCTransform(Sco)
 Sco <- RunPCA(Sco)
 sct <- Sco@reductions$pca@cell.embeddings
 sct.umap <- umap::umap(sct[,1:10])$layout
-df <- data.frame(x=sct[,1],y=sct[,2],color=true_cluster)
+df <- data.frame(x=sct[,1],y=sct[,2],color=true_cluster) |> arrange(desc(color))
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
   ggtitle("SCT+PCA") +
@@ -147,7 +147,7 @@ p_sct_umap <- data.frame(x=sct.umap[,1], y=sct.umap[,2],color=true_cluster) |>
 apr <- sctransform::vst(Y, method="offset")
 pca.apr <- prcomp(t(apr$y))
 apr.umap <- umap::umap(pca.apr$x[,1:10])$layout
-df <- data.frame(x=pca.apr$x[,1],y=pca.apr$x[,2],color=true_cluster)
+df <- data.frame(x=pca.apr$x[,1],y=pca.apr$x[,2],color=true_cluster) |> arrange(desc(color))
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
   ggtitle("APR+PCA") +
@@ -184,7 +184,7 @@ YL <- log(sweep(Y,MARGIN=2,STATS=L^{-1}*colSums(Y),FUN="/") + 1)
 my.pca <- prcomp(t(YL))
 lpca <- my.pca$x
 lpca.umap <- umap::umap(lpca[,1:10])$layout
-df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster)
+df <- data.frame(x=lpca[,1],y=lpca[,2],color=true_cluster) |> arrange(desc(color))
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none") +
   ggtitle("Log+PCA") +
