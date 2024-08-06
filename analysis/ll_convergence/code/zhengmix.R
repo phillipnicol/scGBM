@@ -2,6 +2,7 @@
 library(scGBM)
 library(rstiefel)
 library(SingleCellExperiment)
+library(Seurat)
 
 #Compute log-likelihood
 gbm.ll <- function(W,Y) {
@@ -51,6 +52,8 @@ print(out$ll.oos)
 time.1 <- out$time
 ll.1 <- out$ll.oos
 
+saveRDS(out$scores, file="../data/gbm_zhengmix_embedding.RDS")
+
 ## GBM SC PAR
 ## GBM SC PAR
 library(parallel)
@@ -86,6 +89,8 @@ ll.2 <- proj.ll.all
 time.2 <- proj.time.all
 print(ll.2)
 
+saveRDS(out$scores, file="../data/gbm_proj_zhengmix_embedding.RDS")
+
 
 
 
@@ -100,9 +105,12 @@ fit <- glmpca(Y1,L=20,Y.oos=Y2,ctl=list(maxIter=max.iter))
 time.3 <- fit$mylist$time[-1]
 ll.3 <- fit$mylist$LL
 
+saveRDS(fit$res$factors, file="../data/glmpca_avagrad_zhengmix_embedding.RDS")
+
 max.iter <- 100
 fit <- glmpca(Y1,L=20,Y.oos=Y2,optimizer="fisher",ctl=list(verbose=TRUE,maxIter=max.iter))
 
+saveRDS(fit$res$factors, file="../data/glmpca_fisher_zhengmix_embedding.RDS")
 
 time.4 <- fit$mylist$time[-1]
 ll.4 <- fit$mylist$LL
@@ -111,6 +119,7 @@ set.seed(1)
 max.iter <- 500
 fit <- glmpca(Y1,Y.oos=Y2,L=20,minibatch="stochastic",ctl=list(verbose=TRUE,max.iter=max.iter,batch_size=400))
 
+saveRDS(fit$res$factors, file="../data/glmpca_sgd_zhengmix_embedding.RDS")
 
 time.5 <- fit$mylist$time[-1]
 ll.5 <- fit$mylist$LL
@@ -123,3 +132,52 @@ LL <- list(ll.1,ll.2,ll.3,ll.4, ll.5)
 
 save(Time,file="../data/zhengmix_time.RData")
 save(LL,file="../data/zhengmix_LL.RData")
+
+
+### Comparison to standard pipeline
+
+
+## Comparison to LOG+PCA
+
+L <- median(colSums(Y))
+YL <- log(sweep(Y,MARGIN=2,STATS=L^{-1}*colSums(Y),FUN="/") + 1)
+my.pca <- irlba::prcomp_irlba(t(YL),n=20)
+saveRDS(my.pca$x, "../data/logpca_zhemgmix_embedding.RDS")
+
+pca.umap <- umap::umap(my.pca$x)$layout
+saveRDS(pca.umap, "../data/logpca_zhengmix_umap.RDS")
+
+## Comparison to APR
+
+apr <- sctransform::vst(Y, method="offset")
+pca.apr <- irlba::prcomp_irlba(t(apr$y),n=20)
+saveRDS(pca.apr$x, "../data/apr_zhengmix_embedding.RDS")
+
+apr.umap <- umap::umap(pca.apr$x)$layout
+saveRDS(apr.umap, "../data/apr_zhengmix_umap.RDS")
+
+## Comparison to SCT
+Sco <- CreateSeuratObject(counts=Y)
+Sco <- SCTransform(Sco)
+Sco <- RunPCA(Sco)
+sct <- Sco@reductions$pca@cell.embeddings
+saveRDS(sct, "../data/sct_zhengmix_embedding.RDS")
+
+sct.umap <- umap::umap(sct)$layout
+saveRDS(sct.umap, "../data/sct_zhengmix_umap.RDS")
+
+## Comparison to Log+Scale+PCA
+
+Sco <- CreateSeuratObject(counts=Y)
+Sco <- NormalizeData(Sco)
+Sco <- FindVariableFeatures(Sco)
+Sco <- ScaleData(Sco)
+Sco <- RunPCA(Sco)
+
+lpca <- Sco@reductions$pca@cell.embeddings
+saveRDS(sct, "../data/seurat_zhengmix_embedding.RDS")
+lpca.scale.umap <- umap::umap(lpca)$layout
+saveRDS(sct, "../data/seurat_zhengmix_umap.RDS")
+
+
+
