@@ -8,7 +8,7 @@ Y <- as.matrix(Y)
 
 set.seed(1)
 subset <- seq(1000,10000,by=1000)
-iters <- 25
+iters <- 10
 Rmse <- matrix(0,nrow=length(subset),ncol=iters)
 
 library(fastglm)

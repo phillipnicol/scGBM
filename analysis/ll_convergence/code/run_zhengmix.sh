@@ -6,5 +6,6 @@
 #SBATCH --output=../logs/zhengmix.log   # Standard output and error log
 #SBATCH -c 32
 
+module load R/4.3.2
 module load gcc/9.2.0
 Rscript zhengmix.R
