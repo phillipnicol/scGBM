@@ -139,6 +139,7 @@ save(LL,file="../data/zhengmix_LL.RData")
 
 ### Comparison to standard pipeline
 
+Y <- Y1 #Use the one that was compared against
 
 ## Comparison to LOG+PCA
 
