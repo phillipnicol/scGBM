@@ -30,7 +30,7 @@ library(bigmemory)
 
 
 
-sce <- sce_full_Zhengmix4eq()
+sce <- sce_full_Zhengmix8eq()
 
 #Sco <- as.Seurat(sce)
 #Sco <- NormalizeData(Sco)
@@ -48,6 +48,9 @@ print(dim(Y))
 max.iter <- 100
 out <- gbm.sc(Y1,oos.Y=Y2,M=20,max.iter=max.iter,tol=10^{-4},infer.beta=TRUE,time.by.iter = TRUE)
 print(out$ll.oos)
+
+gbm_umap <- umap::umap(out$scores)$layout
+saveRDS(gbm_umap, file="../data/gbm_zhengmix_umap.RDS")
 
 time.1 <- out$time
 ll.1 <- out$ll.oos
