@@ -55,6 +55,101 @@ p  <- p
 p_tenximmune <- p
 
 
+##Compare embedding plots
+point.size <- 0.5
+df <- readRDS("../data/apr_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_apr <- ggplot(data=df,aes(x=PC1,y=PC2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("APR+PCA")
+
+df <- readRDS("../data/apr_zhengmix_umap.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_apr_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("APR+PCA+UMAP")
+
+df <- readRDS("../data/sct_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  ggtitle("SCT+PCA")
+
+df <- readRDS("../data/sct_zhengmix_umap.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_sct_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("SCT+PCA+UMAP")
+
+
+df <- readRDS("../data/logpca_zhemgmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_lpca <- ggplot(data=df,aes(x=PC1,y=PC2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("Log+PCA")
+
+
+df <- readRDS("../data/logpca_zhengmix_umap.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_lpca_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("Log+PCA+UMAP")
+
+df <- readRDS("../data/gbm_zhengmix_embedding.RDS")[,c(1,2)]
+colnames(df) <- c("x","y")
+df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
+p_scgbm <- ggplot(data=df,aes(x=x,y=y,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("scGBM")
+
+df <- readRDS("../data/gbm_proj_zhengmix_embedding.RDS") |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("scGBM-proj")
+
+##scGBM UMAP TODO
+df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
+p_scgbm_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("scGBM+UMAP")
+
+df <- readRDS("../data/glmpca_fisher_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_fisher <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("GLM-PCA (Fisher)")
+
+df <- readRDS("../data/glmpca_avagrad_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_avagrad <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("GLM-PCA (AvaGrad)")
+
+df <- readRDS("../data/glmpca_sgd_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_sgd <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") +
+  ggtitle("GLM-PCA (SGD)")
+
+
+library(ggpubr)
+p <- ggarrange(p_scgbm, p_scgbm_proj, p_scgbm_umap, p_glmpca_avagrad,
+          p_glmpca_fisher, p_glmpca_sgd,
+          p_sct_umap, p_apr_umap, p_lpca_umap,
+          nrow=3, ncol=3, common.legend = TRUE)
+
 
 
 load("../data/blish_time.RData")

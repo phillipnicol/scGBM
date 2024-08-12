@@ -5,6 +5,7 @@
 .DS_Store
 *.png
 *.log
+*.RDS
 
 # exclude everything including subdirectories
 analysis/data/*
