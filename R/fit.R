@@ -349,6 +349,7 @@ process.results <- function(gbm,Y,
     gbm$D <- gbm$D[my.order]
   }
 
+  gbm$dev.diff <- dev.diff[my.order]
   gbm$scores <- t(gbm$D*t(gbm$V))
   return(gbm)
 }

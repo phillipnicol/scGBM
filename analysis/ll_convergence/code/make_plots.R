@@ -116,6 +116,7 @@ p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   ggtitle("scGBM-proj")
 
 ##scGBM UMAP TODO
+df <- readRDS("../data/data/gbm_zhengmix_umap.RDS")
 df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
 p_scgbm_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   geom_point(size=point.size) + theme_bw() +
