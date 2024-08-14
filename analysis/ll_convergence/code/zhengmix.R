@@ -43,6 +43,7 @@ Y <- Y[rowSums(Y) >= 50,]
 ds <- scGBM:::data.split(Y,p=0.5)
 Y1 <- ds$Y1; Y2 <- ds$Y2
 I <- nrow(Y); J <- ncol(Y)
+colnames(Y1) <- colnames(Y); rownames(Y1) <- rownames(Y)
 print(dim(Y))
 
 max.iter <- 100
