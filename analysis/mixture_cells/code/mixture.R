@@ -87,6 +87,7 @@ apr.umap <- Sco@reductions$umap@cell.embeddings
 L <- median(colSums(Y.new))
 YL <- log(sweep(Y.new,MARGIN=2,STATS=L^{-1}*colSums(Y.new),FUN="/") + 1)
 my.pca <- irlba::prcomp_irlba(t(YL), n=20)
+lpca <- my.pca$x
 rownames(my.pca$x) <- colnames(Y.new)
 Sco[["LPCA"]] <- CreateDimReducObject(embeddings=my.pca$x, key="LPCA_")
 Sco <- RunUMAP(Sco,reduction="LPCA",dims=1:20)
@@ -177,7 +178,6 @@ p  <- p + scale_color_gradientn(colors=rainbow(2))
 p <- p + theme_bw()
 p <- p + xlab(parse(text = paste0("paste('PC1 ', r^2, ' = ', ", round(lpca.scale.pca.r21,3), ")")))
 p <- p + ylab(parse(text = paste0("paste('PC2 ', r^2, ' = ', ", round(lpca.scale.pca.r22,3), ")")))
-p <- p + ylab("PCA2")
 p <- p +  ggtitle("Log+Scale+PCA")
 p <- p + labs(color="Naive T")
 p_log2PCAscale <- p
@@ -199,7 +199,6 @@ p  <- p + scale_color_gradientn(colors=rainbow(2))
 p <- p + theme_bw()
 p <- p + xlab(parse(text = paste0("paste('PC1 ', r^2, ' = ', ", round(lpca.pca.r21,3), ")")))
 p <- p + ylab(parse(text = paste0("paste('PC2 ', r^2, ' = ', ", round(lpca.pca.r22,3), ")")))
-p <- p + ylab("PCA2")
 p <- p +  ggtitle("Log+PCA")
 p <- p + labs(color="Naive T")
 p_log2PCA <- p
@@ -300,7 +299,11 @@ G_list <- getBM(filters= "ensembl_gene_id", attributes= c("ensembl_gene_id","hgn
 ix <- match(G_list$ensembl_gene_id, rownames(out$loadings))
 rownames(out$loadings)[ix] <- G_list$hgnc_symbol
 out <- get.se(out,EPS=0.001)
-p.volc <- loadings.volcano(out, return.plot=TRUE,dim=2)
+p.volc <- loadings.volcano(out, return.plot=TRUE,dim=1)
+
+ggsave(p.volc, file="../plots/volcano_plot.png",
+       width=9.15, height=8.08, units="in")
+
 
 library(ggpubr)
 pmid <- ggarrange(ggarrange(p_gbm,p_sct,p_log2,nrow=1,ncol=3,

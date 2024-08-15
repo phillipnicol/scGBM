@@ -54,6 +54,9 @@ p <- p + guides(color="none")
 p  <- p
 p_tenximmune <- p
 
+library(DuoClustering2018)
+sce <- sce_full_Zhengmix8eq()
+
 
 ##Compare embedding plots
 point.size <- 0.5
@@ -115,8 +118,7 @@ p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("scGBM-proj")
 
-##scGBM UMAP TODO
-df <- readRDS("../data/data/gbm_zhengmix_umap.RDS")
+df <- readRDS("../data/gbm_zhengmix_umap.RDS")
 df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
 p_scgbm_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   geom_point(size=point.size) + theme_bw() +
@@ -203,6 +205,42 @@ p <- p + annotation_logticks(sides = 'b')
 p <- p + theme_bw()
 p <- p + ggtitle("COVID-19 (J=44,721; I=17,393)")
 pblish <- p
+
+## Compare embedding plots
+
+
+
+df <- readRDS("../data/gbm_blish_embedding.RDS")[,c(1,2)]
+colnames(df) <- c("x","y")
+df <- df |> as.data.frame() |> mutate(color=blish_meta$cell.type.coarse)
+p_scgbm <- ggplot(data=df,aes(x=x,y=y,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM")
+
+df <- readRDS("../data/gbm_proj_blish_embedding.RDS") |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM-proj")
+
+df <- readRDS("../data/gbm_blish_umap.RDS")
+df <- df |> as.data.frame() |> mutate(color=blish_meta$cell.type.coarse)
+p_scgbm_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM+UMAP")
+
+
+df <- readRDS("../data/glmpca_avagrad_blish_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_glmpca_avagrad <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (AvaGrad)")
+
+
 
 
 
