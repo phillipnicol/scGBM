@@ -324,7 +324,7 @@ gbm.sc.check.valid.input <- function(my.args) {
 
 process.results <- function(gbm,Y,
                             order.by.deviance=TRUE) {
-  #Enforce identifiability in U
+  #Multiplicative identifiability in U, V
   M <- gbm$M
   for(m in 1:M) {
     if(gbm$U[1,m] < 0) {
@@ -332,6 +332,16 @@ process.results <- function(gbm,Y,
       gbm$V[,m] <- -1*gbm$V[,m]
     }
   }
+
+  # Additive identifiability in U, V
+  u.mean <- colMeans(gbm$U)
+  gbm$beta <- gbm$beta + colSums(diag(gbm$D*u.mean)%*%t(gbm$V))
+  gbm$U <- scale(gbm$U, center=TRUE,scale=FALSE)
+  v.mean <- colMeans(gbm$V)
+  gbm$alpha[,1] <- gbm$alpha[,1] + colSums(diag(gbm$D*u.mean)%*%t(gbm$U))
+  gbm$V <- scale(gbm$V, center=TRUE,scale=FALSE)
+  gbm$beta <- gbm$beta + mean(gbm$alpha[,1])
+  gbm$alpha[,1] <- gbm$alpha[,1] - mean(gbm$alpha[,1])
 
   if(order.by.deviance) {
     dev.full <- sum(Y*log(gbm$W) - gbm$W)
