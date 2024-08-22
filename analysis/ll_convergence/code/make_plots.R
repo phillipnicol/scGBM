@@ -186,6 +186,22 @@ p_lpca_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   ggtitle("Log+PCA+UMAP")
 
 
+df <- readRDS("../data/seurat_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_log_scale <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("Log+PCA+SCALE")
+
+df <- readRDS("../data/seurat_zhengmix_umap.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_log_scale_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("Log+Scale+PCA+UMAP")
+
+
+
 library(ggpubr)
 p <- ggarrange(p_scgbm, p_scgbm_umap, p_scgbm_proj, p_scgbm_proj_umap,
                p_glmpca_avagrad, p_glmpca_avagrad_umap, p_glmpca_fisher, p_glmpca_fisher_umap,

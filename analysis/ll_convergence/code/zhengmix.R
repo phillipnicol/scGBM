@@ -180,9 +180,9 @@ Sco <- ScaleData(Sco)
 Sco <- RunPCA(Sco)
 
 lpca <- Sco@reductions$pca@cell.embeddings
-saveRDS(sct, "../data/seurat_zhengmix_embedding.RDS")
+saveRDS(lpca, "../data/seurat_zhengmix_embedding.RDS")
 lpca.scale.umap <- umap::umap(lpca)$layout
-saveRDS(sct, "../data/seurat_zhengmix_umap.RDS")
+saveRDS(lpca.scale.umap, "../data/seurat_zhengmix_umap.RDS")
 
 
 
