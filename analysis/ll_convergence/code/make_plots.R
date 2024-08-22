@@ -60,6 +60,88 @@ sce <- sce_full_Zhengmix8eq()
 
 ##Compare embedding plots
 point.size <- 0.5
+
+
+#scGBM
+df <- readRDS("../data/gbm_zhengmix_embedding.RDS")[,c(1,2)]
+colnames(df) <- c("x","y")
+df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
+p_scgbm <- ggplot(data=df,aes(x=x,y=y,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM")
+
+df <- readRDS("../data/gbm_zhengmix_umap.RDS")
+df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
+p_scgbm_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM+UMAP")
+
+#scGBM proj
+
+df <- readRDS("../data/../data/gbm_proj_zhengmix_embedding.RDS") |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM-proj")
+
+df <- readRDS("../data/../data/gbm_proj_zhengmix_umap.RDS") |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_scgbm_proj_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM-proj+UMAP")
+
+#Fisher
+df <- readRDS("../data/glmpca_fisher_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_fisher <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (Fisher)")
+
+df <- readRDS("../data/glmpca_fisher_zhengmix_umap.RDS") |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_fisher_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (Fisher) + UMAP")
+
+#Avagrad
+df <- readRDS("../data/glmpca_avagrad_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_avagrad <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (AvaGrad)")
+
+df <- readRDS("../data/glmpca_avagrad_zhengmix_umap.RDS") |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_avagrad_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (Avagrad) + UMAP")
+
+
+#SGD
+
+df <- readRDS("../data/glmpca_sgd_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_sgd <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (SGD)")
+
+
+df <- readRDS("../data/glmpca_sgd_zhengmix_umap.RDS") |> as.data.frame() |>
+  mutate(color=sce$phenoid)
+p_glmpca_sgd_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (SGD) + UMAP")
+
 df <- readRDS("../data/apr_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=sce$phenoid)
 p_apr <- ggplot(data=df,aes(x=PC1,y=PC2,color=color)) +
@@ -76,7 +158,7 @@ p_apr_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
 
 df <- readRDS("../data/sct_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=sce$phenoid)
-p <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
+p_sct <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
   geom_point(size=point.size) + theme_bw() + labs(color="Cell Type") +
   ggtitle("SCT+PCA")
 
@@ -103,57 +185,16 @@ p_lpca_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("Log+PCA+UMAP")
 
-df <- readRDS("../data/gbm_zhengmix_embedding.RDS")[,c(1,2)]
-colnames(df) <- c("x","y")
-df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
-p_scgbm <- ggplot(data=df,aes(x=x,y=y,color=color)) +
-  geom_point(size=point.size) + theme_bw() +
-  xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("scGBM")
-
-df <- readRDS("../data/gbm_proj_zhengmix_embedding.RDS") |> as.data.frame() |>
-  mutate(color=sce$phenoid)
-p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
-  geom_point(size=point.size) + theme_bw() +
-  xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("scGBM-proj")
-
-df <- readRDS("../data/gbm_zhengmix_umap.RDS")
-df <- df |> as.data.frame() |> mutate(color=sce$phenoid)
-p_scgbm_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
-  geom_point(size=point.size) + theme_bw() +
-  xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("scGBM+UMAP")
-
-df <- readRDS("../data/glmpca_fisher_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
-  mutate(color=sce$phenoid)
-p_glmpca_fisher <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
-  geom_point(size=point.size) + theme_bw() +
-  xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("GLM-PCA (Fisher)")
-
-df <- readRDS("../data/glmpca_avagrad_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
-  mutate(color=sce$phenoid)
-p_glmpca_avagrad <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
-  geom_point(size=point.size) + theme_bw() +
-  xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("GLM-PCA (AvaGrad)")
-
-df <- readRDS("../data/glmpca_sgd_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
-  mutate(color=sce$phenoid)
-p_glmpca_sgd <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
-  geom_point(size=point.size) + theme_bw() +
-  xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("GLM-PCA (SGD)")
-
 
 library(ggpubr)
-p <- ggarrange(p_scgbm, p_scgbm_proj, p_scgbm_umap, p_glmpca_avagrad,
-          p_glmpca_fisher, p_glmpca_sgd,
-          p_sct_umap, p_apr_umap, p_lpca_umap,
-          nrow=3, ncol=3, common.legend = TRUE)
+p <- ggarrange(p_scgbm, p_scgbm_umap, p_scgbm_proj, p_scgbm_proj_umap,
+               p_glmpca_avagrad, p_glmpca_avagrad_umap, p_glmpca_fisher, p_glmpca_fisher_umap,
+               p_glmpca_sgd, p_glmpca_sgd_umap, p_apr, p_apr_umap,
+               p_lpca, p_lpca_umap, p_sct, p_sct_umap, nrow=4,ncol=4,
+               common.legend=TRUE)
 
-ggsave(p, "../plots/tenx_immune_embeddings.png")
+ggsave(p, filename="../plots/tenx_immune_embeddings.png",
+       width=1.5*10.6, height=1.5*8.33, units="in")
 
 
 
@@ -257,7 +298,7 @@ p_lpca_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
 
 
 
-
+#scGBM
 df <- readRDS("../data/gbm_blish_embedding.RDS")[,c(1,2)]
 colnames(df) <- c("x","y")
 df <- df |> as.data.frame() |> mutate(color=blish_meta$cell.type.coarse)
@@ -266,12 +307,6 @@ p_scgbm <- ggplot(data=df,aes(x=x,y=y,color=color)) +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("scGBM")
 
-df <- readRDS("../data/gbm_proj_blish_embedding.RDS") |> as.data.frame() |>
-  mutate(color=blish_meta$cell.type.coarse)
-p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
-  geom_point(size=point.size) + theme_bw() +
-  xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("scGBM-proj")
 
 df <- readRDS("../data/gbm_blish_umap.RDS")
 df <- df |> as.data.frame() |> mutate(color=blish_meta$cell.type.coarse)
@@ -280,6 +315,24 @@ p_scgbm_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("scGBM+UMAP")
 
+## scGBM-proj
+
+df <- readRDS("../data/gbm_proj_blish_embedding.RDS") |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_scgbm_proj <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM-proj")
+
+df <- readRDS("../data/gbm_proj_blish_umap.RDS")
+df <- df |> as.data.frame() |> mutate(color=blish_meta$cell.type.coarse)
+p_scgbm_proj_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("scGBM-proj+UMAP")
+
+
+#Avagrad
 
 df <- readRDS("../data/glmpca_avagrad_blish_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=blish_meta$cell.type.coarse)
@@ -288,6 +341,15 @@ p_glmpca_avagrad <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("GLM-PCA (AvaGrad)")
 
+df <- readRDS("../data/glmpca_avagrad_blish_umap.RDS") |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_glmpca_avagrad_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (AvaGrad) + UMAP")
+
+#SGD
+
 df <- readRDS("../data/glmpca_sgd_blish_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=blish_meta$cell.type.coarse)
 p_glmpca_sgd <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
@@ -295,12 +357,28 @@ p_glmpca_sgd <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("GLM-PCA (AvaGrad)")
 
+df <- readRDS("../data/glmpca_sgd_blish_umap.RDS") |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_glmpca_sgd_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (SGD) + UMAP")
+
+#Fisher
+
 df <- readRDS("../data/glmpca_fisher_blish_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=blish_meta$cell.type.coarse)
 p_glmpca_fisher <- ggplot(data=df,aes(x=dim1,y=dim2,color=color)) +
   geom_point(size=point.size) + theme_bw() +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("GLM-PCA (Fisher)")
+
+df <- readRDS("../data/glmpca_fisher_blish_umap.RDS") |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_glmpca_fisher_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("GLM-PCA (Fisher) + UMAP")
 
 library(ggpubr)
 p <- ggarrange(p_scgbm, p_scgbm_proj, p_scgbm_umap, p_glmpca_avagrad,
