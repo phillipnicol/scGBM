@@ -8,4 +8,4 @@
 
 module load R/4.3.2
 module load gcc/9.2.0
-Rscript blish.R
+Rscript blish_temp.R
