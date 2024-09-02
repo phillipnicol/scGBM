@@ -286,9 +286,11 @@ p <- ggarrange(p_gbm,p_gbm_umap,
                p_log2PCA, p_log2,
                p_aprPCA, p_apr,
                nrow=5,ncol=2,
-               common.legend=TRUE)
+               common.legend=TRUE,
+               legend="bottom")
 
-ggsave(p, filename="../plots/mixture_sim.png")
+ggsave(p, filename="../plots/mixture_sim.png",
+       width=10.1, height=11.7, units="in")
 
 #Volcano plot
 library('biomaRt')

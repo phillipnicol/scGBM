@@ -160,7 +160,7 @@ df <- readRDS("../data/sct_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame() 
   mutate(color=sce$phenoid)
 p_sct <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
   geom_point(size=point.size) + theme_bw() + labs(color="Cell Type") +
-  ggtitle("SCT+PCA")
+  ggtitle("SCT+PCA") + xlab("") + ylab("")
 
 df <- readRDS("../data/sct_zhengmix_umap.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=sce$phenoid)
@@ -191,7 +191,7 @@ df <- readRDS("../data/seurat_zhengmix_embedding.RDS")[,c(1,2)] |> as.data.frame
 p_log_scale <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
   geom_point(size=point.size) + theme_bw() +
   xlab("") + ylab("") + labs(color="Cell Type") +
-  ggtitle("Log+PCA+SCALE")
+  ggtitle("Log+Scale+PCA")
 
 df <- readRDS("../data/seurat_zhengmix_umap.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=sce$phenoid)
@@ -201,16 +201,32 @@ p_log_scale_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   ggtitle("Log+Scale+PCA+UMAP")
 
 
-
 library(ggpubr)
-p <- ggarrange(p_scgbm, p_scgbm_umap, p_scgbm_proj, p_scgbm_proj_umap,
-               p_glmpca_avagrad, p_glmpca_avagrad_umap, p_glmpca_fisher, p_glmpca_fisher_umap,
-               p_glmpca_sgd, p_glmpca_sgd_umap, p_apr, p_apr_umap,
-               p_lpca, p_lpca_umap, p_sct, p_sct_umap, nrow=4,ncol=4,
-               common.legend=TRUE)
 
-ggsave(p, filename="../plots/tenx_immune_embeddings.png",
-       width=1.5*10.6, height=1.5*8.33, units="in")
+p.embed <- ggarrange(p_scgbm, p_scgbm_proj,
+                     p_glmpca_avagrad, p_glmpca_fisher,
+                     p_glmpca_sgd, p_apr,
+                     p_sct, p_log_scale,
+                     p_lpca, ncol=3, nrow=3,
+                     common.legend=TRUE,
+                     legend="bottom")
+
+ggsave(p.embed, filename="../plots/10x_embeddings.png",
+       width=10.4, height=8.36, units="in")
+
+p.umap <- ggarrange(p_scgbm_umap, p_scgbm_proj_umap,
+                    p_glmpca_avagrad_umap, p_glmpca_fisher_umap,
+                    p_glmpca_sgd_umap, p_apr_umap,
+                    p_sct_umap, p_log_scale_umap,
+                    p_lpca_umap, ncol=3, nrow=3,
+                    common.legend=TRUE,
+                    legend="bottom")
+
+ggsave(p.umap, filename="../plots/10x_umap.png",
+       width=10.4, height=8.36, units="in")
+
+#ggsave(p, filename="../plots/tenx_immune_embeddings.png",
+#       width=1.5*10.6, height=1.5*8.33, units="in")
 
 
 
@@ -285,7 +301,7 @@ p_apr_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
 
 df <- readRDS("../data/sct_blish_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
   mutate(color=blish_meta$cell.type.coarse)
-p <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
+p_sct <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
   geom_point(size=point.size) + theme_bw() + labs(color="Cell Type") +
   ggtitle("SCT+PCA")
 
@@ -396,13 +412,51 @@ p_glmpca_fisher_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
   xlab("") + ylab("") + labs(color="Cell Type") +
   ggtitle("GLM-PCA (Fisher) + UMAP")
 
+#SEURAT
+df <- readRDS("../data/seurat_blish_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_log_scale <- ggplot(data=df,aes(x=PC_1,y=PC_2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("Log+Scale+PCA")
+
+df <- readRDS("../data/seurat_blish_umap.RDS")[,c(1,2)] |> as.data.frame() |>
+  mutate(color=blish_meta$cell.type.coarse)
+p_log_scale_umap <- ggplot(data=df,aes(x=V1,y=V2,color=color)) +
+  geom_point(size=point.size) + theme_bw() +
+  xlab("") + ylab("") + labs(color="Cell Type") +
+  ggtitle("Log+Scale+PCA+UMAP")
+
 library(ggpubr)
+
+p.embed <- ggarrange(p_scgbm, p_scgbm_proj,
+                     p_glmpca_avagrad, p_glmpca_fisher,
+                     p_glmpca_sgd, p_apr,
+                     p_sct, p_log_scale,
+                     p_lpca, ncol=3, nrow=3,
+                     common.legend=TRUE,
+                     legend="bottom")
+
+ggsave(p.embed, filename="../plots/blish_embeddings.png",
+       width=10.4, height=8.36, units="in")
+
+p.umap <- ggarrange(p_scgbm_umap, p_scgbm_proj_umap,
+                    p_glmpca_avagrad_umap, p_glmpca_fisher_umap,
+                    p_glmpca_sgd_umap, p_apr_umap,
+                    p_sct_umap, p_log_scale_umap,
+                    p_lpca_umap, ncol=3, nrow=3,
+                    common.legend=TRUE,
+                    legend="bottom")
+
+ggsave(p.umap, filename="../plots/blish_umap.png",
+       width=10.4, height=8.36, units="in")
+
 p <- ggarrange(p_scgbm, p_scgbm_proj, p_scgbm_umap, p_glmpca_avagrad,
                p_glmpca_fisher, p_glmpca_sgd,
                p_sct_umap, p_apr_umap, p_lpca_umap,
                nrow=3, ncol=3, common.legend = TRUE)
 
-ggsave(p, filename="../plots/blish_embeddings.png", width=12.22, height=9.5, units="in")
+#ggsave(p, filename="../plots/blish_embeddings.png", width=12.22, height=9.5, units="in")
 
 
 df <- readRDS("../data/apr_blish_embedding.RDS")[,c(1,2)] |> as.data.frame() |>
@@ -545,7 +599,8 @@ p_simdatalv5 <- p
 library(ggpubr)
 
 p_ll <- ggarrange(pblish, p_tenximmune,
-               p_simdata, p_simdatalv5, nrow=2, ncol=2, common.legend = TRUE)
+               p_simdata, p_simdatalv5, nrow=2, ncol=2, common.legend = TRUE,
+               legend="bottom")
 
 ggsave(p_ll, filename="../plots/all_runtime_plots.png")
 

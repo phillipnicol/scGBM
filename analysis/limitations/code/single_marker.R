@@ -361,7 +361,7 @@ p.gbm1 <- data.frame(x=out$scores[,1], y=out$scores[,2]) |>
   geom_point(size=0.5) +
   theme_bw() +
   xlab("GBM1") + ylab("GBM2") +
-  ggtitle("ERCC Scaled (GBM)")
+  ggtitle("ERCC (GBM)")
 
 out <- gbm.sc(expr2 |> as.matrix(),M=20,sigma=10)
 
@@ -389,18 +389,22 @@ df <- data.frame(equal = res,
 p <- reshape2::melt(df,id.vars="Method") |>
   ggplot(aes(x = Method, y=value, fill=variable)) +
   geom_bar(stat="identity", position="dodge") +
-  scale_fill_manual(labels=c("Equal", "Unequal"),
+  scale_fill_manual(labels=c("Balanced", "Unbalanced"),
                     values=c("firebrick", "forestgreen")) +
   ylab("ARI") +
   labs(fill = "Size distribution") +
   theme_bw()+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
-
+ggsave(p, filename="../plots/gbm_limitations_excerpt_c.png",
+       width=6.4, height=3.57,units="in")
 
 p <- ggarrange(p_sm, p_ercc, p, nrow=3, labels=c("a","b","c"))
 
-ggsave(p, filename="../plots/gbm_limitations.png")
+ggsave(p, filename="../plots/gbm_limitations.png",
+       width=2541, height=3508, units="px")
+
+
 
 
 
