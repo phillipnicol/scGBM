@@ -254,8 +254,13 @@ expr <- expr[nz >= 5,]
 
 row.multiplier <- rexp(n=nrow(expr), rate=0.1)
 
-expr2 <- sweep(expr, 1, row.multiplier, `*`)
-expr2 <- as.matrix(expr2)
+#expr2 <- sweep(expr, 1, row.multiplier, `*`)
+#expr2 <- as.matrix(expr2)
+
+expr2 <- expr
+for(i in 1:nrow(expr2)) {
+  expr2[i,] <- expr2[i,]/mean(expr2[i,])
+}
 
 ## APR + PCA + (UMAP)
 
@@ -272,7 +277,7 @@ p.apr <- data.frame(x=my.pca$x[,1], y=my.pca$x[,2]) |>
 
 apr <- sctransform::vst(expr2, method="offset")
 my.pca.scaled <- irlba::prcomp_irlba(t(apr$y),n=10)
-umap.apr.scaled <- umap::umap(my.pca$x)
+umap.apr.scaled <- umap::umap(my.pca.scaled$x)
 p.apr.scaled <- data.frame(x=my.pca.scaled$x[,1], y=my.pca.scaled$x[,2]) |>
   ggplot(aes(x=x,y=y)) +
   geom_point(size=0.5) +
@@ -305,7 +310,7 @@ p.sct <- data.frame(x=my.pca$x[,1], y=my.pca$x[,2]) |>
 
 apr <- sctransform::vst(expr2)
 my.pca.scaled <- irlba::prcomp_irlba(t(apr$y),n=10)
-umap.apr.scaled <- umap::umap(my.pca$x)
+umap.apr.scaled <- umap::umap(my.pca.scaled$x)
 p.sct.scaled <- data.frame(x=my.pca.scaled$x[,1], y=my.pca.scaled$x[,2]) |>
   ggplot(aes(x=x,y=y)) +
   geom_point(size=0.5) +
@@ -404,7 +409,11 @@ p <- ggarrange(p_sm, p_ercc, p, nrow=3, labels=c("a","b","c"))
 ggsave(p, filename="../plots/gbm_limitations.png",
        width=2541, height=3508, units="px")
 
+ggsave(p.ercc.scaled, filename="../plots/limitation_plot_panel_c.png",
+       width=12.8, height=5.5)
 
+ggsave(p_ercc, filename = "../plots/gbm_limitations_excerpt_b.png",
+       width=6.37, height=4.79, units="in")
 
 
 

@@ -638,6 +638,7 @@ p <- ggplot(df, aes(x=Var3, y=mean, color=Method,ymin=ymin,ymax=ymax)) +
   ylab("r^2 with ground truth")
 
 
+#res2 <- sqrt(I*J)*res2
 df <- reshape2::melt(res2)
 df$value <- sqrt(I*J)*df$value
 df <- df |> mutate(Method = method.names[Var2])
