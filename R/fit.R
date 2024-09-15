@@ -62,7 +62,8 @@ gbm.sc <- function(Y,
                    min.iter=30,
                    oos.Y=NULL,
                    sigma=10,
-                   order.by.deviance=TRUE) {
+                   order.by.deviance=TRUE,
+                   factor.init = "pearson") {
 
   #Check validity of input
   gbm.sc.check.valid.input(as.list(environment()))
@@ -118,18 +119,25 @@ gbm.sc <- function(Y,
   alphas <- alphas - mean(alphas) #Ensure alphas sum to 0
   W <- exp(sweep(alphas[,batch], 2, betas, "+"))
 
-  #Starting estimate of X
-  Z <- (Y-W)/sqrt(W)
-  LRA <-  irlba::irlba(Z,nv=M,nu=M)
-  X <- LRA$u %*%(LRA$d*t(LRA$v))
-  X <- sqrt(1/W)*X
-  #X[X > 8] <- 8
-  #X[X < -8] <- -8
-  LRA <- irlba::irlba(X,nv=M)
-
   prior.mean <- sigma
-  LRA$d <- sort(rexp(n=M,rate=1/10))
-  X <- LRA$u %*% (LRA$d * t(LRA$v))
+  if(factor.init == "pearson") {
+    #Starting estimate of X
+    #Z <- (Y-W)/sqrt(W)
+    LRA <-  irlba::irlba((Y-W)/sqrt(W),nv=M,nu=M)
+    X <- LRA$u %*%(LRA$d*t(LRA$v))
+    X <- sqrt(1/W)*X
+    #X[X > 8] <- 8
+    #X[X < -8] <- -8
+    LRA <- irlba::irlba(X,nv=M)
+    LRA$d <- sort(rexp(n=M,rate=1/10))
+    X <- LRA$u %*% (LRA$d * t(LRA$v))
+  } else if(factor.init == "near-zero") {
+    LRA <- list()
+    LRA$d <- rep(1, M)
+    LRA$v <- matrix(rnorm(J*M, sd=10^{-5}), nrow=J, ncol=M)
+    LRA$u <- matrix(rnorm(I*M, sd=10^{-5}), nrow=I, ncol=M)
+    X <- LRA$u %*% t(LRA$v)
+  }
 
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)

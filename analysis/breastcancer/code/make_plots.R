@@ -74,7 +74,7 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
                                 "Plasmablasts" = 1,
                                 "Cycling PVL" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + Low inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -100,7 +100,7 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                 "Endothelial RGS5" = 1,
                                 "Endothelial CXCL12" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + High inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -173,7 +173,7 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
                                 "Plasmablasts" = 1,
                                 "Cycling PVL" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + Low inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -200,7 +200,7 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                 "Endothelial RGS5" = 1,
                                 "Endothelial CXCL12" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + High inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -263,7 +263,7 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
                                 "Plasmablasts" = 1,
                                 "Cycling PVL" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + Low inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -289,7 +289,7 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                 "Endothelial RGS5" = 1,
                                 "Endothelial CXCL12" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + High inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -353,7 +353,7 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
                                 "Plasmablasts" = 1,
                                 "Cycling PVL" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + Low inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -380,7 +380,7 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                 "Endothelial RGS5" = 1,
                                 "Endothelial CXCL12" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + High inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -446,7 +446,7 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
                                 "Plasmablasts" = 1,
                                 "Cycling PVL" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + Low inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
   guides(color="none")
 
@@ -473,7 +473,7 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                 "Endothelial RGS5" = 1,
                                 "Endothelial CXCL12" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
-  geom_point(size=0.25) + ggtitle("High CCI + High inter-cluster CCI") +
+  geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
