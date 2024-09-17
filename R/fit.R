@@ -143,6 +143,13 @@ gbm.sc <- function(Y,
   Xt <- matrix(0,nrow=I,ncol=J)
 
   for(i in 1:max.iter) {
+
+    if(max.iter == 0) {
+      pgd <- list()
+      pgd$LRA <- LRA
+      break
+    }
+
     #Reweight
     print(i)
     alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {

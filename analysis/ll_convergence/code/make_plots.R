@@ -54,6 +54,40 @@ p <- p + guides(color="none")
 p  <- p
 p_tenximmune <- p
 
+
+## Near zero result
+
+
+df.1 <- data.frame(time=Time[[1]],
+                   Method="scGBM-full",
+                   ll=LL[[1]])
+
+df.2 <- data.frame(time = near.zero.results$time.zhengmix,
+                   Method="scGBM-full (GLM-PCA init)",
+                   ll=near.zero.results$ll.zhengmix)
+
+
+df <- rbind(df.1,df.2) %>% as.data.frame
+
+
+p <- ggplot(data=df,aes(x=time/3600,y=ll,color=Method))
+p <- p + geom_point() + geom_line()
+#p <- p + geom_segment(x=log10(Time[[2]][1]/3600),xend=100,y=LL[[2]][1],yend=LL[[2]][1],
+#color=hue_pal()(5)[5],linetype="dashed")
+p <- p + scale_x_log10(
+  breaks = scales::trans_breaks("log10", function(x) 10^x),
+  labels = scales::trans_format("log10", scales::math_format(10^.x)),
+  limits=c(10,10^{3})/3600
+)
+p <- p + xlab("") + ylab("")
+p <- p + theme_bw()
+p <- p + annotation_logticks(sides = 'b')
+p <- p + ggtitle("10X Immune (J=3,994; I=6,049)")
+#p <- p + guides(color="none")
+p  <- p
+p_tenximmune.initcompare <- p
+
+
 library(DuoClustering2018)
 sce <- sce_full_Zhengmix8eq()
 
@@ -280,6 +314,42 @@ p <- p + annotation_logticks(sides = 'b')
 p <- p + theme_bw()
 p <- p + ggtitle("COVID-19 (J=44,721; I=17,393)")
 pblish <- p
+
+
+## Near zero result
+
+
+df.1 <- data.frame(time=Time[[1]],
+                   Method="scGBM-full",
+                   ll=LL[[1]])
+
+df.2 <- data.frame(time = near.zero.results$time.blish,
+                   Method="scGBM-full (GLM-PCA init)",
+                   ll=near.zero.results$ll.blish)
+
+
+df <- rbind(df.1,df.2) %>% as.data.frame
+
+
+p <- ggplot(data=df,aes(x=time/3600,y=ll,color=Method))
+p <- p + geom_point() + geom_line()
+#p <- p + geom_segment(x=log10(Time[[2]][1]/3600),xend=100,y=LL[[2]][1],yend=LL[[2]][1],
+#color=hue_pal()(5)[5],linetype="dashed")
+p <- p + scale_x_log10(
+  breaks = scales::trans_breaks("log10", function(x) 10^x),
+  labels = scales::trans_format("log10", scales::math_format(10^.x)),
+  limits=c(10,10^{3})/3600
+)
+p <- p + xlab("") + ylab("")
+p <- p + theme_bw()
+p <- p + annotation_logticks(sides = 'b')
+p <- p + ggtitle("10X Immune (J=3,994; I=6,049)")
+#p <- p + guides(color="none")
+p  <- p
+p_tenximmune.initcompare <- p
+
+
+
 
 
 ##Compare embedding plots
