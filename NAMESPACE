@@ -3,6 +3,7 @@
 export(CCI)
 export(cluster.default)
 export(denoise.U)
+export(gbm.cell.covariate)
 export(gbm.sc)
 export(get.se)
 export(loadings.volcano)
