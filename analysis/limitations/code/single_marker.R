@@ -12,7 +12,7 @@ J <- 1000
 baseline.means <- rep(1, I)
 Mu <- matrix(baseline.means,nrow=I,ncol=J)
 Mu[1,] <- 100
-Mu[1,1:10] <- 1
+Mu[1,1:10] <- 20
 Mu[1,11:20] <- 10
 Mu[2,] <- 1
 Mu[2,667:1000] <- 50
@@ -71,7 +71,7 @@ rownames(Y) <- 1:I
 Sco <- CreateSeuratObject(counts=Y)
 Sco <- NormalizeData(Sco)
 Sco <- FindVariableFeatures(Sco)
-Sco <- ScaleData(Sco)
+Sco <- ScaleData(Sco,scale=TRUE)
 Sco$group <- true_cluster
 Sco <- RunPCA(Sco)
 lpca <- Sco@reductions$pca@cell.embeddings
