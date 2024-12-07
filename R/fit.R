@@ -119,8 +119,25 @@ gbm.sc <- function(Y,
   alphas <- alphas - mean(alphas) #Ensure alphas sum to 0
   W <- exp(sweep(alphas[,batch], 2, betas, "+"))
 
-  X <- matrix(0, nrow=I, ncol=J)
-
+  prior.mean <- sigma
+  if(factor.init == "pearson") {
+    #Starting estimate of X
+    #Z <- (Y-W)/sqrt(W)
+    LRA <-  irlba::irlba((Y-W)/sqrt(W),nv=M,nu=M)
+    X <- LRA$u %*%(LRA$d*t(LRA$v))
+    X <- sqrt(1/W)*X
+    #X[X > 8] <- 8
+    #X[X < -8] <- -8
+    LRA <- irlba::irlba(X,nv=M)
+    LRA$d <- sort(rexp(n=M,rate=1/10))
+    X <- LRA$u %*% (LRA$d * t(LRA$v))
+  } else if(factor.init == "near-zero") {
+    LRA <- list()
+    LRA$d <- rep(1, M)
+    LRA$v <- matrix(rnorm(J*M, sd=10^{-5}), nrow=J, ncol=M)
+    LRA$u <- matrix(rnorm(I*M, sd=10^{-5}), nrow=I, ncol=M)
+    X <- LRA$u %*% t(LRA$v)
+  }
 
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
@@ -324,16 +341,22 @@ process.results <- function(gbm,Y,
                             order.by.deviance=TRUE) {
   #Multiplicative identifiability in U, V
   M <- gbm$M
+  for(m in 1:M) {
+    if(gbm$U[1,m] < 0) {
+      gbm$U[,m] <- -1*gbm$U[,m]
+      gbm$V[,m] <- -1*gbm$V[,m]
+    }
+  }
 
   # Additive identifiability in U, V
-  u.mean <- colMeans(matrix(gbm$U,ncol=M))
+  u.mean <- colMeans(gbm$U)
   gbm$beta <- gbm$beta + colSums(diag(gbm$D*u.mean)%*%t(gbm$V))
   gbm$U <- scale(gbm$U, center=TRUE,scale=FALSE)
-  v.mean <- colMeans(matrix(gbm$V,ncol=M))
-  #gbm$alpha[,1] <- gbm$alpha[,1] + colSums(diag(gbm$D*u.mean)%*%t(gbm$U))
-  #gbm$V <- scale(gbm$V, center=TRUE,scale=FALSE)
-  #gbm$beta <- gbm$beta + mean(gbm$alpha[,1])
- #gbm$alpha[,1] <- gbm$alpha[,1] - mean(gbm$alpha[,1])
+  v.mean <- colMeans(gbm$V)
+  gbm$alpha[,1] <- gbm$alpha[,1] + colSums(diag(gbm$D*u.mean)%*%t(gbm$U))
+  gbm$V <- scale(gbm$V, center=TRUE,scale=FALSE)
+  gbm$beta <- gbm$beta + mean(gbm$alpha[,1])
+  gbm$alpha[,1] <- gbm$alpha[,1] - mean(gbm$alpha[,1])
 
   if(order.by.deviance) {
     dev.full <- sum(Y*log(gbm$W) - gbm$W)
@@ -349,10 +372,9 @@ process.results <- function(gbm,Y,
     gbm$U <- gbm$U[,my.order]
     gbm$V <- gbm$V[,my.order]
     gbm$D <- gbm$D[my.order]
-
-    gbm$dev.diff <- dev.diff[my.order]
   }
 
+  gbm$dev.diff <- dev.diff[my.order]
   gbm$scores <- t(gbm$D*t(gbm$V))
   return(gbm)
 }
@@ -366,13 +388,9 @@ pgd_irlba <- function(X,Xt,i,lr,W,Y,M,prior.mean) {
   w.max <- max(W)
 
   LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
-  #LRA$d <- ifelse(LRA$d > 1/prior.mean, LRA$d - 1/prior.mean, 0)
+  LRA$d <- ifelse(LRA$d > 1/prior.mean, LRA$d - 1/prior.mean, 0)
   print(max(LRA$d))
   print(max(W))
-  #LRA$u <- ifelse(LRA$u < 0, 0, LRA$u)
-  LRA$v <- ifelse(LRA$v < 0, 0, LRA$v)
-  LRA$v <- t(apply(LRA$v, 1, function(x) ifelse(x==max(x),1,0)))
-
   out$X <- LRA$u %*% (LRA$d*t(LRA$v))
   out$LRA <- LRA
 
