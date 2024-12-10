@@ -15,7 +15,7 @@ Mu[1,] <- 100
 Mu[1,1:10] <- 20
 Mu[1,11:20] <- 10
 Mu[2,] <- 1
-Mu[2,667:1000] <- 50
+Mu[2,667:1000] <- 2000
 Y <- matrix(rpois(n=I*J,lambda=as.vector(Mu)),nrow=I,ncol=J)
 
 
