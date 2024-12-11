@@ -59,10 +59,12 @@ fit <- lm(ifelse(true_cluster == "A", 1, 0) ~ ., data=pca.apr$x[,c(1:20)] |> as.
 fit <- lm(ifelse(true_cluster == "A", 1, 0) ~ ., data=out$scores[,c(1:2)] |> as.data.frame())
 
 
-generate_spike <- function(I, J, baseline.mean, spike.size, spike.mean) {
-  Mu <- matrix(baseline.mean,nrow=I,ncol=J)
+generate_spike <- function(I, J, baseline.mean, spike.size, spike.mean, second.spike.mean) {
+  Mu <- matrix(1,nrow=I,ncol=J)
   Mu[1,] <- baseline.mean
   Mu[1,1:spike.size] <- spike.mean
+  Mu[2,] <- 1
+  Mu[2,667:1000] <- second.spike.mean
   Y <- matrix(rpois(n=I*J,lambda=as.vector(Mu)),nrow=I,ncol=J)
   colnames(Y) <- 1:ncol(Y); rownames(Y) <- 1:nrow(Y)
   return(Y)
@@ -126,16 +128,18 @@ test_logpca <- function(Y) {
   return(max(my.cor))
 }
 
-baseline.means <- c(1, 100) #Small and large 
-spike.fc <- c(0.01, 0.1, 10)
+baseline.means <- 100 #Small and large 
+spike.mean <- c(10, 20, 50)
 #iter <- 1:10 #10 repitions
 iter <- c(1)
 spike.size <- c(10, 25, 50, 100)
+second.spike.mean <- c(10, 50, 100, 1000)
 
 params <- expand.grid(baseline.means,
-                      spike.fc,
+                      spike.mean,
                       spike.size,
-                      iter)
+                      iter,
+                      second.spike.mean)
 
 params$scgbm <- rep(0, nrow(params))
 params$apr <- rep(0, nrow(params))
@@ -145,11 +149,34 @@ params$logpca <- rep(0, nrow(params))
 for(i in 1:nrow(params)) {
   cat("ITERATION ", i, "\n")
   Y <- generate_spike(I = 1000,J=1000,
-                      baseline.mean = params$Var1[i], 
-                      spike.size = params$Var3[i], 
-                      spike.mean = params$Var1[i] * params$Var2[i])
+                      baseline.mean=params$Var1[i],
+                      spike.size=params$Var3[i],
+                      spike.mean=params$Var2[i],
+                      second.spike.mean=params$Var5[i])
   params$scgbm[i] <- test_scGBM(Y)
   params$apr[i] <- test_apr(Y)
   params$sct[i] <- test_sct(Y)
   params$logpca[i] <- test_logpca(Y)
 }
+
+
+
+library(ggplot2)
+library(reshape2)
+
+colnames(params) <- c("baseline.mean", "spike.mean", "spike.size", "iter", "second.spike.mean", "scgbm", "apr", "sct", "logpca")
+
+# Assuming params is your data frame
+# Melt the data frame to long format for ggplot
+params_long <- melt(params, id.vars = c("spike.size", "second.spike.mean", "spike.mean"), 
+                    measure.vars = c("scgbm", "sct", "logpca", "apr"))
+
+# Create the ggplot
+ggplot(params_long, aes(x = spike.size, y = value, color = variable)) +
+  geom_line() +
+  facet_grid(second.spike.mean ~ spike.mean) +
+  labs(title = "Plot of scgbm, sct, logpca, apr against spike.size",
+       x = "Spike Size",
+       y = "Value",
+       color = "Metrics") +
+  theme_minimal()
