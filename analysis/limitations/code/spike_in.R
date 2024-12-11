@@ -128,6 +128,41 @@ test_logpca <- function(Y) {
   return(max(my.cor))
 }
 
+
+test_logpca <- function(Y) {
+  M <- 20
+  J <- ncol(Y); I <- nrow(Y)
+  colnames(Y) <- 1:J
+  rownames(Y) <- 1:I
+  L <- median(colSums(Y))
+  YL <- log(sweep(Y,MARGIN=2,STATS=L^{-1}*colSums(Y),FUN="/") + 1)
+  pca.log <- irlba::prcomp_irlba(t(YL), n=20)
+  my.cor <- rep(1:M)
+  u.true <- rep(0, nrow(Y)); u.true[1] <- 1
+  for(m in 1:M) {
+    my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
+  }
+
+  return(max(my.cor))
+}
+
+test_logpca_S1 <- function(Y) {
+  M <- 20
+  J <- ncol(Y); I <- nrow(Y)
+  colnames(Y) <- 1:J
+  rownames(Y) <- 1:I
+  #L <- median(colSums(Y))
+  YL <- log(sweep(Y,MARGIN=2,STATS=L^{-1},FUN="/") + 1)
+  pca.log <- irlba::prcomp_irlba(t(YL), n=20)
+  my.cor <- rep(1:M)
+  u.true <- rep(0, nrow(Y)); u.true[1] <- 1
+  for(m in 1:M) {
+    my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
+  }
+
+  return(max(my.cor))
+}
+
 baseline.means <- 100 #Small and large 
 spike.mean <- c(10, 20, 50)
 #iter <- 1:10 #10 repitions
@@ -180,3 +215,33 @@ ggplot(params_long, aes(x = spike.size, y = value, color = variable)) +
        y = "Value",
        color = "Metrics") +
   theme_minimal()
+
+
+
+
+
+
+
+  ### Is S_j containing biological variability? 
+
+  ## 8eq
+sce <- DuoClustering2018::sce_full_Zhengmix8eq()
+phenoid <- sce$phenoid
+Y <- sce@assays@data$counts
+
+library(ggplot2)
+
+# Create a data frame for ggplot
+data <- data.frame(
+  log_counts = log(colSums(Y)),
+  phenoid = sce$phenoid
+)
+
+# Create the ggplot boxplot
+ggplot(data, aes(x = phenoid, y = log_counts)) +
+  geom_boxplot(fill="lightblue") +
+  labs(title = "Count depth by cell type",
+       x = "Cell type",
+       y = "Count depth") +
+  theme_bw() + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
