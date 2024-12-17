@@ -26,7 +26,8 @@ gbm <- adj.rand.index(phenoid, Sco$seurat_clusters)
 
 
 
-fit <- glmpca(Y, L=20)
+set.seed(1)
+fit <- glmpca(Y, L=20, minibatch="stochastic", ctl=list(batch_size=400))
 Sco <- CreateSeuratObject(counts=Y)
 Sco[["glmpca"]] <- CreateDimReducObject(embeddings=as.matrix(fit$res$factors),key="GLMPCA_")
 Sco <- FindNeighbors(Sco,reduction = "glmpca")
@@ -59,26 +60,6 @@ Sco <- FindClusters(Sco)
 #apr <- adj.rand.index(sce$phenoid, Sco$seurat_clusters)
 apr <- adj.rand.index(phenoid, Sco$seurat_clusters)
 
-
-my.dist <- dist(Sco@reductions$pca@cell.embeddings) |> as.matrix()
-avg.dist <- rep(0, length(unique(phenoid)))
-for(i in 1:length(avg.dist)) {
-  avg.dist[i] <- mean(my.dist[phenoid == unique(phenoid)[i],phenoid == unique(phenoid)[i]])
-}
-
-
-
-embedding <- umap::umap(Sco@reductions$pca@cell.embeddings)
-
-p <- data.frame(x=embedding$layout[,1], y=embedding$layout[,2], color=Sco$seurat_clusters) |>
-  ggplot(aes(x=x,y=y,color=color)) +
-  geom_point() +
-  theme_bw()
-
-p <- data.frame(x=out$scores[,1], y=out$scores[,2], color=Sco$seurat_clusters) |>
-  ggplot(aes(x=x,y=y,color=color)) +
-  geom_point() +
-  theme_bw()
 
 library(fastglm)
 proj_res <- rep(0, 10)

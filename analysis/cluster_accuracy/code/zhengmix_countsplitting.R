@@ -176,4 +176,18 @@ zhengmix_countsplit <- function(Y) {
   ))
 }
 
+iters <- 5
+res <- matrix(0, nrow=5,ncol=6); colnames(res) <- c("gbm.mono",
+                                                    "apr.mono",
+                                                    "lpca.mono",
+                                                    "sct.mono",
+                                                    "lpca_ns.mono",
+                                                    "glmpca.mono")
+
+
+for(i in 1:5) {
+  res[i, ] <- zhengmix_countsplit(Y)
+}
+
+saveRDS(res, file="../data/zhengmix_countsplit_monocytes.RDS")
 
