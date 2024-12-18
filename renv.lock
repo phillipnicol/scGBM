@@ -664,7 +664,7 @@
     },
     "S4Arrays": {
       "Package": "S4Arrays",
-      "Version": "1.2.0",
+      "Version": "1.0.6",
       "Source": "Bioconductor",
       "Requirements": [
         "BiocGenerics",
@@ -677,7 +677,7 @@
         "methods",
         "stats"
       ],
-      "Hash": "b92a69b0bc7bce3d22f201c3b1126664"
+      "Hash": "2b40d107b4a6fbd3f0cc81214d0b2891"
     },
     "S4Vectors": {
       "Package": "S4Vectors",
