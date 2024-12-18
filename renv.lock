@@ -1394,7 +1394,7 @@
     },
     "dbplyr": {
       "Package": "dbplyr",
-      "Version": "2.5.0",
+      "Version": "2.3.4",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1418,7 +1418,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "39b2e002522bfd258039ee4e889e0fd1"
+      "Hash": "63534894354af6b2587b7aa518a5193a"
     },
     "deldir": {
       "Package": "deldir",
