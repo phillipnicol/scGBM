@@ -3,7 +3,7 @@
 #SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=philnicol740@gmail.com     # Where to send mail
 #SBATCH --mem=32gb                    # Job memory request               # Time limit hrs:min:sec
-#SBATCH --output=../logs/zhengmix.log   # Standard output and error log
+#SBATCH --output=../logs/zhengmix_resolution.log   # Standard output and error log
 #SBATCH -c 32
 
 module load shared R/4.3.2

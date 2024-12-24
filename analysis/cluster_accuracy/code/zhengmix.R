@@ -27,7 +27,7 @@ gbm <- adj.rand.index(phenoid, Sco$seurat_clusters)
 
 
 set.seed(1)
-fit <- glmpca(Y, L=20, minibatch="stochastic", ctl=list(batch_size=400))
+fit <- glmpca(Y |> as.matrix(), L=20, minibatch="stochastic", ctl=list(batch_size=400))
 Sco <- CreateSeuratObject(counts=Y)
 Sco[["glmpca"]] <- CreateDimReducObject(embeddings=as.matrix(fit$res$factors),key="GLMPCA_")
 Sco <- FindNeighbors(Sco,reduction = "glmpca")

@@ -14,7 +14,7 @@ set.seed(42)
 #Sco <- readRDS("../../data/blish.RDS")
 #Sco <- NormalizeData(Sco, assay="RNA")
 #Sco <- FindVariableFeatures(Sco,assay="RNA",nfeatures=2000)
-Y <- readRDS("../../data/blish/blish_counts.RDS")
+Y <- readRDS("../../data/blish_counts.RDS")
 Y <- as.matrix(Y)
 
 
