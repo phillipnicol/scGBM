@@ -17,7 +17,6 @@ set.seed(42)
 Y <- readRDS("../../data/blish_counts.RDS")
 Y <- as.matrix(Y)
 
-
 blish_countsplit <- function(Y) {
   # Generate count split data
   #set.seed(1)
@@ -52,7 +51,7 @@ blish_countsplit <- function(Y) {
   Sco <- FindClusters(Sco)
   cluster2 <- Sco$seurat_clusters
 
-  gbm.mono <- sum(choose(table(cluster1, cluster2), 2)) / choose(ncol(Y),2)
+  gbm.mono <- sum(choose(table(cluster1, cluster2), 2)) / sum(choose(table(cluster1), 2))
 
   # APR+PCA
   Sco <- CreateSeuratObject(counts = Y1)
@@ -69,7 +68,7 @@ blish_countsplit <- function(Y) {
   Sco <- FindClusters(Sco)
   cluster2 <- Sco$seurat_clusters
 
-  apr.mono <- sum(choose(table(cluster1, cluster2), 2)) / choose(ncol(Y),2)
+  apr.mono <- sum(choose(table(cluster1, cluster2), 2)) / sum(choose(table(cluster1), 2))
 
   # LOG+Scale+PCA
   Sco <- CreateSeuratObject(counts = Y1)
@@ -90,7 +89,7 @@ blish_countsplit <- function(Y) {
   Sco <- FindClusters(Sco)
   cluster2 <- Sco$seurat_clusters
 
-  lpca.mono <- sum(choose(table(cluster1, cluster2), 2)) / choose(ncol(Y),2)
+  lpca.mono <- sum(choose(table(cluster1, cluster2), 2)) / sum(choose(table(cluster1), 2))
 
   # SCT+PCA
   Sco <- CreateSeuratObject(counts = Y1)
@@ -107,7 +106,7 @@ blish_countsplit <- function(Y) {
   Sco <- FindClusters(Sco)
   cluster2 <- Sco$seurat_clusters
 
-  sct.mono <- sum(choose(table(cluster1, cluster2), 2)) / choose(ncol(Y),2)
+  sct.mono <- sum(choose(table(cluster1, cluster2), 2)) / sum(choose(table(cluster1), 2))
 
   # LOG+PCA
   Sco <- CreateSeuratObject(counts = Y1)
@@ -130,7 +129,7 @@ blish_countsplit <- function(Y) {
   Sco <- FindClusters(Sco)
   cluster2 <- Sco$seurat_clusters
 
-  lpca_ns.mono <- sum(choose(table(cluster1, cluster2), 2)) / choose(ncol(Y),2)
+  lpca_ns.mono <- sum(choose(table(cluster1, cluster2), 2)) / sum(choose(table(cluster1), 2))
 
   # GLMPCA (SGD)
   set.seed(1)
@@ -149,7 +148,7 @@ blish_countsplit <- function(Y) {
   Sco <- FindClusters(Sco)
   cluster2 <- Sco$seurat_clusters
 
-  glmpca.mono <- sum(choose(table(cluster1, cluster2), 2)) / choose(ncol(Y),2)
+  glmpca.mono <- sum(choose(table(cluster1, cluster2), 2)) / sum(choose(table(cluster1), 2))
 
   # Return results
   return(c(

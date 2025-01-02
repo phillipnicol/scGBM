@@ -222,6 +222,8 @@ for(i in 1:length(resolutions)) {
 
   res_mat[i,] <- res_list$results
   res_subsampled_mat[i,] <- res_list$results_subsampled
+
+  cat("RESULTS: ", res_mat[i,], " ", res_subsampled_mat[i,], "\n")
 }
 
 saveRDS(res_mat, file="../data/resolution_sensitivity_full.RDS")
