@@ -4,60 +4,7 @@ set.seed(1)
 library(Seurat)
 library(viridis)
 pt.size <- 0.5
-
-set.seed(1)
-I <- 1000
-J <- 1000
-spike.size <- 50
-#baseline.means <- 10^{seq(-2, 3,length.out=I)}
-baseline.means <- rep(1, I)
-Mu <- matrix(baseline.means,nrow=I,ncol=J)
-Mu[1,] <- 1
-Mu[1,1:spike.size] <- 10
-Y <- matrix(rpois(n=I*J,lambda=as.vector(Mu)),nrow=I,ncol=J)
-colnames(Y) <- 1:ncol(Y); rownames(Y) <- 1:nrow(Y)
-
-
-true_cluster <- rep(1,J)
-true_cluster[1:spike.size] <- "A"
-true_cluster[(spike.size + 1):1000] <- "B"
-true_cluster <- as.character(true_cluster)
-
-
-
-### ANALYTIC PEARSON RESIDUALS
-apr <- sctransform::vst(Y[rowSums(Y) >= 5,], method="offset")
-pca.apr <- prcomp(t(apr$y))
-apr.umap <- umap::umap(pca.apr$x[,1:10])$layout
-df <- data.frame(x=pca.apr$x[,1],y=pca.apr$x[,2],color=true_cluster) |> arrange(desc(color))
-p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
-p <- p + theme_bw()+xlab("")+ylab("")+guides(color="none")+
-  ggtitle("APR+PCA") +
-  scale_color_manual(values = c("A" = "#FF0000", # Bright red
-                                "B" = "#0000FF") # Bright blue
-  )
-p_apr <- p
-
-#devtools::install_github("phillipnicol/scGBM",ref="dev2")
-
 library(scGBM)
-
-out <- gbm.sc(Y[rowSums(Y) >= 5,],M=20,max.iter=250,tol=10^{-10})
-
-df <- data.frame(x=out$scores[,1], y=out$scores[,2],color=true_cluster)
-
-p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
-p_sm <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
-  scale_color_manual(values = c("A" = "#FF0000", # Bright red
-                                "B" = "#0000FF"))
-
-
-
-
-fit <- lm(ifelse(true_cluster == "A", 1, 0) ~ ., data=pca.apr$x[,c(1:20)] |> as.data.frame())
-
-fit <- lm(ifelse(true_cluster == "A", 1, 0) ~ ., data=out$scores[,c(1:2)] |> as.data.frame())
-
 
 generate_spike <- function(I, J, baseline.mean, spike.size, spike.mean, second.spike.mean) {
   Mu <- matrix(1,nrow=I,ncol=J)
@@ -76,7 +23,8 @@ test_scGBM <- function(Y) {
   my.cor <- rep(1:M)
   u.true <- rep(0, nrow(Y)); u.true[1] <- 1
   for(m in 1:M) {
-    my.cor[m] <- cor(out$U[,m], u.true)^2
+    my.cor[m] <- out$U[1,m]/max(out$U[-1,m])
+    #my.cor[m] <- cor(out$U[,m], u.true)^2
   }
   return(max(my.cor))
 }
@@ -88,7 +36,8 @@ test_apr <- function(Y) {
   my.cor <- rep(1:M)
   u.true <- rep(0, nrow(Y)); u.true[1] <- 1
   for(m in 1:M) {
-    my.cor[m] <- cor(pca.apr$rotation[,m], u.true)^2
+    my.cor[m] <- pca.apr$rotation[1,m]/max(pca.apr$rotation[-1,m])
+    #my.cor[m] <- cor(pca.apr$rotation[,m], u.true)^2
   }
 
   return(max(my.cor))
@@ -105,7 +54,8 @@ test_sct <- function(Y) {
   my.cor <- rep(1:M)
   u.true <- rep(0, nrow(Y)); u.true[1] <- 1
   for(m in 1:M) {
-    my.cor[m] <- cor(pca.sct$rotation[,m], u.true)^2
+    my.cor[m] <- pca.sct$rotation[1,m]/max(pca.sct$rotation[-1,m])
+    #my.cor[m] <- cor(pca.sct$rotation[,m], u.true)^2
   }
 
   return(max(my.cor))
@@ -122,7 +72,8 @@ test_logpca <- function(Y) {
   my.cor <- rep(1:M)
   u.true <- rep(0, nrow(Y)); u.true[1] <- 1
   for(m in 1:M) {
-    my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
+    my.cor[m] <- pca.log$rotation[1,m]/max(pca.log$rotation[-1,m])
+    #my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
   }
 
   return(max(my.cor))
@@ -140,7 +91,8 @@ test_logpca <- function(Y) {
   my.cor <- rep(1:M)
   u.true <- rep(0, nrow(Y)); u.true[1] <- 1
   for(m in 1:M) {
-    my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
+    my.cor[m] <- pca.log$rotation[1,m]/max(pca.log$rotation[-1,m])
+    #my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
   }
 
   return(max(my.cor))
@@ -157,18 +109,19 @@ test_logpca_S1 <- function(Y) {
   my.cor <- rep(1:M)
   u.true <- rep(0, nrow(Y)); u.true[1] <- 1
   for(m in 1:M) {
-    my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
+    my.cor[m] <- pca.log$rotation[1,m]/max(pca.log$rotation[-1,m])
+    #my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
   }
 
   return(max(my.cor))
 }
 
-baseline.means <- 100 #Small and large 
+baseline.means <- 100 #Small and large
 spike.mean <- c(10, 20, 50)
 #iter <- 1:10 #10 repitions
-iter <- c(1)
+iter <- c(1:10)
 spike.size <- c(10, 25, 50, 100)
-second.spike.mean <- c(10, 50, 100, 1000)
+second.spike.mean <- c(10, 50, 100)
 
 params <- expand.grid(baseline.means,
                       spike.mean,
@@ -194,6 +147,7 @@ for(i in 1:nrow(params)) {
   params$logpca[i] <- test_logpca(Y)
 }
 
+saveRDS(params,file="../data/spike_in_params.RDS")
 
 
 library(ggplot2)
@@ -203,7 +157,7 @@ colnames(params) <- c("baseline.mean", "spike.mean", "spike.size", "iter", "seco
 
 # Assuming params is your data frame
 # Melt the data frame to long format for ggplot
-params_long <- melt(params, id.vars = c("spike.size", "second.spike.mean", "spike.mean"), 
+params_long <- melt(params, id.vars = c("spike.size", "second.spike.mean", "spike.mean"),
                     measure.vars = c("scgbm", "sct", "logpca", "apr"))
 
 # Create the ggplot
@@ -219,29 +173,3 @@ ggplot(params_long, aes(x = spike.size, y = value, color = variable)) +
 
 
 
-
-
-
-  ### Is S_j containing biological variability? 
-
-  ## 8eq
-sce <- DuoClustering2018::sce_full_Zhengmix8eq()
-phenoid <- sce$phenoid
-Y <- sce@assays@data$counts
-
-library(ggplot2)
-
-# Create a data frame for ggplot
-data <- data.frame(
-  log_counts = log(colSums(Y)),
-  phenoid = sce$phenoid
-)
-
-# Create the ggplot boxplot
-ggplot(data, aes(x = phenoid, y = log_counts)) +
-  geom_boxplot(fill="lightblue") +
-  labs(title = "Count depth by cell type",
-       x = "Cell type",
-       y = "Count depth") +
-  theme_bw() + 
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) 

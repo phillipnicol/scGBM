@@ -15,7 +15,7 @@ Mu[1,] <- 100
 Mu[1,1:10] <- 20
 Mu[1,11:20] <- 10
 Mu[2,] <- 1
-Mu[2,667:1000] <- 100
+Mu[2,667:1000] <- 50
 Y <- matrix(rpois(n=I*J,lambda=as.vector(Mu)),nrow=I,ncol=J)
 
 
@@ -335,9 +335,11 @@ p.ercc.scaled <- ggarrange(p.apr, p.apr.scaled, p.umap.scaled,
           p.sct, p.sct.scaled, p.sct.umap.scaled,
           nrow=2,ncol=3, labels="c")
 
-library(ggpubr)
-p <- ggarrange(p.single.full, p.ercc.scaled, nrow=2,
-               heights=c(1,1))
+#library(ggpubr)
+#p <- ggarrange(p.single.full, p.ercc.scaled, nrow=2,
+#               heights=c(1,1))
+
+p.single.full
 
 ggsave(p,filename="../plots/limitation_plot.png",
        width=12.8, height=11.7)
@@ -356,6 +358,20 @@ p_sm <- p + theme_bw()+xlab("GBM1")+ylab("GBM1")+guides(color="none") +
                               "B" = "#0000FF", # Bright blue
                               "C" = "#FFD700", # Light grey
                               "D" = "#999999"))
+
+umap.gbm <- umap::umap(out$scores[,1:10])$layout
+p_gbm_umap <- data.frame(x=umap.gbm[,1], y=umap.gbm[,2],color=true_cluster) |>
+  ggplot(aes(x=x,y=y,color=color))+geom_point(size=pt.size) +
+  theme_bw()+xlab("")+ylab("")+guides(color="none") +
+  ggtitle("scGBM+UMAP") + theme(plot.title = element_text(size = 10)) +
+  scale_color_manual(values = c("A" = "#FF0000", # Bright red
+                                "B" = "#0000FF", # Bright blue
+                                "C" = "#FFD700", # Light grey
+                                "D" = "#999999"))  # Darker grey
+
+ggsave(filename = "../plots/scGBM_Umap.png",
+       width=5.07, height=3.76, units="in")
+
 
 
 ## scGBM with prior on sigma
