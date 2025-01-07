@@ -26,6 +26,8 @@ test_scGBM <- function(Y) {
     my.cor[m] <- out$U[1,m]/max(out$U[-1,m])
     #my.cor[m] <- cor(out$U[,m], u.true)^2
   }
+  my.cor <- abs(my.cor)
+
   return(max(my.cor))
 }
 
@@ -39,6 +41,8 @@ test_apr <- function(Y) {
     my.cor[m] <- pca.apr$rotation[1,m]/max(pca.apr$rotation[-1,m])
     #my.cor[m] <- cor(pca.apr$rotation[,m], u.true)^2
   }
+
+  my.cor <- abs(my.cor)
 
   return(max(my.cor))
 }
@@ -58,6 +62,8 @@ test_sct <- function(Y) {
     #my.cor[m] <- cor(pca.sct$rotation[,m], u.true)^2
   }
 
+  my.cor <- abs(my.cor)
+
   return(max(my.cor))
 }
 
@@ -76,6 +82,8 @@ test_logpca <- function(Y) {
     #my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
   }
 
+  my.cor <- abs(my.cor)
+
   return(max(my.cor))
 }
 
@@ -94,6 +102,8 @@ test_logpca <- function(Y) {
     my.cor[m] <- pca.log$rotation[1,m]/max(pca.log$rotation[-1,m])
     #my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
   }
+
+  my.cor <- abs(my.cor)
 
   return(max(my.cor))
 }
@@ -112,6 +122,8 @@ test_logpca_S1 <- function(Y) {
     my.cor[m] <- pca.log$rotation[1,m]/max(pca.log$rotation[-1,m])
     #my.cor[m] <- cor(pca.log$rotation[,m], u.true)^2
   }
+
+  my.cor <- abs(my.cor)
 
   return(max(my.cor))
 }
@@ -150,26 +162,33 @@ for(i in 1:nrow(params)) {
 saveRDS(params,file="../data/spike_in_params.RDS")
 
 
+
+
+### Plotting
+
+params <- readRDS("../data/spike_in_params.RDS")
+
+params <- params[,-1] #Remove baseline means
+
+colnames(params)[1:4] <- c("spike.mean",
+                      "spike.size",
+                      "replicate",
+                      "second.spike.mean")
+
 library(ggplot2)
 library(reshape2)
 
-colnames(params) <- c("baseline.mean", "spike.mean", "spike.size", "iter", "second.spike.mean", "scgbm", "apr", "sct", "logpca")
+df <- reshape2::melt(params,measure.vars=c("scgbm","apr","sct","logpca"))
 
-# Assuming params is your data frame
-# Melt the data frame to long format for ggplot
-params_long <- melt(params, id.vars = c("spike.size", "second.spike.mean", "spike.mean"),
-                    measure.vars = c("scgbm", "sct", "logpca", "apr"))
-
-# Create the ggplot
-ggplot(params_long, aes(x = spike.size, y = value, color = variable)) +
+df <- df |> group_by(spike.mean,spike.size,variable,second.spike.mean) |>
+  summarize(mean=mean(value)) |>
+  ggplot(aes(x=spike.size, y=mean,color=variable)) +
+  geom_point() +
   geom_line() +
-  facet_grid(second.spike.mean ~ spike.mean) +
-  labs(title = "Plot of scgbm, sct, logpca, apr against spike.size",
-       x = "Spike Size",
-       y = "Value",
-       color = "Metrics") +
-  theme_minimal()
+  theme_bw() +
+  facet_grid(second.spike.mean ~ spike.mean)
 
+ggsave(df, filename="../plots/spike_in_sim.png")
 
 
 
