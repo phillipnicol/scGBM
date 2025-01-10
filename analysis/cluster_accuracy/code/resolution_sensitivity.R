@@ -183,16 +183,16 @@ run_clustering_resolution <- function(resolution) {
 
   library(fastglm)
   proj_res <- rep(0, 10)
-  for(j in 1:10) {
-    outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
-    Sco <- CreateSeuratObject(counts=Y)
-    colnames(outproj$scores) <- 1:20
-    rownames(outproj$scores) <- colnames(Y)
-    Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
-    Sco <- FindNeighbors(Sco,reduction = "gbm")
-    Sco <- FindClusters(Sco, resolution = resolution)
-    proj_res[j] <- adj.rand.index(phenoid, Sco$seurat_clusters)
-  }
+  #for(j in 1:10) {
+  #  outproj <- gbm.sc(Y,M=20,subset=400,ncores=8)
+  #  Sco <- CreateSeuratObject(counts=Y)
+  #  colnames(outproj$scores) <- 1:20
+  #  rownames(outproj$scores) <- colnames(Y)
+  #  Sco[["gbm"]] <- CreateDimReducObject(embeddings=outproj$scores,key="GBM_")
+  #  Sco <- FindNeighbors(Sco,reduction = "gbm")
+  #  Sco <- FindClusters(Sco, resolution = resolution)
+  #  proj_res[j] <- adj.rand.index(phenoid, Sco$seurat_clusters)
+  #}
   gbmproj <- mean(proj_res)
 
   results_subsampled <- c(gbm,gbmproj, l2pca, sct,apr,glmpca,lpca_noscale)

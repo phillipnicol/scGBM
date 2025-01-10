@@ -132,7 +132,7 @@ baseline.means <- 100 #Small and large
 spike.mean <- c(10, 20, 50)
 #iter <- 1:10 #10 repitions
 iter <- c(1:10)
-spike.size <- c(10, 25, 50, 100)
+spike.size <- c(1,10, 25, 50, 100)
 second.spike.mean <- c(10, 50, 100)
 
 params <- expand.grid(baseline.means,
