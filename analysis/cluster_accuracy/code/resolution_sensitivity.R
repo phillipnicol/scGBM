@@ -228,3 +228,37 @@ for(i in 1:length(resolutions)) {
 
 saveRDS(res_mat, file="../data/resolution_sensitivity_full.RDS")
 saveRDS(res_subsampled_mat, file="../data/resolution_sensitivity_subsampled.RDS")
+
+
+
+
+
+
+
+
+
+
+### Plotting
+
+
+
+resolutions <- seq(0.3, 1.5, by=0.1)
+
+res.full <- readRDS("../data/resolution_sensitivity_full.RDS")
+res.sub <- readRDS("../data/resolution_sensitivity_subsampled.RDS")
+
+rownames(res.full) <- resolutions
+rownames(res.sub) <- resolutions
+
+
+df <- reshape2::melt(res.full)
+
+p <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
+  geom_point() + geom_line()
+
+df <- reshape2::melt(res.sub)
+
+p <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
+  geom_point() + geom_line()
+
+
