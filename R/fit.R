@@ -252,7 +252,7 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
                               order.by.deviance=TRUE) {
 
   J <- ncol(Y); I <- nrow(Y)
-  alphas.full <- log(rowSums(Y))
+  alphas.full <- log(Matrix::rowSums(Y))
   if(length(subsample)==1) {
     jxs <- sample(1:J,size=subsample,replace=FALSE)
     Y.sub <- Y[,jxs]
