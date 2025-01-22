@@ -2,7 +2,7 @@
 library(DuoClustering2018)
 library(scGBM)
 
-sce <- sce_full_Zhengmix8eq() 
+sce <- sce_full_Zhengmix8eq()
 
 Y <- counts(sce)
 Y <- as.matrix(Y)
@@ -43,7 +43,7 @@ for(i in 1:length(subset)) {
     for(m in 1:20) {
     	  res[i,j,m] <- abs(cor(true.v[,m],out$V[,m]))
           cat("RESULT:", res[i,j,m], "\n")
-	  
+
     }
 
     Pv.est <- out$V %*% solve(t(out$V) %*% out$V) %*% t(out$V)
@@ -59,4 +59,20 @@ for(i in 1:length(subset)) {
 
 saveRDS(res, "../data/corZheng.RDS")
 saveRDS(res.dist, "../data/proj_dist_Zheng.RDS")
-saveRDS(res.dist, "../data/proj_dist_Zheng_top5.RDS")
+saveRDS(res.dist5, "../data/proj_dist_Zheng_top5.RDS")
+
+
+
+
+
+
+
+
+
+
+### Plotting
+
+res <- readRDS("../data/corZheng.RDS")
+res.dist <- readRDS("../data/proj_dist_Zheng.RDS")
+
+
