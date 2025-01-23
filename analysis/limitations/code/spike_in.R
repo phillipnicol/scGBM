@@ -178,7 +178,12 @@ colnames(params)[1:4] <- c("spike.mean",
 library(ggplot2)
 library(reshape2)
 
-df <- reshape2::melt(params,measure.vars=c("scgbm","apr","sct","logpca"))
+colnames(params)[5:8] <- c("scGBM", "APR+PCA", "SCT+PCA","Log+PCA")
+
+df <- reshape2::melt(params,measure.vars=c("scGBM", "APR+PCA", "SCT+PCA","Log+PCA"))
+
+#colnames(df) <- c("Marker mean", "# of cell type A", "Replicate", "Second.spike.mean",
+#                  "Method", "value")
 
 df <- df |> group_by(spike.mean,spike.size,variable,second.spike.mean) |>
   summarize(mean=mean(value)) |>
@@ -186,9 +191,14 @@ df <- df |> group_by(spike.mean,spike.size,variable,second.spike.mean) |>
   geom_point() +
   geom_line() +
   theme_bw() +
+  xlab("# of cell type A") + ylab("Separation") +
+  labs(color = "Method") +
+  xlim(c(0,50)) + ylim(c(0,15)) +
+  geom_abline(slope=0, intercept=1, color="grey", linetype="dashed") +
   facet_grid(second.spike.mean ~ spike.mean)
 
-ggsave(df, filename="../plots/spike_in_sim.png")
+ggsave(df, filename="../plots/spike_in_sim.png",
+       width=8.67, height=5.57, units="in")
 
 
 
