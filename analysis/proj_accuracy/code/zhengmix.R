@@ -64,6 +64,45 @@ saveRDS(res.dist5, "../data/proj_dist_Zheng_top5.RDS")
 
 
 
+M <- 10
+cor1 <- readRDS("corZheng.RDS")[,,1:M]
+
+library(reshape2)
+
+df <- melt(cor1)
+
+library(tidyverse)
+
+df2 <- df %>% group_by(Var3,Var1) %>% summarise(q1=quantile(value,0.25),
+                                                q3=quantile(value,0.75),
+                                                val=median(value))
+
+library(viridis)
+
+subset <- seq(100, 1000,by=100)/3994
+df2$Var1 <- subset[df2$Var1]
+
+df2$Var3 <- as.character(df2$Var3)
+
+
+p <- ggplot(data=df2,aes(x=Var1,y=val,
+                         ymin=q1,ymax=q3,
+                         color=reorder(Var3, sort(as.numeric(Var3))),
+                         group=reorder(Var3, sort(as.numeric(Var3)))))
+p <- p + geom_point()#+ geom_errorbar()
+p <- p + geom_line()
+p <- p + scale_color_manual(values=magma(M+1)[2:(M+1)])
+#p <- p + scale_color_gradient(low="blue",high="red",
+#                              trans="reverse")
+p <- p + theme_bw()
+p <- p + xlab("Subset fraction") + ylab("Magnitude of correlation")
+p <- p + labs(color="Factor")+ggtitle("10X immune")
+pA <- p
+
+library(ggpubr)
+p <- ggarrange(pA,pB,nrow=1,ncol=2,common.legend = TRUE,
+               legend="bottom")
+
 
 
 
@@ -76,3 +115,54 @@ res <- readRDS("../data/corZheng.RDS")
 res.dist <- readRDS("../data/proj_dist_Zheng.RDS")
 
 
+M <- 10
+cor1 <- res[,,1:M]
+
+library(reshape2)
+
+df <- melt(cor1)
+
+library(tidyverse)
+
+df2 <- df %>% group_by(Var3,Var1) %>% summarise(q1=quantile(value,0.25),
+                                                q3=quantile(value,0.75),
+                                                val=median(value))
+
+library(viridis)
+
+subset <- seq(100, 3994, length.out=15)
+df2$Var1 <- subset[df2$Var1]
+
+df2$Var3 <- as.character(df2$Var3)
+
+
+p <- ggplot(data=df2,aes(x=Var1,y=val,
+                         ymin=q1,ymax=q3,
+                         color=reorder(Var3, sort(as.numeric(Var3))),
+                         group=reorder(Var3, sort(as.numeric(Var3)))))
+p <- p + geom_point()#+ geom_errorbar()
+p <- p + geom_line()
+p <- p + scale_color_manual(values=magma(M+1)[2:(M+1)])
+#p <- p + scale_color_gradient(low="blue",high="red",
+#                              trans="reverse")
+p <- p + theme_bw()
+p <- p + xlab("Subset fraction") + ylab("Magnitude of correlation")
+p <- p + labs(color="Factor")+ggtitle("10X immune")
+pA <- p
+
+#library(ggpubr)
+#p <- ggarrange(pA,pB,nrow=1,ncol=2,common.legend = TRUE,
+#               legend="bottom")
+
+
+
+res.dist
+df <- reshape2::melt(res.dist)
+df <- df |> group_by(Var1) |> summarise(mean=mean(value),
+                                        q1=quantile(value,0.25),
+                                        q3=quantile(value,0.75))
+
+p <- ggplot(data=df,aes(x=subset[Var1], y=mean, ymin=q1,ymax=q3)) +
+  geom_point() + geom_errorbar() +
+  xlab("Subset size") + ylab("diff of proj matrices") +
+  theme_bw()
