@@ -193,7 +193,7 @@ df <- df |> group_by(spike.mean,spike.size,variable,second.spike.mean) |>
   theme_bw() +
   xlab("# of cell type A") + ylab("Separation") +
   labs(color = "Method") +
-  xlim(c(0,50)) + ylim(c(0,15)) +
+  xlim(c(0,50)) + ylim(c(0,1.1)) +
   geom_abline(slope=0, intercept=1, color="grey", linetype="dashed") +
   facet_grid(second.spike.mean ~ spike.mean)
 

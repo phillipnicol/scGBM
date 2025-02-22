@@ -95,6 +95,15 @@ lpca.umap <- Sco@reductions$umap@cell.embeddings
 
 cell.mean <- colMeans(Y.new)
 
+### Calculate cancor
+
+gbm.cancor <- cancor(x=gbm.umap, y=my.type)$cor^2
+sct.cancor <- cancor(x=sct.umap, y=my.type)$cor^2
+l.scale.cancor <- cancor(x=lpca.scale.umap, y=my.type)$cor^2
+l.cancor <-  cancor(x=lpca.umap, y=my.type)$cor^2
+apr.cancor <-  cancor(x=apr.umap, y=my.type)$cor^2
+
+
 #saveRDS(out, file=paste0(data.dir,"scGBM_gradient.RData"))
 
 library(ggplot2)
@@ -123,19 +132,24 @@ lpca.pca.r22 <- cor(my.type,lpca[,2])^2
 apr.pca.r21 <- cor(my.type,pca.apr$x[,1])^2
 apr.pca.r22 <- cor(my.type,pca.apr$x[,2])^2
 
+#cancor
+
 ##Plotting Figure
 
 #out <- readRDS(file = paste0(data.dir,"scGBM_gradient.RData"))
 
 pt.size <- 0.5
 
+X <- 0.8
+
 df <- data.frame(x=sct.umap[,1],y=sct.umap[,2],color=my.type)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p  <- p + scale_color_gradientn(colors=rainbow(2))
 p <- p + theme_bw()+ guides(color="none")
-p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(sct.r21,3), ")")))
-p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(sct.r22,3), ")")))
-p <- p +  ggtitle("SCT+PCA+UMAP")
+p <- p + xlab("UMAP1") + ylab("UMAP2")
+#p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(sct.r21,3), ")")))
+#p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(sct.r22,3), ")")))
+p <- p + ggtitle(bquote("SCT+PCA+UMAP, " ~ R^2 ~ "=" ~ .(sct.cancor)))
 p_sct <- p
 
 
@@ -166,9 +180,10 @@ df <- data.frame(x=lpca.scale.umap[,1],y=lpca.scale.umap[,2],color=my.type)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p  <- p + scale_color_gradientn(colors=rainbow(2))
 p <- p + theme_bw()
-p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(l.scale.r21,3), ")")))
-p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(l.scale.r22,3), ")")))
-p <- p +  ggtitle("Log+Scale+PCA+UMAP")
+#p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(l.scale.r21,3), ")")))
+#p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(l.scale.r22,3), ")")))
+p <- p + xlab("UMAP1") + ylab("UMAP2")
+p <- p + ggtitle(bquote("Log+Scale+PCA+UMAP, " ~ R^2 ~ "=" ~ .(l.scale.cancor)))
 p <- p + labs(color="Naive T")
 p_log2scale <- p
 
@@ -187,9 +202,10 @@ df <- data.frame(x=lpca.umap[,1],y=lpca.umap[,2],color=my.type)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p  <- p + scale_color_gradientn(colors=rainbow(2))
 p <- p + theme_bw()
-p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(l.r21,3), ")")))
-p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(l.r22,3), ")")))
-p <- p +  ggtitle("Log+PCA+UMAP")
+#p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(l.r21,3), ")")))
+#p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(l.r22,3), ")")))
+p <- p + xlab("UMAP1") + ylab("UMAP2")
+p <- p + ggtitle(bquote("Log+PCA+UMAP, " ~ R^2 ~ "=" ~ .(l.cancor)))
 p <- p + labs(color="Naive T")
 p_log2 <- p
 
@@ -208,9 +224,10 @@ df <- data.frame(x=apr.umap[,1],y=apr.umap[,2],color=my.type)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p  <- p + scale_color_gradientn(colors=rainbow(2))
 p <- p + theme_bw()
-p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(apr.r21,3), ")")))
-p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(apr.r22,3), ")")))
-p <- p +  ggtitle("APR+PCA+UMAP")
+#p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(apr.r21,3), ")")))
+#p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(apr.r22,3), ")")))
+p <- p + xlab("UMAP1") + ylab("UMAP2")
+p <- p + ggtitle(bquote("APR+PCA+UMAP, " ~ R^2 ~ "=" ~ .(apr.cancor)))
 p <- p + labs(color="Naive T")
 p_apr <- p
 
@@ -252,9 +269,10 @@ df <- data.frame(x=gbm.umap[,1],y=gbm.umap[,2],color=my.type)
 p <- ggplot(data=df,aes(x=x,y=y,color=color))+geom_point(size=pt.size)
 p  <- p + scale_color_gradientn(colors=rainbow(2))
 p <- p + theme_bw() + guides(color="none")
-p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(gbm.umap.r21,3), ")")))
-p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(gbm.umap.r22,3), ")")))
-p <- p +  ggtitle("scGBM+UMAP")
+#p <- p + xlab(parse(text = paste0("paste('UMAP1 ', r^2, ' = ', ", round(gbm.umap.r21,3), ")")))
+#p <- p + ylab(parse(text = paste0("paste('UMAP2 ', r^2, ' = ', ", round(gbm.umap.r22,3), ")")))
+p <- p + xlab("UMAP1") + ylab("UMAP2")
+p <- p + ggtitle(bquote("scGBM+UMAP, " ~ R^2 ~ "=" ~ .(gbm.cancor)))
 p_gbm_umap <- p
 
 df <- data.frame(x=my.type,y=out$scores[,1],color=my.type)

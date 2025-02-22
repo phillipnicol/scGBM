@@ -15,7 +15,7 @@ p.embedding <- data.frame(x=V[,1], y=V[,2], color=meta$celltype_major) |>
 H.table <- readRDS("../data/H.table.minor.RDS") |> as.data.frame()
 
 
-colors <- rainbow(12)
+colors <- rainbow(9)
 
 p.heatmap <- pheatmap::pheatmap(H.table,legend=TRUE, color=colorRampPalette(c("white","red"))(100),
                    breaks=seq(0,1,by=0.01),
@@ -32,17 +32,17 @@ names(my.colors) <- unique(meta$celltype_minor)[p.heatmap$tree_row$order]
 my.colors["Luminal Progenitors"] <- colors[1]
 my.colors["Myoepithelial"] <- colors[4]
 my.colors["Plasmablasts"] <- colors[7]
-my.colors["Cycling PVL"] <- colors[10]
+#my.colors["Cycling PVL"] <- colors[10]
 
 my.colors["Endothelial Lymphatic LYVE1"] <- colors[2]
 my.colors["Endothelial ACKR1"] <- colors[5]
 my.colors["Endothelial RGS5"] <- colors[8]
-my.colors["Endothelial CXCL12"] <- colors[11]
+#my.colors["Endothelial CXCL12"] <- colors[11]
 
-my.colors["Mature Luminal"] <- colors[3]
-my.colors["Cancer Basal SC"] <- colors[6]
-my.colors["Cancer Cycling"] <- colors[9]
-my.colors["Cancer Her2 SC"] <- colors[12]
+#my.colors["Mature Luminal"] <- colors[3]
+my.colors["Cancer Basal SC"] <- colors[3]
+my.colors["Cancer Cycling"] <- colors[6]
+my.colors["Cancer Her2 SC"] <- colors[9]
 
 p.heatmap$gtable$grobs[[4]]$gp=gpar(col=my.colors)
 p.heatmap$gtable$grobs[[5]]$gp=gpar(col=my.colors)
@@ -78,25 +78,21 @@ p <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Lum
 
 p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Luminal Progenitors",
                                                                             "Myoepithelial",
-                                                                            "Plasmablasts",
-                                                                            "Cycling PVL"),
+                                                                            "Plasmablasts"),
                                                  meta$celltype_minor,
                                                  " ")) |>
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
                                 "Luminal Progenitors" = colors[1],
                                 "Myoepithelial" = colors[4],
-                                "Plasmablasts" = colors[7],
-                                "Cycling PVL" = colors[10]),
+                                "Plasmablasts" = colors[7]),
                      breaks=c("Luminal Progenitors",
                               "Myoepithelial",
-                              "Plasmablasts",
-                              "Cycling PVL")) +
+                              "Plasmablasts")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Luminal Progenitors" = 1,
                                 "Myoepithelial" = 1,
-                                "Plasmablasts" = 1,
-                                "Cycling PVL" = 1)) +
+                                "Plasmablasts" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
@@ -104,33 +100,28 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
 
 p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Endothelial Lymphatic LYVE1",
                                                                             "Endothelial ACKR1",
-                                                                            "Endothelial RGS5",
-                                                                            "Endothelial CXCL12"),
+                                                                            "Endothelial RGS5"),
                                                  meta$celltype_minor,
                                                  " ")) |>
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
                                 "Endothelial Lymphatic LYVE1" = colors[2],
                                 "Endothelial ACKR1" = colors[5],
-                                "Endothelial RGS5" = colors[8],
-                                "Endothelial CXCL12" = colors[11]),
+                                "Endothelial RGS5" = colors[8]),
                      breaks=c("Endothelial Lymphatic LYVE1",
                               "Endothelial ACKR1",
-                              "Endothelial RGS5",
-                              "Endothelial CXCL12")) +
+                              "Endothelial RGS5")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Endothelial Lymphatic LYVE1" = 1,
                                 "Endothelial ACKR1" = 1,
-                                "Endothelial RGS5" = 1,
-                                "Endothelial CXCL12" = 1)) +
+                                "Endothelial RGS5" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
 
-p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Mature Luminal",
-                                                                            "Cancer Basal SC",
+p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Cancer Basal SC",
                                                                             "Cancer Cycling",
                                                                             "Cancer Her2 SC"),
                                                  meta$celltype_minor,
@@ -138,16 +129,13 @@ p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in
   ggplot(aes(x=x,y=y,color=color,alpha=color)) +
   geom_point(size=0.25) +
   scale_color_manual(values = c(" " = "grey",
-                                "Mature Luminal" = colors[3],
                                 "Cancer Basal SC" = colors[6],
                                 "Cancer Cycling" = colors[9],
                                 "Cancer Her2 SC" = colors[12]),
-                     breaks = c("Mature Luminal",
-                                "Cancer Basal SC",
+                     breaks = c("Cancer Basal SC",
                                 "Cancer Cycling",
                                 "Cancer Her2 SC")) +
   scale_alpha_manual(values = c(" " = 0.3,
-                                "Mature Luminal" = 1,
                                 "Cancer Basal SC" = 1,
                                 "Cancer Cycling" = 1,
                                 "Cancer Her2 SC" = 1)) +
@@ -201,6 +189,7 @@ p <- ggarrange(p.list[[1]],
 ggsave(p, filename="../plots/cycling_pvl_gbm.png",
        width=13, height=3.92, units="in")
 
+## APR
 Vu <- readRDS("../data/aprUMAP.RDS")
 
 
@@ -214,18 +203,15 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
                                 "Luminal Progenitors" = colors[1],
-                                "Myoepithelial" = colors[2],
-                                "Plasmablasts" = colors[3],
-                                "Cycling PVL" = colors[4]),
+                                "Myoepithelial" = colors[4],
+                                "Plasmablasts" = colors[7]),
                      breaks=c("Luminal Progenitors",
                               "Myoepithelial",
-                              "Plasmablasts",
-                              "Cycling PVL")) +
+                              "Plasmablasts")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Luminal Progenitors" = 1,
                                 "Myoepithelial" = 1,
-                                "Plasmablasts" = 1,
-                                "Cycling PVL" = 1)) +
+                                "Plasmablasts" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
@@ -240,10 +226,9 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                                                    " ")) |>
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
-                                "Endothelial Lymphatic LYVE1" = colors[5],
-                                "Endothelial ACKR1" = colors[6],
-                                "Endothelial RGS5" = colors[7],
-                                "Endothelial CXCL12" = colors[8]),
+                                "Endothelial Lymphatic LYVE1" = colors[2],
+                                "Endothelial ACKR1" = colors[5],
+                                "Endothelial RGS5" = colors[8]),
                      breaks=c("Endothelial Lymphatic LYVE1",
                               "Endothelial ACKR1",
                               "Endothelial RGS5",
@@ -251,16 +236,14 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Endothelial Lymphatic LYVE1" = 1,
                                 "Endothelial ACKR1" = 1,
-                                "Endothelial RGS5" = 1,
-                                "Endothelial CXCL12" = 1)) +
+                                "Endothelial RGS5" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
 
-p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Mature Luminal",
-                                                                                    "Cancer Basal SC",
+p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Cancer Basal SC",
                                                                                     "Cancer Cycling",
                                                                                     "Cancer Her2 SC"),
                                                          meta$celltype_minor,
@@ -268,16 +251,13 @@ p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in
   ggplot(aes(x=x,y=y,color=color,alpha=color)) +
   geom_point(size=0.25) +
   scale_color_manual(values = c(" " = "grey",
-                                "Mature Luminal" = colors[9],
-                                "Cancer Basal SC" = colors[10],
-                                "Cancer Cycling" = colors[11],
-                                "Cancer Her2 SC" = colors[12]),
-                     breaks = c("Mature Luminal",
-                                "Cancer Basal SC",
+                                "Cancer Basal SC" = colors[3],
+                                "Cancer Cycling" = colors[6],
+                                "Cancer Her2 SC" = colors[9]),
+                     breaks = c("Cancer Basal SC",
                                 "Cancer Cycling",
                                 "Cancer Her2 SC")) +
   scale_alpha_manual(values = c(" " = 0.3,
-                                "Mature Luminal" = 1,
                                 "Cancer Basal SC" = 1,
                                 "Cancer Cycling" = 1,
                                 "Cancer Her2 SC" = 1)) +
@@ -304,18 +284,15 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
                                 "Luminal Progenitors" = colors[1],
-                                "Myoepithelial" = colors[2],
-                                "Plasmablasts" = colors[3],
-                                "Cycling PVL" = colors[4]),
+                                "Myoepithelial" = colors[4],
+                                "Plasmablasts" = colors[7]),
                      breaks=c("Luminal Progenitors",
                               "Myoepithelial",
-                              "Plasmablasts",
-                              "Cycling PVL")) +
+                              "Plasmablasts")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Luminal Progenitors" = 1,
                                 "Myoepithelial" = 1,
-                                "Plasmablasts" = 1,
-                                "Cycling PVL" = 1)) +
+                                "Plasmablasts" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
@@ -329,19 +306,16 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                                                    " ")) |>
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
-                                "Endothelial Lymphatic LYVE1" = colors[5],
-                                "Endothelial ACKR1" = colors[6],
-                                "Endothelial RGS5" = colors[7],
-                                "Endothelial CXCL12" = colors[8]),
+                                "Endothelial Lymphatic LYVE1" = colors[2],
+                                "Endothelial ACKR1" = colors[5],
+                                "Endothelial RGS5" = colors[8]),
                      breaks=c("Endothelial Lymphatic LYVE1",
                               "Endothelial ACKR1",
-                              "Endothelial RGS5",
-                              "Endothelial CXCL12")) +
+                              "Endothelial RGS5")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Endothelial Lymphatic LYVE1" = 1,
                                 "Endothelial ACKR1" = 1,
-                                "Endothelial RGS5" = 1,
-                                "Endothelial CXCL12" = 1)) +
+                                "Endothelial RGS5" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
@@ -357,16 +331,13 @@ p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in
   ggplot(aes(x=x,y=y,color=color,alpha=color)) +
   geom_point(size=0.25) +
   scale_color_manual(values = c(" " = "grey",
-                                "Mature Luminal" = colors[9],
-                                "Cancer Basal SC" = colors[10],
-                                "Cancer Cycling" = colors[11],
-                                "Cancer Her2 SC" = colors[12]),
-                     breaks = c("Mature Luminal",
-                                "Cancer Basal SC",
+                                "Cancer Basal SC" = colors[3],
+                                "Cancer Cycling" = colors[6],
+                                "Cancer Her2 SC" = colors[9]),
+                     breaks = c("Cancer Basal SC",
                                 "Cancer Cycling",
                                 "Cancer Her2 SC")) +
   scale_alpha_manual(values = c(" " = 0.3,
-                                "Mature Luminal" = 1,
                                 "Cancer Basal SC" = 1,
                                 "Cancer Cycling" = 1,
                                 "Cancer Her2 SC" = 1)) +
@@ -394,18 +365,15 @@ p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
                                 "Luminal Progenitors" = colors[1],
-                                "Myoepithelial" = colors[2],
-                                "Plasmablasts" = colors[3],
-                                "Cycling PVL" = colors[4]),
+                                "Myoepithelial" = colors[4],
+                                "Plasmablasts" = colors[7]),
                      breaks=c("Luminal Progenitors",
                               "Myoepithelial",
-                              "Plasmablasts",
-                              "Cycling PVL")) +
+                              "Plasmablasts")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Luminal Progenitors" = 1,
                                 "Myoepithelial" = 1,
-                                "Plasmablasts" = 1,
-                                "Cycling PVL" = 1)) +
+                                "Plasmablasts" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
@@ -420,27 +388,23 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                                                    " ")) |>
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
-                                "Endothelial Lymphatic LYVE1" = colors[5],
-                                "Endothelial ACKR1" = colors[6],
-                                "Endothelial RGS5" = colors[7],
-                                "Endothelial CXCL12" = colors[8]),
+                                "Endothelial Lymphatic LYVE1" = colors[2],
+                                "Endothelial ACKR1" = colors[5],
+                                "Endothelial RGS5" = colors[8]),
                      breaks=c("Endothelial Lymphatic LYVE1",
                               "Endothelial ACKR1",
-                              "Endothelial RGS5",
-                              "Endothelial CXCL12")) +
+                              "Endothelial RGS5")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Endothelial Lymphatic LYVE1" = 1,
                                 "Endothelial ACKR1" = 1,
-                                "Endothelial RGS5" = 1,
-                                "Endothelial CXCL12" = 1)) +
+                                "Endothelial RGS5" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
 
-p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Mature Luminal",
-                                                                                    "Cancer Basal SC",
+p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Cancer Basal SC",
                                                                                     "Cancer Cycling",
                                                                                     "Cancer Her2 SC"),
                                                          meta$celltype_minor,
@@ -448,16 +412,13 @@ p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in
   ggplot(aes(x=x,y=y,color=color,alpha=color)) +
   geom_point(size=0.25) +
   scale_color_manual(values = c(" " = "grey",
-                                "Mature Luminal" = colors[9],
-                                "Cancer Basal SC" = colors[10],
-                                "Cancer Cycling" = colors[11],
-                                "Cancer Her2 SC" = colors[12]),
-                     breaks = c("Mature Luminal",
-                                "Cancer Basal SC",
+                                "Cancer Basal SC" = colors[3],
+                                "Cancer Cycling" = colors[6],
+                                "Cancer Her2 SC" = colors[9]),
+                     breaks = c("Cancer Basal SC",
                                 "Cancer Cycling",
                                 "Cancer Her2 SC")) +
   scale_alpha_manual(values = c(" " = 0.3,
-                                "Mature Luminal" = 1,
                                 "Cancer Basal SC" = 1,
                                 "Cancer Cycling" = 1,
                                 "Cancer Her2 SC" = 1)) +
@@ -480,25 +441,21 @@ Vu <- readRDS("../data/log.scale.pca.UMAP.RDS")
 
 p_high_cci_low_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Luminal Progenitors",
                                                                                              "Myoepithelial",
-                                                                                             "Plasmablasts",
-                                                                                             "Cycling PVL"),
+                                                                                             "Plasmablasts"),
                                                                   meta$celltype_minor,
                                                                   " ")) |>
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
                                 "Luminal Progenitors" = colors[1],
-                                "Myoepithelial" = colors[2],
-                                "Plasmablasts" = colors[3],
-                                "Cycling PVL" = colors[4]),
+                                "Myoepithelial" = colors[4],
+                                "Plasmablasts" = colors[7]),
                      breaks=c("Luminal Progenitors",
                               "Myoepithelial",
-                              "Plasmablasts",
-                              "Cycling PVL")) +
+                              "Plasmablasts")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Luminal Progenitors" = 1,
                                 "Myoepithelial" = 1,
-                                "Plasmablasts" = 1,
-                                "Cycling PVL" = 1)) +
+                                "Plasmablasts" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + Low inter-CCI") +
   theme_bw() + xlab("UMAP1") + ylab("UMAP2")+ theme(legend.position = "bottom") +
@@ -513,27 +470,23 @@ p_high_cci_high_icc <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype
                                                                    " ")) |>
   ggplot(aes(x=x,y=y,color=color, alpha=color)) +
   scale_color_manual(values = c(" " = "grey",
-                                "Endothelial Lymphatic LYVE1" = colors[5],
-                                "Endothelial ACKR1" = colors[6],
-                                "Endothelial RGS5" = colors[7],
-                                "Endothelial CXCL12" = colors[8]),
+                                "Endothelial Lymphatic LYVE1" = colors[2],
+                                "Endothelial ACKR1" = colors[5],
+                                "Endothelial RGS5" = colors[8]),
                      breaks=c("Endothelial Lymphatic LYVE1",
                               "Endothelial ACKR1",
-                              "Endothelial RGS5",
-                              "Endothelial CXCL12")) +
+                              "Endothelial RGS5")) +
   scale_alpha_manual(values = c(" " = 0.3,
                                 "Endothelial Lymphatic LYVE1" = 1,
                                 "Endothelial ACKR1" = 1,
-                                "Endothelial RGS5" = 1,
-                                "Endothelial CXCL12" = 1)) +
+                                "Endothelial RGS5" = 1)) +
   guides(alpha="none") + labs(color="Cell type") +
   geom_point(size=0.25) + ggtitle("High CCI + High inter-CCI") +
   xlab("UMAP1") + ylab("UMAP2") + theme_bw()+ theme(legend.position = "bottom") +
   guides(color="none")
 
 
-p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Mature Luminal",
-                                                                                    "Cancer Basal SC",
+p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Cancer Basal SC",
                                                                                     "Cancer Cycling",
                                                                                     "Cancer Her2 SC"),
                                                          meta$celltype_minor,
@@ -541,16 +494,13 @@ p_low_cci <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in
   ggplot(aes(x=x,y=y,color=color,alpha=color)) +
   geom_point(size=0.25) +
   scale_color_manual(values = c(" " = "grey",
-                                "Mature Luminal" = colors[9],
-                                "Cancer Basal SC" = colors[10],
-                                "Cancer Cycling" = colors[11],
-                                "Cancer Her2 SC" = colors[12]),
-                     breaks = c("Mature Luminal",
-                                "Cancer Basal SC",
+                                "Cancer Basal SC" = colors[3],
+                                "Cancer Cycling" = colors[6],
+                                "Cancer Her2 SC" = colors[9]),
+                     breaks = c("Cancer Basal SC",
                                 "Cancer Cycling",
                                 "Cancer Her2 SC")) +
   scale_alpha_manual(values = c(" " = 0.3,
-                                "Mature Luminal" = 1,
                                 "Cancer Basal SC" = 1,
                                 "Cancer Cycling" = 1,
                                 "Cancer Her2 SC" = 1)) +

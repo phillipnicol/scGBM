@@ -18,7 +18,11 @@ gbm.sc(
   return.W = TRUE,
   batch = as.factor(rep(1, ncol(Y))),
   time.by.iter = FALSE,
-  min.iter = 30
+  min.iter = 30,
+  oos.Y = NULL,
+  sigma = 10,
+  order.by.deviance = TRUE,
+  factor.init = "pearson"
 )
 }
 \arguments{

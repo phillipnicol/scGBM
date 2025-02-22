@@ -253,12 +253,25 @@ rownames(res.sub) <- resolutions
 
 df <- reshape2::melt(res.full)
 
-p <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
-  geom_point() + geom_line()
+p1 <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
+  geom_point() + geom_line() +
+  xlab("Resolution") + ylab("ARI") + theme_bw() +
+  labs(color="Method") +
+  geom_vline(xintercept=0.8, color="grey", linetype="dashed")
 
 df <- reshape2::melt(res.sub)
 
-p <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
-  geom_point() + geom_line()
+p2 <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
+  geom_point() + geom_line() +
+  xlab("Resolution") + ylab("ARI") + theme_bw() +
+  labs(color="Method") +
+  geom_vline(xintercept=0.8, color="grey", linetype="dashed")
 
+library(ggpubr)
 
+p <- ggarrange(p1, p2, nrow=1,
+               common.legend = TRUE,
+               legend = "top")
+
+ggsave(p, filename="../plots/zheng_resolution_sensitivity.png",
+       width=10.1, height=5.21, units="in")

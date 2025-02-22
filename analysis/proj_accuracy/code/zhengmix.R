@@ -65,7 +65,7 @@ saveRDS(res.dist5, "../data/proj_dist_Zheng_top5.RDS")
 
 
 M <- 10
-cor1 <- readRDS("corZheng.RDS")[,,1:M]
+cor1 <- readRDS("../data/corZheng.RDS")[,,1:M]
 
 library(reshape2)
 
@@ -75,7 +75,7 @@ library(tidyverse)
 
 df2 <- df %>% group_by(Var3,Var1) %>% summarise(q1=quantile(value,0.25),
                                                 q3=quantile(value,0.75),
-                                                val=median(value))
+                                                val=mean(value))
 
 library(viridis)
 

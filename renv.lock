@@ -3,6 +3,26 @@
     "Version": "4.3.0",
     "Repositories": [
       {
+        "Name": "BioCsoft",
+        "URL": "https://bioconductor.org/packages/3.17/bioc"
+      },
+      {
+        "Name": "BioCann",
+        "URL": "https://bioconductor.org/packages/3.17/data/annotation"
+      },
+      {
+        "Name": "BioCexp",
+        "URL": "https://bioconductor.org/packages/3.17/data/experiment"
+      },
+      {
+        "Name": "BioCworkflows",
+        "URL": "https://bioconductor.org/packages/3.17/workflows"
+      },
+      {
+        "Name": "BioCbooks",
+        "URL": "https://bioconductor.org/packages/3.17/books"
+      },
+      {
         "Name": "CRAN",
         "URL": "https://packagemanager.posit.co/cran/latest"
       }
@@ -411,7 +431,7 @@
       "Package": "Matrix",
       "Version": "1.6-5",
       "Source": "Repository",
-      "Repository": "https://packagemanager.posit.co/cran/2024-04-26",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "grDevices",

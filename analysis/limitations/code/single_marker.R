@@ -345,6 +345,7 @@ ggsave(p,filename="../plots/limitation_plot.png",
        width=12.8, height=11.7)
 
 
+library(scGBM)
 ###scGBM
 set.seed(42)
 out <- gbm.sc(Y,M=20,sigma=10, infer.beta=TRUE)
@@ -398,11 +399,23 @@ p_ercc <- ggarrange(p.gbm1,p.gbm2,nrow=1)
 res <- readRDS("../../cluster_accuracy/data/zhengmix8eq.RDS")
 res2 <- readRDS("../../cluster_accuracy/data/zhengmix8uneq.RDS")
 
-names(res) <- c("scGBM-full", "scGBM-proj",
-                "log+scale+PCA",
-                "SCT+PCA",
-                "APR+PCA",
-                "GLM-PCA")
+res.full.sensitivty <- readRDS("../../cluster_accuracy/data/resolution_sensitivity_full.RDS")
+res.sub.sensitivty <- readRDS("../../cluster_accuracy/data/resolution_sensitivity_subsampled.RDS")
+
+resolutions <- seq(0.3, 1.5, by=0.1)
+
+
+rownames(res.full.sensitivty) <- resolutions
+rownames(res.sub.sensitivty) <- resolutions
+
+res <- res.full.sensitivty[6,]
+res2 <- res.sub.sensitivty[6,]
+
+#names(res) <- c("scGBM-full", "scGBM-proj",
+#                "log+scale+PCA",
+#                "SCT+PCA",
+#                "APR+PCA",
+#                "GLM-PCA (SGD)")
 
 df <- data.frame(equal = res,
                  unequal = res2, Method=names(res) |> fct_inorder())
@@ -417,13 +430,45 @@ p <- reshape2::melt(df,id.vars="Method") |>
   theme_bw()+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
-ggsave(p, filename="../plots/gbm_limitations_excerpt_c.png",
-       width=6.4, height=3.57,units="in")
 
-p <- ggarrange(p_sm, p_ercc, p, nrow=3, labels=c("a","b","c"))
+
+## Now add sensitivity plot
+
+
+df <- reshape2::melt(res.full.sensitivty)
+
+p.sens.1 <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
+  geom_point() + geom_line() +
+  xlab("Resolution") + ylab("ARI") + theme_bw() +
+  labs(color="Method") +
+  geom_vline(xintercept=0.8, color="grey", linetype="dashed")
+
+df <- reshape2::melt(res.sub.sensitivty)
+
+p.sens.2 <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
+  geom_point() + geom_line() +
+  xlab("Resolution") + ylab("ARI") + theme_bw() +
+  labs(color="Method") +
+  geom_vline(xintercept=0.8, color="grey", linetype="dashed")
+
+library(ggpubr)
+
+p.sens <- ggarrange(p.sens.1, p.sens.2, nrow=1, common.legend = TRUE,
+          legend="top")
+
+#ggsave(p, filename="../plots/gbm_limitations_excerpt_c.png",
+#       width=6.4, height=3.57,units="in")
+
+#p <- ggarrange(p_sm, p_ercc, p, nrow=3, labels=c("a","b","c"))
+
+p <- ggarrange(p_sm, p, p.sens, nrow=3, labels=c("a","b","c"),
+               heights=c(1,1.5,1.5))
 
 ggsave(p, filename="../plots/gbm_limitations.png",
-       width=2541, height=3508, units="px")
+       width=11.5, height=11.7)
+
+#ggsave(p, filename="../plots/gbm_limitations.png",
+#       width=2541, height=3508, units="px")
 
 ggsave(p.ercc.scaled, filename="../plots/limitation_plot_panel_c.png",
        width=12.8, height=5.5)
