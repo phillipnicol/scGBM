@@ -1,3 +1,4 @@
+setwd(here::here("analysis/proj_accuracy/code/"))
 
 library(DuoClustering2018)
 library(scGBM)
