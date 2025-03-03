@@ -1,3 +1,4 @@
+setwd(here::here("analysis/cluster_accuracy/code"))
 
 ### Subsample
 library(DuoClustering2018)
@@ -352,15 +353,32 @@ load(file="../data/apr_ggplot_obj.RData")
 load(file="../data/lpca_ns_ggplot_obj.RData")
 
 
-p <- ggarrange(p.scgbm,
+p <- ggarrange(p.scgbm + guides(color="none"),
                p.glmpca,
                p.lpca,
                p.sct,
                p.apr,
                p.lpca_ns,
-               nrow=3, ncol=2)
+               nrow=3, ncol=2,
+               common.legend=TRUE,
+               legend="top")
 
 
 ggsave(p, filename="../plots/all_umap_subsampled.png", width=15, height=10, units="in")
+
+
+
+
+
+##Resizing
+load(file="../data/scgbm_ggplot_obj.RData")
+load(file="../data/glmpca_ggplot_obj.RData")
+load(file="../data/scgbm_lpca_obj.RData")
+load(file="../data/sct_ggplot_obj.RData")
+load(file="../data/apr_ggplot_obj.RData")
+load(file="../data/lpca_ns_ggplot_obj.RData")
+
+
+
 
 

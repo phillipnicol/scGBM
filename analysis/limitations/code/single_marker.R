@@ -1,4 +1,6 @@
 
+setwd(here::here("analysis/limitations/code"))
+
 library(tidyverse)
 set.seed(1)
 library(Seurat)
@@ -441,7 +443,8 @@ p.sens.1 <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
   geom_point() + geom_line() +
   xlab("Resolution") + ylab("ARI") + theme_bw() +
   labs(color="Method") +
-  geom_vline(xintercept=0.8, color="grey", linetype="dashed")
+  geom_vline(xintercept=0.8, color="grey", linetype="dashed") +
+  ggtitle("Balanced")
 
 df <- reshape2::melt(res.sub.sensitivty)
 
@@ -449,7 +452,8 @@ p.sens.2 <- ggplot(data=df,aes(x=Var1, y=value, color=Var2)) +
   geom_point() + geom_line() +
   xlab("Resolution") + ylab("ARI") + theme_bw() +
   labs(color="Method") +
-  geom_vline(xintercept=0.8, color="grey", linetype="dashed")
+  geom_vline(xintercept=0.8, color="grey", linetype="dashed") +
+  ggtitle("Unbalanced")
 
 library(ggpubr)
 
@@ -466,6 +470,9 @@ p <- ggarrange(p_sm, p, p.sens, nrow=3, labels=c("a","b","c"),
 
 ggsave(p, filename="../plots/gbm_limitations.png",
        width=11.5, height=11.7)
+
+ggsave(p.sens, filename="../plots/zheng_resolution_sensitivity.png",
+       width=10.2, height=5.78, units="in")
 
 #ggsave(p, filename="../plots/gbm_limitations.png",
 #       width=2541, height=3508, units="px")
