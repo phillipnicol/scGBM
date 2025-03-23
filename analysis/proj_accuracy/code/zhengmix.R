@@ -127,11 +127,11 @@ library(tidyverse)
 
 df2 <- df %>% group_by(Var3,Var1) %>% summarise(q1=quantile(value,0.25),
                                                 q3=quantile(value,0.75),
-                                                val=median(value))
+                                                val=mean(value))
 
 library(viridis)
 
-subset <- seq(100, 3994, length.out=15)
+subset <- seq(100, 3994, length.out=15)/3994
 df2$Var1 <- subset[df2$Var1]
 
 df2$Var3 <- as.character(df2$Var3)
@@ -189,11 +189,11 @@ library(tidyverse)
 
 df2 <- df %>% group_by(Var3,Var1) %>% summarise(q1=quantile(value,0.25),
                                                 q3=quantile(value,0.75),
-                                                val=median(value))
+                                                val=mean(value))
 
 library(viridis)
 
-subset <- seq(100, 3994, length.out=15)
+subset <- seq(1000, 42000, length.out=8)/44721
 df2$Var1 <- subset[df2$Var1]
 
 df2$Var3 <- as.character(df2$Var3)
@@ -210,12 +210,14 @@ p <- p + scale_color_manual(values=magma(M+1)[2:(M+1)])
 #                              trans="reverse")
 p <- p + theme_bw()
 p <- p + xlab("Subset fraction") + ylab("Magnitude of correlation")
-p <- p + labs(color="Factor")+ggtitle("10X immune")
+p <- p + labs(color="Factor")+ggtitle("COVID-19")
 pB <- p
 
-#library(ggpubr)
-#p <- ggarrange(pA,pB,nrow=1,ncol=2,common.legend = TRUE,
-#               legend="bottom")
+library(ggpubr)
+p <- ggarrange(pA,pB,nrow=1,ncol=2,common.legend = TRUE,
+               legend="bottom")
 
 
+ggsave(p, filename="../plots/realsubsetsim.png",
+       width = 10.6, height = 5.74, units = "in")
 
