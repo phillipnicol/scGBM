@@ -362,7 +362,7 @@ p <- ggarrange(ggarrange(p.scgbm + guides(color="none"),
                p.apr,
                p.lpca_ns,
                nrow=3, ncol=2),
-               ggarrange(celltype_legend,cluster_legend,nrow=1),
+               ggarrange(celltype_legend,nrow=1),
                nrow=2,heights=c(10,1))
 
 

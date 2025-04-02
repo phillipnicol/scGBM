@@ -1,3 +1,4 @@
+setwd(here::here("analysis/breastcancer/code"))
 
 library(tidyverse)
 library(ggpubr)
@@ -67,8 +68,7 @@ p <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("B c
 
 p <- data.frame(x=Vu[,1], y=Vu[,2], color=ifelse(meta$celltype_minor %in% c("Luminal Progenitors",
                                                                             "Myoepithelial",
-                                                                            "Plasmablasts",
-                                                                            "Cycling PVL"),
+                                                                            "Plasmablasts"),
                                                  meta$celltype_minor,
                                                  "")) |>
   ggplot(aes(x=x,y=y,color=color)) +
