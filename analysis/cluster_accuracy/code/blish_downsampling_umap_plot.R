@@ -17,6 +17,27 @@ gbm <- readRDS("../data/covid19_subsample_scGBM_umap.RDS")
 meta <- readRDS("../../data/blish/blish_meta.RDS")
 
 
+
+
+# Define the sample sizes for each cell type
+set.seed(42)  # For reproducibility
+
+# Get row indices for sampling
+sampled_indices <- unlist(lapply(unique(meta$cell.type.coarse), function(cell_type) {
+  rows <- which(meta$cell.type.coarse == cell_type)
+  if (cell_type == "CD14 Monocyte") {
+    sample(rows, min(10339, length(rows)))  # Sample up to 10339
+  } else {
+    sample(rows, min(100, length(rows)))  # Sample up to 100
+  }
+}))
+
+
+meta <- meta[sampled_indices,]
+
+
+
+
 size <- 0.25
 
 library(tidyverse)
