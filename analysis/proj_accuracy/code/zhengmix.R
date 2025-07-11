@@ -178,6 +178,11 @@ res <- readRDS("../data/corBlish.RDS")
 #res.dist <- readRDS("../data/proj_st_Zheng.RDS")
 
 
+#Load final subset
+res.final <- readRDS("../data/corBlish_fullsubset.RDS")
+
+res[8,,] <- res.final[8,,]
+
 M <- 10
 cor1 <- res[,,1:M]
 
@@ -194,6 +199,7 @@ df2 <- df %>% group_by(Var3,Var1) %>% summarise(q1=quantile(value,0.25),
 library(viridis)
 
 subset <- seq(1000, 42000, length.out=8)/44721
+subset[8] <- 1
 df2$Var1 <- subset[df2$Var1]
 
 df2$Var3 <- as.character(df2$Var3)
