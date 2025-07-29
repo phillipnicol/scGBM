@@ -62,7 +62,7 @@ Sco <- FindClusters(Sco)
 library(Seurat)
 Sco <- CreateSeuratObject(counts=Y)
 colnames(out$scores) <- 1:10
-Sco[["gbm"]] <- CreateDimReducObject(embeddings=out$V,key="GBM_")
+Sco[["gbm"]] <- CreateDimReducObject(embeddings=out$scores,key="GBM_")
 Sco <- FindNeighbors(Sco,reduction = "gbm")
 Sco <- FindClusters(Sco)
 ```
@@ -126,7 +126,7 @@ cci$cci_diagonal
 ```
 
 
-The heatmap shows there is significant overlap between the clusters. This makes sense because the data was simulated to have no latent variability.
+The heatmap shows there is significant overlap between the clusters. This is expected because the data was simulated to have no latent variability.
 
 
 ## Reference 

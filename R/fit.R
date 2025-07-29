@@ -23,6 +23,10 @@
 #' @param batch An optional factor containing the assignment of cells to known batches.
 #' @param time.by.iter If TRUE, the elapsed time (in seconds) is given at each iteration of the algorithm.
 #' @param min.iter The minimum number of iterations.
+#' @param oos.Y An optional out-of-sample count matrix to compute the log-likelihood on.
+#' @param sigma The prior mean for the singular values (this is equivalent to 1/tau in the article).
+#' @param order.by.deviance If TRUE, the factors are ordered by the deviance explained by each factor.
+#' @param factor.init The initialization method for the factors. Can be either "pearson" (default) or "near-zero".
 #'
 #' @return A list with components
 #' \itemize{
@@ -151,7 +155,7 @@ gbm.sc <- function(Y,
     }
 
     #Reweight
-    print(i)
+    #print(i)
     alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
       #sweep(X[,batch==j],2,betas[batch==j],"+")
       log.rsy[j,]-log(rowSums(exp(sweep(X[,batch==j],2,betas[batch==j],"+"))))
@@ -204,9 +208,9 @@ gbm.sc <- function(Y,
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
 
 
-    print(i)
+    #print(i)
     ### Projected gradient descent step
-    print(lr)
+    #print(lr)
     #lr <- 1
     pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M, prior.mean)
     X <- pgd$X

@@ -1,7 +1,7 @@
 Model-based Dimensionality Reduction for Single-cell RNA-seq with
 Generalized Bilinear Models
 ================
-R package version 1.1.1
+R package version 1.2.0
 
 ## Installation
 
@@ -33,33 +33,32 @@ Run scGBM with $M = 10$ latent factors
 out <- gbm.sc(Y,M=10)
 ```
 
-    ## Iteration:  1 . Objective= -240304.2 
-    ## Iteration:  2 . Objective= -240294.5 
-    ## Iteration:  3 . Objective= -240287 
-    ## Iteration:  4 . Objective= -240281.6 
-    ## Iteration:  5 . Objective= -240277.9 
-    ## Iteration:  6 . Objective= -240275.1 
-    ## Iteration:  7 . Objective= -240273 
-    ## Iteration:  8 . Objective= -240271.2 
-    ## Iteration:  9 . Objective= -240269.9 
-    ## Iteration:  10 . Objective= -240269.1 
-    ## Iteration:  11 . Objective= -240268.9 
-    ## Iteration:  13 . Objective= -240268.9 
-    ## Iteration:  14 . Objective= -240268.6 
-    ## Iteration:  15 . Objective= -240268 
-    ## Iteration:  16 . Objective= -240267.4 
-    ## Iteration:  17 . Objective= -240267 
-    ## Iteration:  18 . Objective= -240266.9 
-    ## Iteration:  20 . Objective= -240266.9 
-    ## Iteration:  21 . Objective= -240266.8 
-    ## Iteration:  22 . Objective= -240266.7 
-    ## Iteration:  23 . Objective= -240266.5 
-    ## Iteration:  24 . Objective= -240266.4 
-    ## Iteration:  25 . Objective= -240266.4 
-    ## Iteration:  26 . Objective= -240266.3 
-    ## Iteration:  27 . Objective= -240266.2 
-    ## Iteration:  28 . Objective= -240266 
-    ## Iteration:  29 . Objective= -240265.9
+    ## Iteration:  1 . Objective= -246881.1 
+    ## Iteration:  2 . Objective= -241241.3 
+    ## Iteration:  3 . Objective= -240373.3 
+    ## Iteration:  4 . Objective= -240315.5 
+    ## Iteration:  6 . Objective= -240315.5 
+    ## Iteration:  7 . Objective= -240300.8 
+    ## Iteration:  8 . Objective= -240287.2 
+    ## Iteration:  9 . Objective= -240281.6 
+    ## Iteration:  10 . Objective= -240280.9 
+    ## Iteration:  11 . Objective= -240279.4 
+    ## Iteration:  12 . Objective= -240276.1 
+    ## Iteration:  13 . Objective= -240274.3 
+    ## Iteration:  15 . Objective= -240274.3 
+    ## Iteration:  16 . Objective= -240272.8 
+    ## Iteration:  17 . Objective= -240270.5 
+    ## Iteration:  18 . Objective= -240268.7 
+    ## Iteration:  19 . Objective= -240268.3 
+    ## Iteration:  21 . Objective= -240268.3 
+    ## Iteration:  22 . Objective= -240268.2 
+    ## Iteration:  23 . Objective= -240268 
+    ## Iteration:  24 . Objective= -240267.9 
+    ## Iteration:  25 . Objective= -240267.8 
+    ## Iteration:  26 . Objective= -240267.6 
+    ## Iteration:  27 . Objective= -240267.2 
+    ## Iteration:  28 . Objective= -240266.7 
+    ## Iteration:  29 . Objective= -240266.4
 
     ## For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.
 
@@ -98,20 +97,20 @@ out <- get.se(out)
 head(out$se_scores) 
 ```
 
-    ##              1         2         3         4         5         6         7
-    ## [1,] 0.9827696 0.9604884 0.9833750 0.9986217 0.9961750 0.9939438 1.0024827
-    ## [2,] 0.9868728 0.9573743 0.9942293 1.0230468 1.0038184 0.9887006 0.9953444
-    ## [3,] 0.9692269 0.9614666 0.9672354 0.9273413 0.9547951 0.9570453 0.9664860
-    ## [4,] 0.9676738 0.9670946 0.9542210 0.9424605 0.9483404 0.9524144 0.9460106
-    ## [5,] 1.0063214 1.0163037 0.9823466 0.9929520 0.9971580 1.0056245 1.0034012
-    ## [6,] 1.0528522 1.0371955 1.0451813 1.0685987 1.0542485 1.0463961 1.0422791
+    ##              1         2         4         3         5         7         6
+    ## [1,] 0.9818454 0.9648486 0.9970515 0.9836591 0.9998857 1.0037412 0.9921433
+    ## [2,] 0.9857107 0.9595188 1.0203683 0.9940216 0.9986431 0.9977712 0.9878560
+    ## [3,] 0.9705299 0.9598379 0.9297896 0.9670845 0.9517267 0.9645998 0.9587170
+    ## [4,] 0.9664405 0.9667122 0.9454582 0.9524491 0.9495731 0.9468009 0.9523415
+    ## [5,] 1.0077513 1.0151847 0.9930146 0.9864628 0.9917487 1.0031665 1.0012457
+    ## [6,] 1.0525799 1.0396983 1.0658745 1.0441789 1.0529122 1.0437008 1.0453202
     ##              8         9        10
-    ## [1,] 0.9955121 1.0007955 0.9854292
-    ## [2,] 0.9969187 0.9981072 0.9745440
-    ## [3,] 0.9675816 0.9671162 0.9636636
-    ## [4,] 0.9595275 0.9457462 0.9502666
-    ## [5,] 1.0019558 1.0120540 0.9979084
-    ## [6,] 1.0487410 1.0483612 1.0355369
+    ## [1,] 0.9987585 1.0016256 0.9811790
+    ## [2,] 0.9952865 1.0033278 0.9729804
+    ## [3,] 0.9672515 0.9692597 0.9674929
+    ## [4,] 0.9579136 0.9467246 0.9495301
+    ## [5,] 1.0000469 1.0145981 0.9948347
+    ## [6,] 1.0503104 1.0489968 1.0302706
 
 You can visualize the uncertainty with ellipses around the points
 
@@ -160,7 +159,7 @@ cci$cci_diagonal
 ![](README_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 
 The heatmap shows there is significant overlap between the clusters.
-This makes sense because the data was simulated to have no latent
+This is expected because the data was simulated to have no latent
 variability.
 
 ## Reference

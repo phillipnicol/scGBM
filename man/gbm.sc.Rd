@@ -53,6 +53,14 @@ be FALSE for large datasets since it requires a lot of memory.}
 \item{time.by.iter}{If TRUE, the elapsed time (in seconds) is given at each iteration of the algorithm.}
 
 \item{min.iter}{The minimum number of iterations.}
+
+\item{oos.Y}{An optional out-of-sample count matrix to compute the log-likelihood on.}
+
+\item{sigma}{The prior mean for the singular values (this is equivalent to 1/tau in the article).}
+
+\item{order.by.deviance}{If TRUE, the factors are ordered by the deviance explained by each factor.}
+
+\item{factor.init}{The initialization method for the factors. Can be either "pearson" (default) or "near-zero".}
 }
 \value{
 A list with components
