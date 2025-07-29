@@ -361,7 +361,7 @@ process.results <- function(gbm,Y,
   if(order.by.deviance) {
     dev.full <- sum(Y*log(gbm$W) - gbm$W)
     dev.diff <- rep(0,M)
-    print(gbm$D)
+    #print(gbm$D) This prints the singular values
     for(m in 1:M) {
       Etam <- matrix(gbm$alpha[,1], nrow=gbm$I, ncol=gbm$J)+
         matrix(gbm$beta,nrow=gbm$I,ncol=gbm$J) +
@@ -389,8 +389,7 @@ pgd_irlba <- function(X,Xt,i,lr,W,Y,M,prior.mean) {
 
   LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
   LRA$d <- ifelse(LRA$d > 1/prior.mean, LRA$d - 1/prior.mean, 0)
-  print(max(LRA$d))
-  print(max(W))
+
   out$X <- LRA$u %*% (LRA$d*t(LRA$v))
   out$LRA <- LRA
 

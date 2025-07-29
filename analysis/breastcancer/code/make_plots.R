@@ -11,6 +11,7 @@ p.embedding <- data.frame(x=V[,1], y=V[,2], color=meta$celltype_major) |>
   ggplot(aes(x=x,y=y,color=color)) +
   geom_point(size=0.25) +
   theme_bw() +
+  labs(color="Cell type") +
   xlab("GBM1") + ylab("GBM2")
 
 H.table <- readRDS("../data/H.table.minor.RDS") |> as.data.frame()
