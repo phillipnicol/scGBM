@@ -23,6 +23,10 @@
 #' @param batch An optional factor containing the assignment of cells to known batches.
 #' @param time.by.iter If TRUE, the elapsed time (in seconds) is given at each iteration of the algorithm.
 #' @param min.iter The minimum number of iterations.
+#' @param oos.Y An optional out-of-sample count matrix to compute the log-likelihood on.
+#' @param sigma The prior mean for the singular values (this is equivalent to 1/tau in the article).
+#' @param order.by.deviance If TRUE, the factors are ordered by the deviance explained by each factor.
+#' @param factor.init The initialization method for the factors. Can be either "pearson" (default) or "near-zero".
 #'
 #' @return A list with components
 #' \itemize{
@@ -59,14 +63,19 @@ gbm.sc <- function(Y,
                    return.W = TRUE,
                    batch=as.factor(rep(1,ncol(Y))),
                    time.by.iter = FALSE,
-                   min.iter=30) {
+                   min.iter=30,
+                   oos.Y=NULL,
+                   sigma=10,
+                   order.by.deviance=TRUE,
+                   factor.init = "pearson") {
 
   #Check validity of input
   gbm.sc.check.valid.input(as.list(environment()))
 
   if(!is.null(subset)) {
     out <- gbm.proj.parallel(Y,M,subsample=subset,ncores=ncores,tol=tol,
-                             max.iter=max.iter)
+                             max.iter=max.iter,
+                             order.by.deviance=order.by.deviance)
     ##Message for users of new version about scores
     message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores.")
     return(out)
@@ -79,6 +88,10 @@ gbm.sc <- function(Y,
   if(time.by.iter) {
     time <- c()
     start.time <- Sys.time()
+  }
+
+  if(!is.null(oos.Y)) {
+    ll.oos <- rep(-Inf, max.iter)
   }
 
   lr <- 1 #Default learning rate is set to 1
@@ -110,20 +123,39 @@ gbm.sc <- function(Y,
   alphas <- alphas - mean(alphas) #Ensure alphas sum to 0
   W <- exp(sweep(alphas[,batch], 2, betas, "+"))
 
-  #Starting estimate of X
-  Z <- (Y-W)/sqrt(W)
-  LRA <-  irlba::irlba(Z,nv=M,nu=M)
-  X <- LRA$u %*%(LRA$d*t(LRA$v))
-  X <- sqrt(1/W)*X
-
-  X[X > 8] <- 8 #Clipping
-  X[X < -8] <- -8
+  prior.mean <- sigma
+  if(factor.init == "pearson") {
+    #Starting estimate of X
+    #Z <- (Y-W)/sqrt(W)
+    LRA <-  irlba::irlba((Y-W)/sqrt(W),nv=M,nu=M)
+    X <- LRA$u %*%(LRA$d*t(LRA$v))
+    X <- sqrt(1/W)*X
+    #X[X > 8] <- 8
+    #X[X < -8] <- -8
+    LRA <- irlba::irlba(X,nv=M)
+    LRA$d <- sort(rexp(n=M,rate=1/10))
+    X <- LRA$u %*% (LRA$d * t(LRA$v))
+  } else if(factor.init == "near-zero") {
+    LRA <- list()
+    LRA$d <- rep(1, M)
+    LRA$v <- matrix(rnorm(J*M, sd=10^{-5}), nrow=J, ncol=M)
+    LRA$u <- matrix(rnorm(I*M, sd=10^{-5}), nrow=I, ncol=M)
+    X <- LRA$u %*% t(LRA$v)
+  }
 
   #For acceleration, save previous X
   Xt <- matrix(0,nrow=I,ncol=J)
 
   for(i in 1:max.iter) {
+
+    if(max.iter == 0) {
+      pgd <- list()
+      pgd$LRA <- LRA
+      break
+    }
+
     #Reweight
+    #print(i)
     alphas <- vapply(1:nbatch, FUN.VALUE=numeric(I), function(j) {
       #sweep(X[,batch==j],2,betas[batch==j],"+")
       log.rsy[j,]-log(rowSums(exp(sweep(X[,batch==j],2,betas[batch==j],"+"))))
@@ -141,14 +173,15 @@ gbm.sc <- function(Y,
       start.time <- Sys.time()
     }
 
-    #Prevent W from being too large (stability)
-    W[W > max.Y] <- max.Y
-
-    #Compute working variables
-    #Z <- X+(Y-W)/W
-
     ## Compute log likelihood (no normalizing constant)
     LL[i] <- sum(Y[nz]*log(W[nz]))-sum(W)
+
+    ## Out of sample likelihood
+    if(!is.null(oos.Y)) {
+      ll.oos[i] <- sum(oos.Y*log(W)) - sum(W)
+      print(ll.oos[i])
+    }
+
     if(is.na(LL[i]) | is.infinite(LL[i])) {
       X <- Xt
       lr <- lr/2
@@ -174,8 +207,12 @@ gbm.sc <- function(Y,
     loglik <- c(loglik,LL[i])
     cat("Iteration: ", i, ". Objective=", LL[i], "\n")
 
+
+    #print(i)
     ### Projected gradient descent step
-    pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M)
+    #print(lr)
+    #lr <- 1
+    pgd <- pgd_irlba(X, Xt, i, lr, W, Y, M, prior.mean)
     X <- pgd$X
     Xt <- pgd$Xt
 
@@ -203,7 +240,11 @@ gbm.sc <- function(Y,
     out$time <- cumsum(time)
   }
 
-  out <- process.results(out)
+  if(!is.null(oos.Y)) {
+    out$ll.oos <- ll.oos
+  }
+
+  out <- process.results(out,Y, order.by.deviance)
 
   ##Message for users of new version about scores
   message("For users of newer versions (1.0.1+): the `scores` matrix now contains factor scores, the `V` matrix is UNSCALED scores.")
@@ -211,10 +252,11 @@ gbm.sc <- function(Y,
 }
 
 gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
-                              ncores,tol=10^{-4},max.iter=max.iter) {
+                              ncores,tol=10^{-4},max.iter=max.iter,
+                              order.by.deviance=TRUE) {
 
   J <- ncol(Y); I <- nrow(Y)
-  alphas.full <- log(rowSums(Y))
+  alphas.full <- log(Matrix::rowSums(Y))
   if(length(subsample)==1) {
     jxs <- sample(1:J,size=subsample,replace=FALSE)
     Y.sub <- Y[,jxs]
@@ -224,7 +266,8 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
   Y.sub <- as.matrix(Y.sub)
   ixs <- which(rowSums(Y.sub) > 5)
   Y.sub <- Y.sub[ixs,]
-  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter)
+  out <- gbm.sc(Y.sub,M=M,tol=tol,max.iter=max.iter,
+                order.by.deviance = order.by.deviance)
 
   U <- out$U
   #U <- as.data.frame(U)
@@ -251,8 +294,8 @@ gbm.proj.parallel <- function(Y,M,subsample=2000,min.counts=5,
       val <- matrix(rep(0,2*M+1),nrow=1)
       try({
         fit <- fastglm::fastglm(x=U,y=cell,offset=o,
-                       family=poisson(),
-                       method=3)
+                                family=poisson(),
+                                method=3)
         #fit <- glm(cell~0+offset(o)+.,
         #data=U,
         #family=poisson(link="log"))
@@ -298,8 +341,9 @@ gbm.sc.check.valid.input <- function(my.args) {
   }
 }
 
-process.results <- function(gbm) {
-  #Enforce identifiability in U
+process.results <- function(gbm,Y,
+                            order.by.deviance=TRUE) {
+  #Multiplicative identifiability in U, V
   M <- gbm$M
   for(m in 1:M) {
     if(gbm$U[1,m] < 0) {
@@ -307,12 +351,39 @@ process.results <- function(gbm) {
       gbm$V[,m] <- -1*gbm$V[,m]
     }
   }
-  gbm$scores <- t(gbm$D*t(gbm$V))
 
+  # Additive identifiability in U, V
+  u.mean <- colMeans(gbm$U)
+  gbm$beta <- gbm$beta + colSums(diag(gbm$D*u.mean)%*%t(gbm$V))
+  gbm$U <- scale(gbm$U, center=TRUE,scale=FALSE)
+  v.mean <- colMeans(gbm$V)
+  gbm$alpha[,1] <- gbm$alpha[,1] + colSums(diag(gbm$D*u.mean)%*%t(gbm$U))
+  gbm$V <- scale(gbm$V, center=TRUE,scale=FALSE)
+  gbm$beta <- gbm$beta + mean(gbm$alpha[,1])
+  gbm$alpha[,1] <- gbm$alpha[,1] - mean(gbm$alpha[,1])
+
+  if(order.by.deviance) {
+    dev.full <- sum(Y*log(gbm$W) - gbm$W)
+    dev.diff <- rep(0,M)
+    #print(gbm$D) This prints the singular values
+    for(m in 1:M) {
+      Etam <- matrix(gbm$alpha[,1], nrow=gbm$I, ncol=gbm$J)+
+        matrix(gbm$beta,nrow=gbm$I,ncol=gbm$J) +
+        gbm$U[,-m] %*% diag(gbm$D[-m]) %*% t(gbm$V[,-m])
+      dev.diff[m] <- dev.full - sum(Y*Etam - exp(Etam))
+    }
+    my.order <- order(dev.diff,decreasing=TRUE)
+    gbm$U <- gbm$U[,my.order]
+    gbm$V <- gbm$V[,my.order]
+    gbm$D <- gbm$D[my.order]
+  }
+
+  gbm$dev.diff <- dev.diff[my.order]
+  gbm$scores <- t(gbm$D*t(gbm$V))
   return(gbm)
 }
 
-pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
+pgd_irlba <- function(X,Xt,i,lr,W,Y,M,prior.mean) {
   out <- list()
 
   ## Gradient Step
@@ -321,6 +392,8 @@ pgd_irlba <- function(X,Xt,i,lr,W,Y,M) {
   w.max <- max(W)
 
   LRA <- irlba::irlba(V+(lr/w.max)*(Y-W),nv=M)
+  LRA$d <- ifelse(LRA$d > 1/prior.mean, LRA$d - 1/prior.mean, 0)
+
   out$X <- LRA$u %*% (LRA$d*t(LRA$v))
   out$LRA <- LRA
 

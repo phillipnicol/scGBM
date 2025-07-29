@@ -3,3 +3,17 @@
 .RData
 .Ruserdata
 .DS_Store
+*.png
+*.log
+*.RDS
+*.RData
+
+# exclude everything including subdirectories
+analysis/data/*
+Analysis/data/*/*
+
+# exception to the rule
+!analysis/data/.gitkeep 
+
+#renv
+renv/library
