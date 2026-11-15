@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use scGBM in your research, please cite the article below."
+type: software
+title: "scGBM: Model-based dimensionality reduction for single-cell RNA-seq"
+version: 1.2.0
+date-released: 2025-07-29
+license: GPL-2.0-or-later
+repository-code: "https://github.com/phillipnicol/scGBM"
+url: "https://github.com/phillipnicol/scGBM"
+authors:
+  - family-names: Nicol
+    given-names: "Phillip B."
+preferred-citation:
+  type: article
+  title: "Model-based dimensionality reduction for single-cell RNA-seq using generalized bilinear models"
+  authors:
+    - family-names: Nicol
+      given-names: "Phillip B."
+    - family-names: Miller
+      given-names: "Jeffrey W."
+  journal: Biostatistics
+  year: 2025
+  volume: "26"
+  issue: "1"
+  doi: "10.1093/biostatistics/kxaf024"

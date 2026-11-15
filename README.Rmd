@@ -8,13 +8,23 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Overview
+
+`scGBM` is an R package for model-based dimensionality reduction of single-cell RNA-seq data. It fits a Poisson generalized bilinear model directly to a matrix of UMI counts, producing low-dimensional cell scores and gene loadings without first transforming the counts. It also supports uncertainty quantification for the estimated scores and a projection method to scale up to large datasets.
+
+To run `scGBM`, you will need a UMI count matrix with genes in rows and cells in columns, along with the number of latent factors to estimate. A simulated demo is provided below.
+
+If you use `scGBM` in your work, please cite:
+
+Nicol, P.B. and Miller, J.W. (2025). Model-based dimensionality reduction for single-cell RNA-seq using generalized bilinear models. *Biostatistics*. Vol. 26(1), kxaf024. [https://doi.org/10.1093/biostatistics/kxaf024](https://doi.org/10.1093/biostatistics/kxaf024).
+
 ## Installation 
 
 From the R console, `devtools::install_github("phillipnicol/scGBM")`. 
 
 ## Demo 
 
-We demonstrate scGBM by applying it to a random noise (i.e., a dataset with no latent variaiblity). 
+We demonstrate scGBM by applying it to random noise (i.e., a dataset with no latent variability).
 
 ```{r}
 library(scGBM)
@@ -127,11 +137,3 @@ cci$cci_diagonal
 
 
 The heatmap shows there is significant overlap between the clusters. This is expected because the data was simulated to have no latent variability.
-
-
-## Reference 
-
-If you use `scGBM` in your work, please cite: 
-
-Nicol, P.B. and Miller, J.W. (2023). Model-based dimensionality reduction for single-cell RNA-seq
-using generalized bilinear models. bioRxiv.
